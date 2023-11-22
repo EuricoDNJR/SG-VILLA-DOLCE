@@ -1,11 +1,31 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from .database.dbmain import db
+from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido
+from .routers.v1 import test
+from contextlib import asynccontextmanager
 
 import logging
 
 logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w', format="%(asctime)s - %(levelname)s - %(message)s")
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logging.info("Startup")
+    logging.info("Connecting Database")
+    db.connect()
+    logging.info("Creating Tables")
+    db.create_tables([Usuario, Pagamento, Cliente, Caixa, Produto, Pedido], safe=True)
+    logging.info("Tables Created")
+    
+    yield
+
+    logging.info("Shutdown")
+    logging.info("Disconnecting Database")
+    db.close()
+    logging.info("Database Disconnected")
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,6 +34,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(test.router, prefix="/v1/test", tags=["test"])
 
 @app.get("/")
 def read_root():
