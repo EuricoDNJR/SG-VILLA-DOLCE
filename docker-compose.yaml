@@ -1,0 +1,14 @@
+version: '3'
+services:
+  db:
+    image: "postgres:latest"
+    container_name: "db"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=guest
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_ROOT_PASSWORD=postgres
+      - POSTGRES_DB=villa_dolce_db
+    volumes:
+      - ./db:/var/lib/postgresql/data
