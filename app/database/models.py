@@ -35,13 +35,13 @@ class Pagamento(BaseModel):
 
 class Cliente(BaseModel):
     idCliente = UUIDField(primary_key=True, default=uuid.uuid4)
-    email = CharField()
+    email = CharField(unique=True, null=True)
     nome = CharField()
-    dataNascimento = DateField()
-    cpf = CharField()
-    endereco = CharField()
-    telefone = CharField()
-    saldo = DecimalField()
+    dataNascimento = DateField(null=True)
+    cpf = CharField(unique=True, null=True)
+    endereco = CharField(null=True)
+    telefone = CharField(unique=True)
+    saldo = DecimalField(decimal_places=2, null=True)
    
     class Meta:
         table_name = "Cliente"
