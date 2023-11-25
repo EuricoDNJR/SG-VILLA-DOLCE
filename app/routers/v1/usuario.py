@@ -5,7 +5,6 @@ from passlib.hash import bcrypt
 from ...database import crud
 from fastapi import (
     APIRouter,
-    Form,
     HTTPException,
     status,
 )
