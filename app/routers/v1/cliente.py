@@ -1,23 +1,25 @@
-import json
 import logging
+from typing import Optional
 from pydantic import BaseModel
 from ...database import crud
+from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     HTTPException,
     status,
+    Response
 )
 
 router = APIRouter()
 
 class ClienteRequest(BaseModel):
-    email: str
+    email: Optional[str]
     nome: str
-    dataNascimento: str
-    cpf: str
-    endereco: str
+    dataNascimento: Optional[str]
+    cpf: Optional[str]
+    endereco: Optional[str]
     telefone: str
-    saldo: float
+    saldo: Optional[float]
 
 @router.post("/create_client/", status_code=status.HTTP_201_CREATED)
 def create_client(data: ClienteRequest):
@@ -48,6 +50,23 @@ def create_client(data: ClienteRequest):
         )
         logging.info("Client created")
         return {"uuid": str(cliente.idCliente), "Nome": cliente.nome}
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
+@router.get("/get_all_clients/", status_code=status.HTTP_200_OK)
+def get_all_clients():
+    """
+    Retorna todos os clientes.
+    """
+    try:
+        logging.info("Getting all clients")
+        clientes = crud.get_all_clientes()
+        if clientes is not None:
+            return JSONResponse(status_code=status.HTTP_200_OK, content=clientes)
+        else:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         logging.error(e)
         raise HTTPException(
