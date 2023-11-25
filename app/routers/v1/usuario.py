@@ -1,5 +1,6 @@
 import json
 import logging
+from pydantic import BaseModel
 from passlib.hash import bcrypt
 from ...database import crud
 from fastapi import (
@@ -11,13 +12,33 @@ from fastapi import (
 
 router = APIRouter()
 
+class LoginRequest(BaseModel):
+    senha: str
+    telefone: str
+
+
 @router.post("/login/", status_code=status.HTTP_200_OK)
-def login(data: str = Form()):
+def login(data: LoginRequest):
+    """
+    Autenticação de usuário.
+
+    Este endpoint permite que usuários autentiquem-se fornecendo telefone e senha.
+
+    Exemplo de entrada:
+
+    ```
+    {
+        "senha": "senha_abashla",
+        "telefone": "123456789"
+    }
+    ```
+
+    """
+    try:
         logging.info("Receiving data")
-        json_data = json.loads(data)
         logging.info("Data received")
         logging.info("Getting user")
-        user = crud.get_usuario(telefone=json_data["telefone"])
+        user = crud.get_usuario(telefone=data.telefone)
         if user is None:
             logging.error("User not found")
             raise HTTPException(
@@ -25,7 +46,7 @@ def login(data: str = Form()):
             )
         logging.info("User found")
         logging.info("Verifying password")
-        if user and bcrypt.verify(json_data["senha"], user.senha):
+        if user and bcrypt.verify(data.senha, user.senha):
             logging.info("Login successful")
             return {"message": "Login bem-sucedido"}
         else:
@@ -34,27 +55,54 @@ def login(data: str = Form()):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciais inválidas",
             )
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Erro ao realizar login: " + str(e),
+        )
+
+class CreateUserRequest(BaseModel):
+    email: str
+    senha: str
+    nome: str
+    dataNascimento: str
+    cpf: str
+    endereco: str
+    telefone: str
+    cargo: str
 
 @router.post("/create_user/", status_code=status.HTTP_201_CREATED)
-def create_user(data: str = Form()):
+def create_user(data: CreateUserRequest):
+    """
+    Criação de usuário.
+    exemplo de entrada:
+    
+        {
+            "email": "usuario@test2.com",
+            "senha": "senha_abashla",
+            "nome": "Nome do Usuário",
+            "dataNascimento": "1990-01-01",
+            "cpf": "12345678301",
+            "endereco": "Rua Exemplo, 123",
+            "telefone": "123456789",
+            "cargo": "Admin"
+        }
+    """
     try:
-        logging.info("Receiving data")
-        json_data = json.loads(data)
-        logging.info("Data received")
-
         # Gerar hash da senha usando passlib
-        hashed_password = bcrypt.using(rounds=12).hash(json_data["senha"])
+        hashed_password = bcrypt.using(rounds=12).hash(data.senha)
 
         logging.info("Creating user")
         user = crud.create_usuario(
-            email=json_data["email"],
+            email=data.email,
             senha=hashed_password,
-            nome=json_data["nome"],
-            dataNascimento=json_data["dataNascimento"],
-            cpf=json_data["cpf"],
-            endereco=json_data["endereco"],
-            telefone=json_data["telefone"],
-            cargo=json_data["cargo"],
+            nome=data.nome,
+            dataNascimento=data.dataNascimento,
+            cpf=data.cpf,
+            endereco=data.endereco,
+            telefone=data.telefone,
+            cargo=data.cargo
         )
         
         logging.info("User created")
