@@ -1,7 +1,7 @@
 import datetime
 import uuid
-
 from peewee import *
+
 from .dbmain import db
 
 class BaseModel(Model):
@@ -15,11 +15,13 @@ class Usuario(BaseModel):
     dataNascimento = DateField()
     cpf = CharField(unique=True)
     endereco = CharField()
-    telefone = CharField()
+    telefone = CharField(unique=True)
     cargo = CharField()
+    senha = CharField()
 
     class Meta:
         table_name = "Usuario"
+
 
 class Pagamento(BaseModel):
     idPagamento = UUIDField(primary_key=True, default=uuid.uuid4)
