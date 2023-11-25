@@ -7,23 +7,8 @@
 </head>
 <body>
     <h1 id="title">TESTE</h1>
-    <button onclick="botao()">Request API</button>
+    <button id="btn">Request API</button>
 
-    <script>
-        console.log("Teste")
-        function botao(){
-            let titulo = document.getElementById("title");
-
-            fetch("http://127.0.0.1:8000/").then((response) => {
-                console.log(response);
-                return response.text();
-            }).then((texto) => {
-                console.log(texto);
-                titulo.textContent = texto;
-            })
-            titulo.textContent = "Carregando requisição";
-
-        }
-    </script>
+    <script src="main.js"></script>
 </body>
 </html>
