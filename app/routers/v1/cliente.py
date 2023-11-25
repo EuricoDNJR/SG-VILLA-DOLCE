@@ -1,31 +1,50 @@
 import json
 import logging
-
+from pydantic import BaseModel
 from ...database import crud
 from fastapi import (
     APIRouter,
-    Form,
     HTTPException,
     status,
 )
 
 router = APIRouter()
 
+class ClienteRequest(BaseModel):
+    email: str
+    nome: str
+    dataNascimento: str
+    cpf: str
+    endereco: str
+    telefone: str
+    saldo: float
+
 @router.post("/create_client/", status_code=status.HTTP_201_CREATED)
-def create_client(data: str = Form()):
+def create_client(data: ClienteRequest):
+    """
+    Criação de usuário.
+    exemplo de entrada:
+    
+        {
+            "email": "test3@gmail.com",
+            "nome": "Nome do Usuário",
+            "dataNascimento": "1990-01-01",
+            "cpf": "12345678301",
+            "endereco": "Rua Exemplo, 123",
+            "telefone": "123456789",
+            "saldo": "100.00"
+        }
+    """
     try:
-        logging.info("Receiving data")
-        json_data = json.loads(data)
-        logging.info("Data received")
         logging.info("Creating client")
         cliente = crud.create_cliente(
-            json_data["email"],
-            json_data["nome"],
-            json_data["dataNascimento"],
-            json_data["cpf"],
-            json_data["endereco"],
-            json_data["telefone"],
-            json_data["saldo"],
+            data.email,
+            data.nome,
+            data.dataNascimento,
+            data.cpf,
+            data.endereco,
+            data.telefone,
+            data.saldo,
         )
         logging.info("Client created")
         return {"uuid": str(cliente.idCliente), "Nome": cliente.nome}
