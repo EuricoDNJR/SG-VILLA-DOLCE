@@ -55,6 +55,27 @@ def create_client(data: ClienteRequest):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         )
+
+@router.get("/get_client/{telefone}", status_code=status.HTTP_200_OK)
+def get_client(telefone: str):
+    """
+    Retorna um cliente.
+    """
+    try:
+        logging.info("Getting client")
+        cliente = crud.get_cliente(telefone=telefone)
+        if cliente is None:
+            logging.error("Client not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        else:
+            logging.info("Client found")
+            return JSONResponse(status_code=status.HTTP_200_OK, content=cliente)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
+
 @router.get("/get_all_clients/", status_code=status.HTTP_200_OK)
 def get_all_clients():
     """
