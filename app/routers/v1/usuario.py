@@ -3,6 +3,7 @@ import logging
 from pydantic import BaseModel
 from passlib.hash import bcrypt
 from ...database import crud
+from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -150,7 +151,7 @@ def get_all_users():
                 status_code=status.HTTP_404_NOT_FOUND, detail="Users not found"
             )
         logging.info("Users found")
-        return users
+        return JSONResponse(status_code=status.HTTP_200_OK, content=users)
     except Exception as e:
         logging.error(e)
         raise HTTPException(
