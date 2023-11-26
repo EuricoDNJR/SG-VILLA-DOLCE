@@ -93,3 +93,36 @@ def get_all_clients():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         )
+    
+@router.patch("/update_cliente/{idCliente}")
+def update_cliente(
+    idCliente: str,
+    telefone: str =  None,
+    email: str = None,
+    nome: str = None,
+    dataNascimento: str = None,
+    cpf: str = None,
+    endereco: str = None,
+    saldo: float = None,
+):
+    try:
+        logging.info("Updating client")
+        update_cliente = crud.update_cliente(
+            uuid=idCliente,
+            telefone=telefone,
+            email=email,
+            nome=nome,
+            dataNascimento=dataNascimento,
+            cpf=cpf,
+            endereco=endereco,
+            saldo=saldo
+        )
+        if update_cliente:
+            logging.info("Client updated")
+            return JSONResponse(status_code=status.HTTP_200_OK, content=update_cliente)
+        else:
+            logging.error("Client not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=400, detail=str(e))
