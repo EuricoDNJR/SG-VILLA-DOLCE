@@ -59,6 +59,7 @@ h1 {
     margin: 0px 0px 5px 15px;
     font-size: 25px;
     font-weight: 500;
+    line-height: 30px;
     color: rgb(95, 95, 95); 
     transition: all 0.3s;
 }
