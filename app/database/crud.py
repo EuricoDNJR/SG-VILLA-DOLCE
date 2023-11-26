@@ -13,6 +13,25 @@ def get_usuario(telefone):
     except DoesNotExist:
         return None
 
+def get_cliente(telefone):
+    try:
+        cliente = models.Cliente.get(models.Cliente.telefone == telefone)
+
+        # Retorna um dicionário contendo apenas atributos não nulos
+        return {
+            "idCliente": str(cliente.idCliente),
+            "email": cliente.email if cliente.email is not None else None,
+            "nome": cliente.nome,
+            "dataNascimento": cliente.dataNascimento.isoformat() if cliente.dataNascimento is not None else None,
+            "cpf": cliente.cpf if cliente.cpf is not None else None,
+            "endereco": cliente.endereco if cliente.endereco is not None else None,
+            "telefone": cliente.telefone if cliente.telefone is not None else None,
+            "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+        }
+
+    except DoesNotExist:
+        return None
+
 def get_all_users():
     try:
         # Tenta buscar todos os usuários
