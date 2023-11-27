@@ -7,7 +7,6 @@ from ...dependencies import get_token_header
 from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
-    HTTPException,
     status,
     Response,
     Header,
@@ -45,9 +44,7 @@ def login(data: LoginRequest):
         user = crud.get_usuario(telefone=data.telefone)
         if user is None:
             logging.error("User not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Usuário não encontrado"})
         logging.info("User found")
         logging.info("Verifying password")
         if user and bcrypt.verify(data.senha, user.senha):
@@ -64,9 +61,9 @@ def login(data: LoginRequest):
             )
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Erro ao realizar login: " + str(e),
+            content={"message": "Erro ao realizar login: " + str(e)},
         )
 
 class CreateUserRequest(BaseModel):
@@ -122,9 +119,9 @@ def create_user(data: CreateUserRequest, jwt_token: str = Header()):
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(user.idUsuario), "message": "Usuário criado com sucesso"})
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Usuario não criado " + str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao criar usuário: " + str(e)})
     
 @router.get("/get_user/{telefone}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_user(telefone: str, jwt_token: str = Header()):  
@@ -151,9 +148,9 @@ def get_user(telefone: str, jwt_token: str = Header()):
                                                                       "cargo": user.cargo})
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar usuário: " + str(e)})
     
 @router.get("/get_all_users/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_all_users(jwt_token: str = Header()):
@@ -168,13 +165,11 @@ def get_all_users(jwt_token: str = Header()):
         users = crud.get_all_users()
         if users is None:
             logging.error("Users not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Users not found"
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Users found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=users)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar usuários: " + str(e)})
