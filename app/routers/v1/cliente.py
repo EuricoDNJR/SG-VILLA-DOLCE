@@ -6,7 +6,6 @@ from ...dependencies import get_token_header
 from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
-    HTTPException,
     status,
     Response,
     Header,
@@ -25,7 +24,7 @@ class ClienteRequest(BaseModel):
     saldo: Optional[float]
 
 @router.post("/create_client/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
-def create_client(data: ClienteRequest):
+def create_client(data: ClienteRequest, jwt_token: str = Header()):
     """
     Criação de usuário.
     exemplo de entrada:
@@ -41,7 +40,7 @@ def create_client(data: ClienteRequest):
         }
     """
     try:
-        logging.info("Creating client")
+        logging.info("Creating client by user: " + jwt_token)
         cliente = crud.create_cliente(
             data.email,
             data.nome,
@@ -56,9 +55,9 @@ def create_client(data: ClienteRequest):
         
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao criar cliente: " + str(e)})
 
 @router.get("/get_client/{telefone}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_client(telefone: str):
@@ -76,9 +75,9 @@ def get_client(telefone: str):
             return JSONResponse(status_code=status.HTTP_200_OK, content=cliente)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar cliente: " + str(e)})
 
 @router.get("/get_all_clients/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_all_clients():
@@ -94,9 +93,9 @@ def get_all_clients():
             return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar clientes: " + str(e)})
     
 @router.patch("/update_cliente/{idCliente}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def update_cliente(
@@ -129,4 +128,6 @@ def update_cliente(
             return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(status_code=400, detail=str(e))
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao atualizar cliente: " + str(e)})
