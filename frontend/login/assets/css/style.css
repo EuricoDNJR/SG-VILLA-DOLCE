@@ -49,25 +49,24 @@ h1 {
 }
 
 .input-centralize{
-    display: flex;
     position: relative;
-    align-items: center;
+    margin-bottom: 10px;
 }
 
 .input-field label {
     position: absolute;
-    margin: 0px 0px 5px 15px;
+    left: 17px;
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 25px;
     font-weight: 500;
-    line-height: 30px;
-    color: rgb(95, 95, 95); 
+    color: rgb(95, 95, 95);
     transition: all 0.3s;
 }
 
 .input-field input {
     width: 320px;
     height: 50px;
-    margin-bottom: 10px;
     border-radius: 10px;
     border-color: rgb(95, 95, 95);
     border-style: solid;
@@ -77,11 +76,10 @@ h1 {
     font-weight: 500;
     padding: 15px 0px 0px 15px;
     transition: all 0.3s;
-    
 }
 
 .input-field input:focus + label, .input-field input:valid + label{
-    transform: translate(-25%, -15px) scale(0.5);
+    transform: translate(-25%, -85%) scale(0.5);
     color: rgb(102, 12, 185);
 }
 
