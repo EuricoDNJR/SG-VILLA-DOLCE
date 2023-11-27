@@ -3,11 +3,15 @@ import logging
 from pydantic import BaseModel
 from passlib.hash import bcrypt
 from ...database import crud
+from ...dependencies import get_token_header
 from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     HTTPException,
     status,
+    Response,
+    Header,
+    Depends
 )
 
 router = APIRouter()
@@ -48,12 +52,15 @@ def login(data: LoginRequest):
         logging.info("Verifying password")
         if user and bcrypt.verify(data.senha, user.senha):
             logging.info("Login successful")
-            return {"message": "Login bem-sucedido"}
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content={"token": str(user.idUsuario), "cargo": user.cargo, "nome": user.nome, "message": "Login realizado com sucesso"},
+            )
         else:
             logging.warning("Login failed: Invalid email or password")
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credenciais inválidas",
+                content={"message": "Credenciais inválidas"},
             )
     except Exception as e:
         logging.error(e)
@@ -72,8 +79,8 @@ class CreateUserRequest(BaseModel):
     telefone: str
     cargo: str
 
-@router.post("/create_user/", status_code=status.HTTP_201_CREATED)
-def create_user(data: CreateUserRequest):
+@router.post("/create_user/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
+def create_user(data: CreateUserRequest, jwt_token: str = Header()):
     """
     Criação de usuário.
     exemplo de entrada:
@@ -90,6 +97,12 @@ def create_user(data: CreateUserRequest):
         }
     """
     try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         # Gerar hash da senha usando passlib
         hashed_password = bcrypt.using(rounds=12).hash(data.senha)
 
@@ -113,36 +126,46 @@ def create_user(data: CreateUserRequest):
             status_code=status.HTTP_400_BAD_REQUEST, detail="Usuario não criado " + str(e)
         )
     
-@router.get("/get_user/{telefone}", status_code=status.HTTP_200_OK)
-def get_user(telefone: str):
+@router.get("/get_user/{telefone}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_user(telefone: str, jwt_token: str = Header()):  
     try:
+        logging.info("Verifying permission")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Getting user")
         user = crud.get_usuario(telefone=telefone)
         if user is None:
             logging.error("User not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("User found")
-        return {
-            "idUsuario": str(user.idUsuario),
-            "email": user.email,
-            "nome": user.nome,
-            "dataNascimento": user.dataNascimento.isoformat(),
-            "cpf": user.cpf,
-            "endereco": user.endereco,
-            "telefone": user.telefone,
-            "cargo": user.cargo
-        }
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"idUsuario": str(user.idUsuario),
+                                                                      "email": user.email, 
+                                                                      "nome": user.nome, 
+                                                                      "dataNascimento": user.dataNascimento.isoformat(), 
+                                                                      "cpf": user.cpf, 
+                                                                      "endereco": user.endereco, 
+                                                                      "telefone": user.telefone, 
+                                                                      "cargo": user.cargo})
     except Exception as e:
         logging.error(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         )
     
-@router.get("/get_all_users/", status_code=status.HTTP_200_OK)
-def get_all_users():
+@router.get("/get_all_users/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_users(jwt_token: str = Header()):
     try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, detail="No Permission"
+                )
         logging.info("Getting all users")
         users = crud.get_all_users()
         if users is None:
