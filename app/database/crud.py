@@ -13,6 +13,25 @@ def get_usuario(telefone):
     except DoesNotExist:
         return None
 
+def get_cliente(telefone):
+    try:
+        cliente = models.Cliente.get(models.Cliente.telefone == telefone)
+
+        # Retorna um dicionário contendo apenas atributos não nulos
+        return {
+            "idCliente": str(cliente.idCliente),
+            "email": cliente.email if cliente.email is not None else None,
+            "nome": cliente.nome,
+            "dataNascimento": cliente.dataNascimento.isoformat() if cliente.dataNascimento is not None else None,
+            "cpf": cliente.cpf if cliente.cpf is not None else None,
+            "endereco": cliente.endereco if cliente.endereco is not None else None,
+            "telefone": cliente.telefone if cliente.telefone is not None else None,
+            "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+        }
+
+    except DoesNotExist:
+        return None
+
 def get_all_users():
     try:
         # Tenta buscar todos os usuários
@@ -39,4 +58,69 @@ def get_all_users():
             return None
     except DoesNotExist:
         # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+    
+def get_all_clientes():
+    try:
+        # Tenta buscar todos os clientes
+        clientes = models.Cliente.select()
+
+        # Verifica se há clientes
+        if clientes.exists():
+            # Retorna a lista de clientes se houver algum
+            return [
+                {
+                    "idCliente": str(cliente.idCliente),
+                    "email": cliente.email if cliente.email is not None else None,
+                    "nome": cliente.nome,
+                    "dataNascimento": cliente.dataNascimento.isoformat() if cliente.dataNascimento is not None else None,
+                    "cpf": cliente.cpf if cliente.cpf is not None else None,
+                    "endereco": cliente.endereco if cliente.endereco is not None else None,
+                    "telefone": cliente.telefone if cliente.telefone is not None else None,
+                    "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+                }
+                for cliente in clientes
+            ]
+        else:
+            # Se não houver clientes, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
+def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
+    try:
+        cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
+        if cliente is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if telefone is not None:
+            cliente.telefone = telefone
+        if email is not None:
+            cliente.email = email
+        if nome is not None:
+            cliente.nome = nome
+        if dataNascimento is not None:
+            cliente.dataNascimento = dataNascimento
+        if cpf is not None:
+            cliente.cpf = cpf
+        if endereco is not None:
+            cliente.endereco = endereco
+        if saldo is not None:
+            cliente.saldo = saldo
+
+        cliente.save()
+
+        return {
+            "idCliente": str(cliente.idCliente),
+            "email": cliente.email if cliente.email is not None else None,
+            "nome": cliente.nome,
+            "dataNascimento": cliente.dataNascimento.isoformat() if cliente.dataNascimento is not None else None,
+            "cpf": cliente.cpf if cliente.cpf is not None else None,
+            "endereco": cliente.endereco if cliente.endereco is not None else None,
+            "telefone": cliente.telefone if cliente.telefone is not None else None,
+            "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+        }
+
+    except DoesNotExist:
         return None
