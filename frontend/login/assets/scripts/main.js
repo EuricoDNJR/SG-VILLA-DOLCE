@@ -1,40 +1,38 @@
 const btn = document.getElementById("btn");
 btn.addEventListener("click", requestLogin);
 
-function trataDadosLogin(){
+//function trataDadosLogin(){}
+
+function requestLogin(event){
+    event.preventDefault();
+    //const data = trataDadosLogin();
     const cellphone = document.getElementById("cellphone");
     const password = document.getElementById("password");
-    
-    // TRATAR DADOS AQUI 
-
-    return {
-        "telefone": cellphone.value,
-        "senha": password.value,
-    };
-}
-
-function requestLogin(){
-    const data = trataDadosLogin();
 
     const options = {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(data),  
+        body: JSON.stringify({
+            telefone: String(cellphone.value),
+            senha: String(password.value),
+        })
     };
-
+    console.log(options);
     fetch("http://127.0.0.1:8000/v1/usuario/login/", options).then(
         (response) => {
+            console.log(response);
             if(!response.ok){
                 const responseJsonPromise = response.json();
 
                 responseJsonPromise.then(
-                    (message) => {
+                    (responseJson) => {
+                        console.log(responseJson);
                         const errorMessage = document.getElementById("error-message");
 
-                        errorMessage.textContent = message;
-                        errorMessage.style.display = block;
+                        errorMessage.textContent = responseJson.message;
+                        errorMessage.style.display = "block";
                     }
                 )
             }else{
@@ -43,4 +41,4 @@ function requestLogin(){
                 // PRECISO DE ALGUNS DADOS DO USUÁRIO -> NOME, CARGO e IMAGEM
             }
         })
-}
+    }
