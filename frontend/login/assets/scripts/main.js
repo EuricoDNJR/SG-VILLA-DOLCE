@@ -3,7 +3,7 @@ btn.addEventListener("click", requestLogin);
 
 //function trataDadosLogin(){}
 
-function requestLogin(event){
+async function requestLogin(event){
     event.preventDefault();
     //const data = trataDadosLogin();
     const cellphone = document.getElementById("cellphone");
