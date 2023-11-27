@@ -6,7 +6,6 @@ from ...dependencies import get_token_header
 from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
-    HTTPException,
     status,
     Response,
     Header,
