@@ -81,9 +81,8 @@ h1 {
 }
 
 .input-field input:focus + label, .input-field input:valid + label{
-    transform: translateY(-15px);
+    transform: translate(-25%, -15px) scale(0.5);
     color: rgb(102, 12, 185);
-    font-size: 12px;
 }
 
 .input-field input:hover{
