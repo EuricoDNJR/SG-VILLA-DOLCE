@@ -25,7 +25,7 @@ class ClienteRequest(BaseModel):
     saldo: Optional[float]
 
 @router.post("/create_client/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
-def create_client(data: ClienteRequest):
+def create_client(data: ClienteRequest, jwt_token: str = Header()):
     """
     Criação de usuário.
     exemplo de entrada:
@@ -41,7 +41,7 @@ def create_client(data: ClienteRequest):
         }
     """
     try:
-        logging.info("Creating client")
+        logging.info("Creating client by user: " + jwt_token)
         cliente = crud.create_cliente(
             data.email,
             data.nome,
