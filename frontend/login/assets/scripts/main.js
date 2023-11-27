@@ -1,44 +1,47 @@
 const btn = document.getElementById("btn");
-btn.addEventListener("click", requestLogin);
+btn.addEventListener("click", callRequestLogin);
 
-//function trataDadosLogin(){}
-
-async function requestLogin(event){
-    event.preventDefault();
-    //const data = trataDadosLogin();
+function trataDadosLogin(){
     const cellphone = document.getElementById("cellphone");
     const password = document.getElementById("password");
+
+    // TRATAR DADOS AQUI
+
+    return {
+        telefone: cellphone.value,
+        senha: password.value
+    };
+}
+
+async function requestLogin(){   
+    const data = trataDadosLogin();
 
     const options = {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            telefone: String(cellphone.value),
-            senha: String(password.value),
-        })
+        body: JSON.stringify(data)
     };
-    console.log(options);
-    fetch("http://127.0.0.1:8000/v1/usuario/login/", options).then(
-        (response) => {
-            console.log(response);
-            if(!response.ok){
-                const responseJsonPromise = response.json();
 
-                responseJsonPromise.then(
-                    (responseJson) => {
-                        console.log(responseJson);
-                        const errorMessage = document.getElementById("error-message");
+    response = await fetch("http://127.0.0.1:8000/v1/usuario/login/", options);
 
-                        errorMessage.textContent = responseJson.message;
-                        errorMessage.style.display = "block";
-                    }
-                )
-            }else{
-                // USUÁRIO AUTORIZADO
-                // REDIRECIONAR PARA PÁGINA DASHBOARD
-                // PRECISO DE ALGUNS DADOS DO USUÁRIO -> NOME, CARGO e IMAGEM
-            }
-        })
+    if(!response.ok){
+        const responseJson = await response.json();
+
+        const errorMessageElement = document.getElementById("error-message");
+
+        errorMessageElement.textContent = responseJson.message;
+        errorMessageElement.style.display = "block";
+    }else{
+        // USUÁRIO AUTORIZADO
+        // REDIRECIONAR PARA PÁGINA DASHBOARD
+        // PRECISO DE ALGUNS DADOS DO USUÁRIO -> NOME, CARGO e IMAGEM
     }
+}
+
+function callRequestLogin(event){
+    event.preventDefault();
+    
+    requestLogin();
+}
