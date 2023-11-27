@@ -119,7 +119,7 @@ def create_user(data: CreateUserRequest, jwt_token: str = Header()):
         )
         
         logging.info("User created")
-        return {"Usuario": "Criado com sucesso"}
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(user.idUsuario), "message": "Usuário criado com sucesso"})
     except Exception as e:
         logging.error(e)
         raise HTTPException(
@@ -163,9 +163,7 @@ def get_all_users(jwt_token: str = Header()):
             user = crud.get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED, detail="No Permission"
-                )
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Getting all users")
         users = crud.get_all_users()
         if users is None:
