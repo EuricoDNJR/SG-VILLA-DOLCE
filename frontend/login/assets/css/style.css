@@ -94,7 +94,10 @@ h1 {
 
 #error-message{
     display: none;
-    color: red;
+    color: #eaeaea;
+    background-color: #ff3333;
+    border-radius: 0.2rem;
+    padding: 10px 5px;
 }
 
 button {
