@@ -38,17 +38,16 @@ async function requestLogin(data){
         body: JSON.stringify(data)
     };
 
-    response = await fetch("http://127.0.0.1:8000/v1/usuario/login/", options);
+    const response = await fetch("http://127.0.0.1:8000/v1/usuario/login/", options);
+    const responseJson = await response.json();
 
     if(!response.ok){
-        const responseJson = await response.json();
-
         printErrorMessage(responseJson.message);
     }else{
-        // window.location.href = "http://127.0.0.1:5500/SG-VILLA-DOLCE/frontend/dashboard/dashboard.html";
-        // REDIRECIONAR PARA PÁGINA DASHBOARD
-        //
-        // PRECISO DE ALGUNS DADOS DO USUÁRIO -> NOME, CARGO e IMAGEM
+        document.location.href = `http://127.0.0.1:5500/frontend/dashboard/dashboard.html?nome=${responseJson.nome}&cargo=${responseJson.cargo}`;
+
+        // SAVE TOKEN IN COOKIES
+        // responseJson.token
     }
 }
 
@@ -67,7 +66,23 @@ function handleLogin(event){
     }
 }
 
-// EVENTS LISTENERS
-const btn = document.getElementById("btn");
+function showHidePassword(event){
+    const btn = event.target;
+    const inputPassword = document.getElementById("password");
 
-btn.addEventListener("click", handleLogin);
+    if(btn.textContent === "Mostrar"){
+        inputPassword.type = "text";
+        btn.textContent = "Ocultar";
+    }else{
+        inputPassword.type = "password";
+        btn.textContent = "Mostrar";
+    }
+}
+
+// EVENTS LISTENERS
+const btnSubmitForm = document.getElementById("btn");
+const btnShowHidePassword = document.getElementById("show-hide-password");
+
+btnSubmitForm.addEventListener("click", handleLogin);
+btnShowHidePassword.addEventListener("click", showHidePassword);
+

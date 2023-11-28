@@ -75,7 +75,7 @@ h1 {
     padding: 5px;
     font-size: 20px;
     font-weight: 500;
-    padding: 15px 0px 0px 15px;
+    padding: 15px 25% 0px 15px;
     transition: all 0.3s;
 }
 
@@ -90,6 +90,26 @@ h1 {
 
 .input-field input:focus, .input-field input:not(:placeholder-shown){
     border-color: rgb(102, 12, 185);
+}
+
+#show-hide-password{
+    all: unset;
+    position: absolute;
+    font-size: 1.2em;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    color:rgb(28, 28, 28);
+    cursor: pointer;
+    display: none;
+}
+
+#show-hide-password:hover{
+    color:rgb(124, 124, 124);
+}
+
+#password:not(:placeholder-shown) ~ #show-hide-password{
+    display: block;
 }
 
 #error-message{
