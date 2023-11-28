@@ -1,11 +1,6 @@
-const btn = document.getElementById("btn");
-btn.addEventListener("click", callRequestLogin);
-
-function trataDadosLogin(){
+function getDadosLoginForm(){
     const cellphone = document.getElementById("cellphone");
     const password = document.getElementById("password");
-
-    // TRATAR DADOS AQUI
 
     return {
         telefone: cellphone.value,
@@ -13,9 +8,28 @@ function trataDadosLogin(){
     };
 }
 
-async function requestLogin(){   
-    const data = trataDadosLogin();
+function formatDadosLogin(data){
+    const formatedData = {...data};
 
+    formatedData.telefone = data.telefone.replace(/\D/g, '');
+
+    return formatedData;
+}
+
+function resetErrorMessage(){
+    const errorMessageElement = document.getElementById("error-message");
+
+    errorMessageElement.style.display = "none";
+}
+
+function printErrorMessage(message){
+    const errorMessageElement = document.getElementById("error-message");
+
+    errorMessageElement.textContent = "*" + message;
+    errorMessageElement.style.display = "block";
+}
+
+async function requestLogin(data){   
     const options = {
         method: "POST",
         headers: {
@@ -29,19 +43,30 @@ async function requestLogin(){
     if(!response.ok){
         const responseJson = await response.json();
 
-        const errorMessageElement = document.getElementById("error-message");
-
-        errorMessageElement.textContent = responseJson.message;
-        errorMessageElement.style.display = "block";
+        printErrorMessage(responseJson.message);
     }else{
-        // USUÁRIO AUTORIZADO
+        // window.location.href = "http://127.0.0.1:5500/SG-VILLA-DOLCE/frontend/dashboard/dashboard.html";
         // REDIRECIONAR PARA PÁGINA DASHBOARD
         // PRECISO DE ALGUNS DADOS DO USUÁRIO -> NOME, CARGO e IMAGEM
     }
 }
 
-function callRequestLogin(event){
+function handleLogin(event){
     event.preventDefault();
-    
-    requestLogin();
+    resetErrorMessage();
+
+    data = getDadosLoginForm();
+
+    formatedData = formatDadosLogin(data);
+
+    if(formatedData.telefone === "" || formatedData.senha === ""){
+        printErrorMessage("Preencha os campos de telefone e senha");
+    }else{
+        requestLogin(formatedData);
+    }
 }
+
+// EVENTS LISTENERS
+const btn = document.getElementById("btn");
+
+btn.addEventListener("click", handleLogin);
