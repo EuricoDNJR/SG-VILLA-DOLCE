@@ -62,6 +62,7 @@ h1 {
     font-weight: 500;
     color: rgb(95, 95, 95);
     transition: all 0.3s;
+    pointer-events: none;
 }
 
 .input-field input {
@@ -78,7 +79,7 @@ h1 {
     transition: all 0.3s;
 }
 
-.input-field input:focus + label, .input-field input:valid + label{
+.input-field input:focus + label, .input-field input:not(:placeholder-shown) + label{
     transform: translate(-25%, -85%) scale(0.5);
     color: rgb(102, 12, 185);
 }
@@ -87,7 +88,7 @@ h1 {
     border-color: #000;
 }
 
-.input-field input:focus, .input-field input:valid{
+.input-field input:focus, .input-field input:not(:placeholder-shown){
     border-color: rgb(102, 12, 185);
 }
 
