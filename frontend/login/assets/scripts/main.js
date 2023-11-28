@@ -47,6 +47,7 @@ async function requestLogin(data){
     }else{
         // window.location.href = "http://127.0.0.1:5500/SG-VILLA-DOLCE/frontend/dashboard/dashboard.html";
         // REDIRECIONAR PARA PÁGINA DASHBOARD
+        //
         // PRECISO DE ALGUNS DADOS DO USUÁRIO -> NOME, CARGO e IMAGEM
     }
 }
