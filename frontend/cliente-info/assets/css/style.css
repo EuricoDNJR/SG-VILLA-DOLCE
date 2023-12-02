@@ -77,22 +77,56 @@ hr {
     background-color: #EEEEEE;
 }
 
-.info-title {
+.toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 35px 0px 10px 0px;
 }
-
-.info-title button {
+/*
+.toolbar button {
     width: 100px;
-    height: 38px;
+    height: 40px;
     background: #000;
     color: #ffffff;
     font-size: 20px;
-    border-radius: 10px;
+    border-radius: 5px;
     border-style: none;
     cursor: pointer;
+}
+*/
+#edit-btn {
+    width: 100px;
+    height: 40px;
+    background: #16c09849;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #119a7a;
+    cursor: pointer;
+}
+
+#delete-btn {
+    width: 100px;
+    height: 40px;
+    background: #df04044d;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #DF0404;
+    cursor: pointer;
+}
+
+#edit-btn a {
+    text-decoration: none;
+    color: #119a7a;
+    font-weight: bold;
+}
+
+#delete-btn a {
+    text-decoration: none;
+    color: #DF0404;
+    font-weight: bold;
 }
 
 .info-field {
@@ -112,7 +146,7 @@ hr {
 
 .card-field {
     width: 100%;
-    height: 40vh;
+    height: 40%;
     display: flex;
     justify-content: center;
     align-items: center;
