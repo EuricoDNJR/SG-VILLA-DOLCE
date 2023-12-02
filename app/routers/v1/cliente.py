@@ -2,12 +2,14 @@ import logging
 from typing import Optional
 from pydantic import BaseModel
 from ...database import crud
+from ...dependencies import get_token_header
 from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
-    HTTPException,
     status,
-    Response
+    Response,
+    Header,
+    Depends
 )
 
 router = APIRouter()
@@ -21,8 +23,8 @@ class ClienteRequest(BaseModel):
     telefone: str
     saldo: Optional[float]
 
-@router.post("/create_client/", status_code=status.HTTP_201_CREATED)
-def create_client(data: ClienteRequest):
+@router.post("/create_client/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
+def create_client(data: ClienteRequest, jwt_token: str = Header()):
     """
     Criação de usuário.
     exemplo de entrada:
@@ -38,7 +40,7 @@ def create_client(data: ClienteRequest):
         }
     """
     try:
-        logging.info("Creating client")
+        logging.info("Creating client by user: " + jwt_token)
         cliente = crud.create_cliente(
             data.email,
             data.nome,
@@ -49,14 +51,15 @@ def create_client(data: ClienteRequest):
             data.saldo,
         )
         logging.info("Client created")
-        return {"uuid": str(cliente.idCliente), "Nome": cliente.nome}
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(cliente.idCliente), "Nome": cliente.nome})
+        
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao criar cliente: " + str(e)})
 
-@router.get("/get_client/{telefone}", status_code=status.HTTP_200_OK)
+@router.get("/get_client/{telefone}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_client(telefone: str):
     """
     Retorna um cliente.
@@ -72,11 +75,11 @@ def get_client(telefone: str):
             return JSONResponse(status_code=status.HTTP_200_OK, content=cliente)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar cliente: " + str(e)})
 
-@router.get("/get_all_clients/", status_code=status.HTTP_200_OK)
+@router.get("/get_all_clients/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_all_clients():
     """
     Retorna todos os clientes.
@@ -90,11 +93,11 @@ def get_all_clients():
             return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar clientes: " + str(e)})
     
-@router.patch("/update_cliente/{idCliente}")
+@router.patch("/update_cliente/{idCliente}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def update_cliente(
     idCliente: str,
     telefone: str =  None,
@@ -125,4 +128,6 @@ def update_cliente(
             return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(status_code=400, detail=str(e))
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao atualizar cliente: " + str(e)})

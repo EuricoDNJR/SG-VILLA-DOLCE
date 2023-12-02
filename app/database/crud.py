@@ -13,6 +13,23 @@ def get_usuario(telefone):
     except DoesNotExist:
         return None
 
+def get_usuario_by_id(uuid):
+    try:
+        usuario = models.Usuario.get(models.Usuario.idUsuario == uuid)
+
+        return {
+            "idUsuario": str(usuario.idUsuario),
+            "email": usuario.email,
+            "nome": usuario.nome,
+            "dataNascimento": usuario.dataNascimento.isoformat(),
+            "cpf": usuario.cpf,
+            "endereco": usuario.endereco,
+            "telefone": usuario.telefone,
+            "cargo": usuario.cargo
+        }
+    except DoesNotExist:
+        return None
+
 def get_cliente(telefone):
     try:
         cliente = models.Cliente.get(models.Cliente.telefone == telefone)
