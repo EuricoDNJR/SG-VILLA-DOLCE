@@ -8,6 +8,9 @@ def create_cliente(email, nome, dataNascimento, cpf, endereco, telefone, saldo):
 def create_usuario(email, senha, nome, dataNascimento, cpf, endereco, telefone, cargo):
     return models.Usuario.create(email=email, senha=senha, nome=nome, dataNascimento=dataNascimento, cpf=cpf, endereco=endereco, telefone=telefone, cargo=cargo)
 
+def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMedida):
+    return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorCusto=valorCusto, valorVenda=valorVenda, unidadeMedida=unidadeMedida)
+
 def get_usuario(telefone):
     try:
         return models.Usuario.get(models.Usuario.telefone == telefone)
