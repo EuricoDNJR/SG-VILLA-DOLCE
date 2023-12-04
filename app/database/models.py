@@ -74,7 +74,6 @@ class Estoque(BaseModel):
     idProduto = ForeignKeyField(Produto, backref='estoque')
     quantidade = DecimalField(max_digits=10, decimal_places=2, default=0)
     dataEntrada = DateField()
-    dataSaida = DateField(null=True)
     dataVencimento = DateField(null=True)
     observacoes = TextField(null=True)
 
