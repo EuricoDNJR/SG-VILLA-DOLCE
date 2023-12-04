@@ -1,9 +1,13 @@
-const nomeElement = document.getElementById("user");
-const cargoElement = document.getElementById("position");
-const params = new URLSearchParams(window.location.search);
-const nome = params.get('nome');
-const cargo = params.get('cargo');
-console.log(nomeElement);
-// AINDA É NECESSÁRIO ATUALIZAR A IMAGEN
-nomeElement.textContent = nome;
-cargoElement.textContent = cargo;
+window.addEventListener('DOMContentLoaded', () => {
+  window.ipcRenderer.getUserDataCookie().then(
+    (dados) => {
+        const nomeElement = document.getElementById("user");
+        const cargoElement = document.getElementById("position");
+
+        // AINDA É NECESSÁRIO ATUALIZAR A IMAGEN
+        //dados.imagem
+        //dados.token
+        nomeElement.textContent = dados.nome;
+        cargoElement.textContent = dados.cargo;
+    })
+});
