@@ -17,19 +17,32 @@ function formatDadosLogin(data){
 }
 
 function resetErrorMessage(){
-    const errorMessageElement = document.getElementById("error-message");
+    const MessageElement = document.getElementById("message");
 
-    errorMessageElement.style.display = "none";
+    MessageElement.style.display = "none";
+}
+
+function printMessage(message, backgroundColor){
+    const MessageElement = document.getElementById("message");
+
+    MessageElement.textContent = message;
+    MessageElement.style.backgroundColor = backgroundColor;
+    MessageElement.style.display = "block";
 }
 
 function printErrorMessage(message){
-    const errorMessageElement = document.getElementById("error-message");
+    printMessage("*" + message, "#ff3333");
+}
 
-    errorMessageElement.textContent = "*" + message;
-    errorMessageElement.style.display = "block";
+function printLoginSuccessfulMessage(){
+    printMessage("Login efetuado com sucesso", "#33ff66");
 }
 
 async function requestLogin(data){   
+    // document.body.style.cursor = "progress";
+    const loaderElement = document.getElementById("loader");
+    loaderElement.style.display = "block";
+
     const options = {
         method: "POST",
         headers: {
@@ -41,14 +54,31 @@ async function requestLogin(data){
     const response = await fetch("http://127.0.0.1:8000/v1/usuario/login/", options);
     const responseJson = await response.json();
 
+    loaderElement.style.display = "none";
     if(!response.ok){
         printErrorMessage(responseJson.message);
     }else{
-        document.location.href = `http://127.0.0.1:5500/frontend/dashboard/dashboard.html?nome=${responseJson.nome}&cargo=${responseJson.cargo}`;
+        printLoginSuccessfulMessage();
+        
+        const userData = {
+            token: responseJson.token,
+            nome: responseJson.nome,
+            cargo: responseJson.cargo
+        };
 
-        // SAVE TOKEN IN COOKIES
-        // responseJson.token
+        window.ipcRenderer.setUserDataCookie(userData).then(
+            () => {
+                document.location.href = "../dashboard/dashboard.html";
+        });
+
+        // document.body.style.cursor = "default";
     }
+
+    // const userData = {
+    //     token: "gd4fsd-0e9-af",
+    //     nome: "Eurico Delmondes do Nascimento Junior",
+    //     cargo: "Dev Back-END"
+    // };
 }
 
 function handleLogin(event){
@@ -98,4 +128,3 @@ const inputPassword = document.getElementById("password");
 btnSubmitForm.addEventListener("click", handleLogin);
 btnShowHidePassword.addEventListener("click", togglePasswordVisibility);
 inputPassword.addEventListener("input", toggleShowHidePasswordButton);
-
