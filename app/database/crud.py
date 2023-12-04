@@ -1,6 +1,7 @@
 from . import models
 from peewee import DoesNotExist
 from passlib.hash import bcrypt
+from decimal import Decimal
 
 def create_cliente(email, nome, dataNascimento, cpf, endereco, telefone, saldo):
     return models.Cliente.create(email=email, nome=nome, dataNascimento=dataNascimento, cpf=cpf, endereco=endereco, telefone=telefone, saldo=saldo)
@@ -10,6 +11,9 @@ def create_usuario(email, senha, nome, dataNascimento, cpf, endereco, telefone, 
 
 def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMedida):
     return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorCusto=valorCusto, valorVenda=valorVenda, unidadeMedida=unidadeMedida)
+
+def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
+    return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
 
 def get_usuario(telefone):
     try:
@@ -50,6 +54,14 @@ def get_cliente(telefone):
             "saldo": str(cliente.saldo) if cliente.saldo is not None else None
         }
 
+    except DoesNotExist:
+        return None
+
+def get_product_by_id(uuid):
+    try:
+        produto = models.Produto.get(models.Produto.idProduto == uuid)
+
+        return produto
     except DoesNotExist:
         return None
 
@@ -198,6 +210,15 @@ def delete_user(uuid):
     try:
         usuario = models.Usuario.get(models.Usuario.idUsuario == uuid)
         usuario.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
+    
+def update_stock_product(uuid, quantidade):
+    try:
+        produto = models.Produto.get(models.Produto.idProduto == uuid)
+        produto.quantidade += Decimal(str(quantidade))
+        produto.save()
         return True
     except DoesNotExist:
         return None
