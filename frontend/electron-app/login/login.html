@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Login</title>
+</head>
+<body>
+    <main>
+        <div class="left-box">
+            <img src="assets/imgs/logo-villa-dolce.jpeg" alt="logo">
+        </div>
+        
+        <div class="right-box">
+            <form action="">
+                <h1>Login</h1>
+
+                <div class="input-field">
+                    <div class="input-centralize">
+                        <input type="text" id="cellphone" maxlength="20" placeholder="" required>
+                        <label for="cellphone">Telefone</label>
+                    </div>
+
+                    <div class="input-centralize">
+                        <input type="password" id="password" maxlength="20" placeholder="" required>
+                        <label for="password">Senha</label>
+                        <button id="show-hide-password" type="button">Mostrar</button>
+                    </div>
+                </div>
+                
+                <div class="message-box">
+                    <p id="loader"></p>
+                    <p id="message"></p>
+                </div>
+                
+                <button id="btn">Entrar</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="assets/scripts/main.js"></script>
+</body>
+</html>
