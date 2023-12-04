@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database.dbmain import db
 from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido
-from .routers.v1 import cliente, usuario
+from .routers.v1 import cliente, usuario, produto
 from contextlib import asynccontextmanager
 
 import logging
@@ -37,6 +37,7 @@ app.add_middleware(
 
 app.include_router(cliente.router, prefix="/v1/cliente", tags=["Cliente"])
 app.include_router(usuario.router, prefix="/v1/usuario", tags=["Usuario"])
+app.include_router(produto.router, prefix="/v1/produto", tags=["Produto"])
 
 @app.get("/")
 def read_root():
