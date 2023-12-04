@@ -141,3 +141,11 @@ def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=No
 
     except DoesNotExist:
         return None
+    
+def delete_cliente(uuid):
+    try:
+        cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
+        cliente.delete_instance()
+        return True
+    except DoesNotExist:
+        return None

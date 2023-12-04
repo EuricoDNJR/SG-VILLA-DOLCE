@@ -131,3 +131,20 @@ def update_cliente(
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao atualizar cliente: " + str(e)})
+    
+@router.delete("/delete_cliente/{idCliente}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def delete_cliente(idCliente: str):
+    try:
+        logging.info("Deleting client")
+        delete_cliente = crud.delete_cliente(uuid=idCliente)
+        if delete_cliente:
+            logging.info("Client deleted")
+            return JSONResponse(status_code=status.HTTP_200_OK, content={'message': 'Cliente deletado com sucesso'})
+        else:
+            logging.error("Client not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao deletar cliente: " + str(e)})
