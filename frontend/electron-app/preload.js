@@ -1,8 +1,7 @@
-const { contextBridge } = require('electron')
+const { contextBridge, ipcRenderer } = require('electron')
 
-contextBridge.exposeInMainWorld('versions', {
-  node: () => process.versions.node,
-  chrome: () => process.versions.chrome,
-  electron: () => process.versions.electron
+contextBridge.exposeInMainWorld('ipcRenderer', {
+  setUserDataCookie: (userData) => ipcRenderer.invoke('salvarDadosNoCookie', userData),
+  getUserDataCookie: () => ipcRenderer.invoke('obterDadosDoCookie')
   // we can also expose variables, not just functions
 })
