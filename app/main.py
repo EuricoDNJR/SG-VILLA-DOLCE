@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database.dbmain import db
-from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido
+from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque
 from .routers.v1 import cliente, usuario, produto
 from contextlib import asynccontextmanager
 
@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     logging.info("Connecting Database")
     db.connect()
     logging.info("Creating Tables")
-    db.create_tables([Usuario, Pagamento, Cliente, Caixa, Produto, Pedido], safe=True)
+    db.create_tables([Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque], safe=True)
     logging.info("Tables Created")
     
     yield
