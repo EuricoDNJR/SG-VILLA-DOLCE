@@ -1,5 +1,6 @@
 from . import models
 from peewee import DoesNotExist
+from passlib.hash import bcrypt
 
 def create_cliente(email, nome, dataNascimento, cpf, endereco, telefone, saldo):
     return models.Cliente.create(email=email, nome=nome, dataNascimento=dataNascimento, cpf=cpf, endereco=endereco, telefone=telefone, saldo=saldo)
@@ -141,11 +142,59 @@ def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=No
 
     except DoesNotExist:
         return None
-    
+
+def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNascimento=None, cpf=None, endereco=None, cargo=None):
+    try:
+        usuario = models.Usuario.get(models.Usuario.idUsuario == uuid)
+        if usuario is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if telefone is not None:
+            usuario.telefone = telefone
+        if email is not None:
+            usuario.email = email
+        if senha is not None:
+            hashed_password = bcrypt.using(rounds=12).hash(senha)
+            usuario.senha = hashed_password
+        if nome is not None:
+            usuario.nome = nome
+        if dataNascimento is not None:
+            usuario.dataNascimento = dataNascimento
+        if cpf is not None:
+            usuario.cpf = cpf
+        if endereco is not None:
+            usuario.endereco = endereco
+        if cargo is not None:
+            usuario.cargo = cargo
+
+        usuario.save()
+
+        return {
+            "idUsuario": str(usuario.idUsuario),
+            "email": usuario.email,
+            "nome": usuario.nome,
+            "dataNascimento": usuario.dataNascimento.isoformat(),
+            "cpf": usuario.cpf,
+            "endereco": usuario.endereco,
+            "telefone": usuario.telefone,
+            "cargo": usuario.cargo
+        }
+
+    except DoesNotExist:
+        return None
+
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
         cliente.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
+    
+def delete_user(uuid):
+    try:
+        usuario = models.Usuario.get(models.Usuario.idUsuario == uuid)
+        usuario.delete_instance()
         return True
     except DoesNotExist:
         return None
