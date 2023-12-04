@@ -173,3 +173,67 @@ def get_all_users(jwt_token: str = Header()):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar usuários: " + str(e)})
+    
+@router.patch("/update_user/{idUsuario}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def update_user(idUser: str, 
+                email: str =  None,
+                senha: str = None,
+                nome: str = None,
+                dataNascimento: str = None,
+                cpf: str = None,
+                endereco: str = None,
+                telefone: str = None,
+                cargo: str = None,
+                jwt_token: str = Header()):
+    try:
+        logging.info("Verifying permission")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            print(user["cargo"])
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+        logging.info("Updating user")
+        update_user = crud.update_user(
+            uuid=idUser,
+            email=email,
+            senha=senha,
+            nome=nome,
+            dataNascimento=dataNascimento,
+            cpf=cpf,
+            endereco=endereco,
+            telefone=telefone,
+            cargo=cargo
+        )
+        if update_user is None:
+            logging.error("User not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("User updated")
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Usuário atualizado com sucesso"})
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao atualizar usuário: " + str(e)})
+    
+@router.delete("/delete_user/{idUsuario}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def delete_user(idUser: str, jwt_token: str = Header()):
+    try:
+        logging.info("Verifying permission")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+        logging.info("Deleting user")
+        delete_user = crud.delete_user(idUser)
+        if delete_user is None:
+            logging.error("User not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("User deleted")
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Usuário deletado com sucesso"})
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao deletar usuário: " + str(e)})
