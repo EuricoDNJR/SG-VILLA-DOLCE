@@ -38,6 +38,14 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
         }
     """
     try:
+        
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+            
         logging.info("Creating product by user: " + jwt_token)
         produto = crud.create_produto(
             data.nome,
