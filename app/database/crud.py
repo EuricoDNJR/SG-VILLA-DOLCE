@@ -274,6 +274,17 @@ def delete_user(uuid):
         return True
     except DoesNotExist:
         return None
+
+def delete_product(uuid):
+    try:
+
+        models.Estoque.delete().where(models.Estoque.idProduto == uuid).execute()
+
+        produto = models.Produto.get(models.Produto.idProduto == uuid)
+        produto.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
     
 def update_stock_product(uuid, quantidade):
     try:
