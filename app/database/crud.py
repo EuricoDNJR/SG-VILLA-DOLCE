@@ -225,6 +225,40 @@ def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNasc
     except DoesNotExist:
         return None
 
+def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=None, valorVenda=None, unidadeMedida=None):
+    try:
+        produto = models.Produto.get(models.Produto.idProduto == uuid)
+        if produto is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if nome is not None:
+            produto.nome = nome
+        if descricao is not None:
+            produto.descricao = descricao
+        if categoria is not None:
+            produto.categoria = categoria
+        if valorCusto is not None:
+            produto.valorCusto = valorCusto
+        if valorVenda is not None:
+            produto.valorVenda = valorVenda
+        if unidadeMedida is not None:
+            produto.unidadeMedida = unidadeMedida
+
+        produto.save()
+
+        return {
+            "idProduto": str(produto.idProduto),
+            "nome": produto.nome,
+            "descricao": produto.descricao if produto.descricao is not None else None,
+            "categoria": produto.categoria,
+            "valorCusto": str(produto.valorCusto),
+            "valorVenda": str(produto.valorVenda),
+            "unidadeMedida": produto.unidadeMedida,
+            "quantidade": str(produto.quantidade)
+        }
+
+    except DoesNotExist:
+        return None
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
