@@ -99,3 +99,25 @@ def get_all_stock_registres():
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar registros de estoque"}
         )
+
+@router.get("/get_all_stock_registre/{uuid}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_stock_registre(uuid: str):
+    """
+    Retorna todos os registros de estoque de um produto.
+    """
+    try:
+        logging.info("Getting all stock registres")
+        estoques = crud.get_all_estoques_by_product(uuid)
+        if estoques is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao buscar registros de estoque"}
+            )
+        logging.info("Stock registres found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=estoques)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar registros de estoque"}
+        )
