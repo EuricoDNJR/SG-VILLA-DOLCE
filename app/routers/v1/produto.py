@@ -118,3 +118,57 @@ def get_product(uuid: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar produto: " + str(e)}
         )
+
+class UpdateProductRequest(BaseModel):
+    nome: Optional[str]
+    descricao: Optional[str]
+    categoria: Optional[str]
+    valorCusto: Optional[float]
+    valorVenda: Optional[float]
+    unidadeMedida: Optional[str]
+   
+@router.patch("/update_product/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Header()):
+    """
+    Atualização de produto.
+    exemplo de entrada:
+    
+        {
+            "nome": "Acai",
+            "descricao": "Acai da Amazonia",
+            "categoria": "Sorvete",
+            "valorCusto": 90.00,
+            "valorVenda": 30.00,
+            "unidadeMedida": "KG"
+        }
+    """
+    try:
+        logging.info("Verifying permission")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+        logging.info("Updating product")
+        produto = crud.update_product(
+            uuid=uuid,
+            nome=data.nome,
+            descricao=data.descricao,
+            categoria=data.categoria,
+            valorCusto=data.valorCusto,
+            valorVenda=data.valorVenda,
+            unidadeMedida=data.unidadeMedida
+        )
+        if produto is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao atualizar produto"}
+            )
+        logging.info("Product updated")
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto atualizado com sucesso"})
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao atualizar produto: " + str(e)}
+        )
