@@ -64,6 +64,32 @@ def get_product_by_id(uuid):
     except DoesNotExist:
         return None
 
+def get_all_estoques_by_product(uuid):
+    try:
+        estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid)
+
+        # Verifica se há registros de estoque
+        if estoques.exists():
+            # Retorna a lista de registros de estoque se houver algum
+            return [
+                {
+                    "idEstoque": str(estoque.idEstoque),
+                    "idProduto": str(estoque.idProduto.idProduto),
+                    "nome": estoque.idProduto.nome,
+                    "quantidade": str(estoque.quantidade),
+                    "dataEntrada": estoque.dataEntrada.isoformat(),
+                    "dataVencimento": estoque.dataVencimento.isoformat() if estoque.dataVencimento is not None else None,
+                    "observacoes": estoque.observacoes if estoque.observacoes is not None else None
+                }
+                for estoque in estoques
+            ]
+        else:
+            # Se não houver registros de estoque, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
 def get_all_users():
     try:
         # Tenta buscar todos os usuários
