@@ -132,7 +132,7 @@ def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Heade
     """
     Atualização de produto.
     exemplo de entrada:
-    
+
         {
             "nome": "Acai",
             "descricao": "Acai da Amazonia",
@@ -171,4 +171,30 @@ def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Heade
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao atualizar produto: " + str(e)}
+        )
+
+@router.delete("/delete_product/{uuid}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def delete_product(uuid: str, jwt_token: str = Header()):
+    """
+    Deleção de produto.
+    """
+    try:
+        logging.info("Verifying permission")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+        logging.info("Deleting product")
+        produto = crud.delete_product(uuid)
+        if produto is None:
+            logging.error("Product not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("Product deleted")
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto deletado com sucesso"})
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao deletar produto: " + str(e)}
         )
