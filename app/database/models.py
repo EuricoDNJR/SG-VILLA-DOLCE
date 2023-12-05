@@ -58,24 +58,35 @@ class Caixa(BaseModel):
 
 class Produto(BaseModel):
     idProduto = UUIDField(primary_key=True, default=uuid.uuid4)
-    nome = CharField()
-    descricao = TextField()
-    quantidade = IntegerField()
-    valorCompra = DecimalField()
+    nome = CharField(unique=True)
+    descricao = TextField(null=True)
+    categoria = CharField()
+    valorCusto = DecimalField()
     valorVenda = DecimalField()
     unidadeMedida = CharField()
-    dataVencimento = DateField(null=True)
+    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
     class Meta:
         table_name = "Produto"
 
+class Estoque(BaseModel):
+    idEstoque = UUIDField(primary_key=True, default=uuid.uuid4)
+    idProduto = ForeignKeyField(Produto, backref='estoque')
+    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0)
+    dataEntrada = DateField()
+    dataVencimento = DateField(null=True)
+    observacoes = TextField(null=True)
+
+    class Meta:
+        table_name = "Estoque"
+
 class Pedido(BaseModel):
     idPedido = UUIDField(primary_key=True, default=uuid.uuid4)
-    idCliente = ForeignKeyField(Cliente, backref='pedidos')
-    idPagamento = ForeignKeyField(Pagamento, backref='pedidos')
-    idUsuario = ForeignKeyField(Usuario, backref='pedidos')
-    idProduto = ForeignKeyField(Produto, backref='pedidos')
-    idCaixa = ForeignKeyField(Caixa, backref='pedidos')
+    idCliente = ForeignKeyField(Cliente, backref='pedido')
+    idPagamento = ForeignKeyField(Pagamento, backref='pedido')
+    idUsuario = ForeignKeyField(Usuario, backref='pedido')
+    idProduto = ForeignKeyField(Produto, backref='pedido')
+    idCaixa = ForeignKeyField(Caixa, backref='pedido')
 
     class Meta:
         table_name = "Pedido"
