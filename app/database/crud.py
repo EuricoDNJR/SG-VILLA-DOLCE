@@ -60,7 +60,6 @@ def get_cliente(telefone):
 def get_product_by_id(uuid):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
-
         return produto
     except DoesNotExist:
         return None
@@ -116,6 +115,34 @@ def get_all_clientes():
             ]
         else:
             # Se não houver clientes, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
+def get_all_produtos():
+    try:
+        # Tenta buscar todos os produtos
+        produtos = models.Produto.select()
+
+        # Verifica se há produtos
+        if produtos.exists():
+            # Retorna a lista de produtos se houver algum
+            return [
+                {
+                    "idProduto": str(produto.idProduto),
+                    "nome": produto.nome,
+                    "descricao": produto.descricao if produto.descricao is not None else None,
+                    "categoria": produto.categoria,
+                    "valorCusto": str(produto.valorCusto),
+                    "valorVenda": str(produto.valorVenda),
+                    "unidadeMedida": produto.unidadeMedida,
+                    "quantidade": str(produto.quantidade)
+                }
+                for produto in produtos
+            ]
+        else:
+            # Se não houver produtos, retorna None
             return None
     except DoesNotExist:
         # Se ocorrer uma exceção DoesNotExist, retorna None
