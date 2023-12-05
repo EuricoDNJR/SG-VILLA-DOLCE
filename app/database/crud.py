@@ -312,6 +312,58 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
 
     except DoesNotExist:
         return None
+
+def sum_all_stock_by_product(uuid_product):
+    try:
+        total = Decimal(0.0)
+        estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid_product)
+        if estoques.exists():
+            for estoque in estoques:
+                total += estoque.quantidade
+            return total
+        else:
+            return None
+    except DoesNotExist:
+        return None
+        
+def update_stock(idEstoque, idProduto, quantidade=None, dataEntrada=None, dataVencimento=None, observacoes=None):
+    try:
+        estoque = models.Estoque.get(models.Estoque.idEstoque == idEstoque)
+        if estoque is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if quantidade is not None:
+            try:
+                estoque.quantidade = quantidade
+                estoque.save()
+                quantidade_atualizada = sum_all_stock_by_product(idProduto)
+                produto = models.Produto.get(models.Produto.idProduto == idProduto)
+                produto.quantidade = Decimal(str(quantidade_atualizada))
+                produto.save()
+            except Exception as e:
+                print(e)
+                return None
+        if dataEntrada is not None:
+            estoque.dataEntrada = dataEntrada
+        if dataVencimento is not None:
+            estoque.dataVencimento = dataVencimento
+        if observacoes is not None:
+            estoque.observacoes = observacoes
+
+        estoque.save()
+
+        return {
+            "idEstoque": str(estoque.idEstoque),
+            "idProduto": str(estoque.idProduto.idProduto),
+            "nome": estoque.idProduto.nome,
+            "quantidade": str(estoque.quantidade),
+            "dataEntrada": estoque.dataEntrada,
+            "dataVencimento": estoque.dataVencimento.isoformat() if estoque.dataVencimento is not None else None,
+            "observacoes": estoque.observacoes if estoque.observacoes is not None else None
+        }
+
+    except DoesNotExist:
+        return None
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
