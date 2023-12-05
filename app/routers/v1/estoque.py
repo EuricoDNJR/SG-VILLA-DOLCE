@@ -18,8 +18,8 @@ class CreateStockRegistreRequest(BaseModel):
     idProduto: str
     quantidade: float
     dataEntrada: str
-    dataVencimento: Optional[str]
-    observacoes: Optional[str]
+    dataVencimento: Optional[str] = None
+    observacoes: Optional[str] = None
 
 @router.post("/create_stock_registre/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
 def create_stock_registre(data:CreateStockRegistreRequest, jwt_token: str = Header()):
