@@ -15,6 +15,12 @@ def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMe
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
 
+def open_caixa(saldoInicial, dataAbertura, observacao):
+    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura, observacao=observacao)
+
+
+
+
 def get_usuario(telefone):
     try:
         return models.Usuario.get(models.Usuario.telefone == telefone)
