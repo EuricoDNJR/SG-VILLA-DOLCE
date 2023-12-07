@@ -172,4 +172,31 @@ def update_stock_registre(data: UpdateStockRegistreRequest, idEstoque: str, jwt_
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao atualizar registro de estoque"}
         )
-    
+
+@router.delete("/delete_stock_registre/{idEstoque}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def delete_stock_registre(idEstoque: str, jwt_token: str = Header()):
+    """
+    Exclusao de registro de estoque.
+    """
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+            if user["cargo"] != "Admin":
+                logging.error("No Permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+        logging.info("Deleting stock registre by user: " + jwt_token)
+        estoque = crud.delete_stock_registre(idEstoque)
+        if estoque is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao deletar registro de estoque - Registro de estoque não encontrado"}
+            )
+        logging.info("Stock registre deleted")
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Registro de estoque deletado com sucesso"})
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao deletar registro de estoque"}
+        )    
