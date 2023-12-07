@@ -12,7 +12,7 @@ main {
 aside {
     background-color: #6940AA;
     width: 18vw;
-    height: 100vw;
+    height: 100%;
     padding: 50px;
 }
 
@@ -57,12 +57,11 @@ aside {
     font-size: 30px;
     font-weight: bold;
     color: #ffffff87;
-    
+    transition: color 0.5s;
 }
 
 .menu a:hover {
     color: #ffffff;
-    transition: 0.5s;
 }
 
 .page-content {
@@ -71,7 +70,7 @@ aside {
     padding: 50px;
     display: flex;
     flex-direction: column;
-    /*justify-content: space-between;*/
+    justify-content: space-between;
 }
 
 
@@ -119,6 +118,10 @@ aside {
     background-color: transparent;
 }
 
+.search-btn:hover {
+    background-color: #ebebeb;
+}
+
 .search-btn img {
     width: 20px;
     height: 20px;
@@ -147,23 +150,13 @@ hr {
     background-color: #EEEEEE;
 }
 
-.clients-list {
-    height: 60vh;
-    overflow-x: auto;
-}
-
 table {
     border-collapse: collapse;
     width: 100%;
     color: #333;
+    /*font-family: sans-serif;*/
     font-size: 15px;
     text-align: left;
-}
-
-thead {
-    top: 0;
-    position: sticky;
-    background-color: #ffffff;
 }
 
 th {
@@ -210,7 +203,7 @@ tr:nth-child(even) {
 .pagination-btn {
     display: flex;
     justify-content: center;
-    margin-top: 35px;
+    margin-top: 10px;
 }
 
 .pagination {
@@ -220,20 +213,19 @@ tr:nth-child(even) {
 }
 
 .pagination-item {
-    margin: 0 10px;
+    margin: 0 5px;
 }
 
 .pagination-link {
     display: inline-block;
-    padding: 10px 16px;
+    padding: 8px 12px;
     text-decoration: none;
     font-weight: bold;
-    font-size: 18px;
     /*border: 1px solid #ccc;*/
     background-color: #F5F5F5;
     border-radius: 5px;
     color: #000000;
-    transition: background-color 0.8s;
+    transition: all 0.8s;
 }
 
 .pagination-link:hover {

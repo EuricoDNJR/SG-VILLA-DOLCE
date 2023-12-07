@@ -74,7 +74,7 @@ async function requestLogin(data){
     }
 }
 
-async function handleLogin(event){
+async function handleLogin(){
     resetErrorMessage();
 
     data = getDadosLoginForm();
@@ -94,7 +94,7 @@ async function handleLogin(event){
 
         if(userData){
             window.ipcRenderer.setUserDataCookie(userData).then(() => {
-                    window.ipcRenderer.redirectTo("dashboard/dashboard.html");
+                window.ipcRenderer.redirectTo("dashboard/dashboard.html");
             });
         } 
     }

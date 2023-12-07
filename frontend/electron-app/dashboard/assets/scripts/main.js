@@ -11,3 +11,8 @@ window.addEventListener('DOMContentLoaded', () => {
         cargoElement.textContent = dados.cargo;
     })
 });
+
+const toClientesButton = document.getElementById('to-clientes'); 
+toClientesButton.addEventListener('click', () => {
+  window.ipcRenderer.redirectTo("cliente-lista/cliente-lista.html");
+});
