@@ -94,7 +94,7 @@ async function handleLogin(event){
 
         if(userData){
             window.ipcRenderer.setUserDataCookie(userData).then(() => {
-                    window.ipcRenderer.successfulLogin("dashboard/dashboard.html");
+                    window.ipcRenderer.redirectTo("dashboard/dashboard.html");
             });
         } 
     }

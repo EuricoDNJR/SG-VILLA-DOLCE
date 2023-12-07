@@ -35,8 +35,8 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.handle('login-bem-sucedido', (event, redirectPage) => {
-  mainWindow.loadFile(redirectPage);
+ipcMain.handle('redirecionar-pagina', (event, redirectPageUrl) => {
+  mainWindow.loadFile(redirectPageUrl);
 });
 
 ipcMain.handle('salvar-dados-no-cookie', async (event, dados) => {
