@@ -55,8 +55,11 @@ async function requestLogin(data){
     const responseJson = await response.json();
 
     loaderElement.style.display = "none";
+
     if(!response.ok){
         printErrorMessage(responseJson.message);
+
+        return null;
     }else{
         printLoginSuccessfulMessage();
         
@@ -66,23 +69,12 @@ async function requestLogin(data){
             cargo: responseJson.cargo
         };
 
-        window.ipcRenderer.setUserDataCookie(userData).then(
-            () => {
-                document.location.href = "../dashboard/dashboard.html";
-        });
-
+        return userData;
         // document.body.style.cursor = "default";
     }
-
-    // const userData = {
-    //     token: "gd4fsd-0e9-af",
-    //     nome: "Eurico Delmondes do Nascimento Junior",
-    //     cargo: "Dev Back-END"
-    // };
 }
 
-function handleLogin(event){
-    event.preventDefault();
+async function handleLogin(event){
     resetErrorMessage();
 
     data = getDadosLoginForm();
@@ -92,7 +84,19 @@ function handleLogin(event){
     if(formatedData.telefone === "" || formatedData.senha === ""){
         printErrorMessage("Preencha os campos de telefone e senha");
     }else{
-        requestLogin(formatedData);
+        userData = await requestLogin(formatedData);
+
+        // const userData = {
+        //     token: "gd4fsd-0e9-af",
+        //     nome: "Eurico Delmondes do Nascimento Junior",
+        //     cargo: "Dev Back-END"
+        // };
+
+        if(userData){
+            window.ipcRenderer.setUserDataCookie(userData).then(() => {
+                    window.ipcRenderer.redirectTo("dashboard/dashboard.html");
+            });
+        } 
     }
 }
 
@@ -125,6 +129,9 @@ const btnSubmitForm = document.getElementById("btn");
 const btnShowHidePassword = document.getElementById("show-hide-password");
 const inputPassword = document.getElementById("password");
 
-btnSubmitForm.addEventListener("click", handleLogin);
+btnSubmitForm.addEventListener("click", (event) => {
+    event.preventDefault();
+    handleLogin()
+});
 btnShowHidePassword.addEventListener("click", togglePasswordVisibility);
 inputPassword.addEventListener("input", toggleShowHidePasswordButton);

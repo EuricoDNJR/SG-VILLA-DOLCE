@@ -1,17 +1,22 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('node:path')
 
+let mainWindow;
+
 const createWindow = () => {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    minWidth: 800,
+    minHeight: 600,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       partition: 'persist:secureSession'
     }
   })
 
-  win.loadFile('login/login.html')
+  mainWindow.loadFile('login/login.html')
 }
 
 app.whenReady().then(() => {
@@ -30,9 +35,11 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.handle('salvarDadosNoCookie', async (event, dados) => {
-  const mainWindow = BrowserWindow.getAllWindows()[0]; // Obtém a janela principal
+ipcMain.handle('redirecionar-pagina', (event, redirectPageUrl) => {
+  mainWindow.loadFile(redirectPageUrl);
+});
 
+ipcMain.handle('salvar-dados-no-cookie', async (event, dados) => {
   await mainWindow.webContents.session.cookies.set({
       url: 'http://localhost',
       name: 'dadosDoUsuário',
@@ -42,13 +49,11 @@ ipcMain.handle('salvarDadosNoCookie', async (event, dados) => {
   });
 });
 
-ipcMain.handle('obterDadosDoCookie', async () => {
-  const mainWindow = BrowserWindow.getAllWindows()[0]; // Obtém a janela principal
-    
+ipcMain.handle('obter-dados-do-cookie', async () => {
   const cookies = await mainWindow.webContents.session.cookies.get({
       url: 'http://localhost',
       name: 'dadosDoUsuário'
-    });
+  });
 
     const dados = JSON.parse(cookies[0].value);
     
