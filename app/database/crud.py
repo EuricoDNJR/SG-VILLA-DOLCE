@@ -390,6 +390,17 @@ def delete_product(uuid):
         return True
     except DoesNotExist:
         return None
+
+def delete_stock_registre(uuid):
+    try:
+        estoque = models.Estoque.get(models.Estoque.idEstoque == uuid)
+        produto = get_product_by_id(estoque.idProduto.idProduto)
+        produto.quantidade -= estoque.quantidade
+        produto.save()
+        estoque.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
     
 def update_stock_product(uuid, quantidade):
     try:
