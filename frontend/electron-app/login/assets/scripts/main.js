@@ -84,13 +84,13 @@ async function handleLogin(){
     if(formatedData.telefone === "" || formatedData.senha === ""){
         printErrorMessage("Preencha os campos de telefone e senha");
     }else{
-        // userData = await requestLogin(formatedData);
+        userData = await requestLogin(formatedData);
 
-        const userData = {
-            token: "gd4fsd-0e9-af",
-            nome: "Eurico Delmondes do Nascimento Junior",
-            cargo: "Dev Back-END"
-        };
+        // const userData = {
+        //     token: "gd4fsd-0e9-af",
+        //     nome: "Eurico Delmondes do Nascimento Junior",
+        //     cargo: "Dev Back-END"
+        // };
 
         if(userData){
             window.ipcRenderer.setUserDataCookie(userData).then(() => {
