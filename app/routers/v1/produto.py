@@ -111,7 +111,8 @@ def get_product(uuid: str):
             "Categoria": produto.categoria, 
             "Valor de Custo": str(produto.valorCusto), 
             "Valor de Venda": str(produto.valorVenda), 
-            "Unidade de Medida": produto.unidadeMedida})
+            "Unidade de Medida": produto.unidadeMedida,
+            "Quantidade em Estoque": str(produto.quantidade)})
     except Exception as e:
         logging.error(e)
         return JSONResponse(
