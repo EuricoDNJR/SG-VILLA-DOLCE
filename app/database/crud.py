@@ -231,6 +231,22 @@ def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNasc
     except DoesNotExist:
         return None
 
+def update_novo_saldo(uuid, novoSaldo = None):
+    try:
+
+        caixa = models.Caixa.get(models.Caixa.idCaixa == uuid)
+
+        if caixa is None:
+            return None
+        if novoSaldo is not None:
+            caixa.saldoInicial = novoSaldo
+        caixa.save()
+
+        return { "saldoInicial": caixa.saldoInicial}
+    
+    except DoesNotExist:
+        return None
+    
 def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=None, valorVenda=None, unidadeMedida=None):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
