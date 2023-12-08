@@ -29,7 +29,7 @@ def get_usuario_by_id(uuid):
             "idUsuario": str(usuario.idUsuario),
             "email": usuario.email,
             "nome": usuario.nome,
-            "dataNascimento": usuario.dataNascimento.isoformat(),
+            "dataNascimento": str(usuario.dataNascimento),
             "cpf": usuario.cpf,
             "endereco": usuario.endereco,
             "telefone": usuario.telefone,
@@ -47,7 +47,7 @@ def get_cliente(telefone):
             "idCliente": str(cliente.idCliente),
             "email": cliente.email if cliente.email is not None else None,
             "nome": cliente.nome,
-            "dataNascimento": cliente.dataNascimento.isoformat() if cliente.dataNascimento is not None else None,
+            "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
             "cpf": cliente.cpf if cliente.cpf is not None else None,
             "endereco": cliente.endereco if cliente.endereco is not None else None,
             "telefone": cliente.telefone if cliente.telefone is not None else None,
@@ -77,8 +77,8 @@ def get_all_estoques_by_product(uuid):
                     "idProduto": str(estoque.idProduto.idProduto),
                     "nome": estoque.idProduto.nome,
                     "quantidade": str(estoque.quantidade),
-                    "dataEntrada": estoque.dataEntrada.isoformat(),
-                    "dataVencimento": estoque.dataVencimento.isoformat() if estoque.dataVencimento is not None else None,
+                    "dataEntrada": str(estoque.dataEntrada),
+                    "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
                     "observacoes": estoque.observacoes if estoque.observacoes is not None else None
                 }
                 for estoque in estoques
@@ -103,7 +103,7 @@ def get_all_users():
                     "idUsuario": str(usuario.idUsuario),
                     "email": usuario.email,
                     "nome": usuario.nome,
-                    "dataNascimento": usuario.dataNascimento.isoformat(),
+                    "dataNascimento": str(usuario.dataNascimento),
                     "cpf": usuario.cpf,
                     "endereco": usuario.endereco,
                     "telefone": usuario.telefone,
@@ -131,7 +131,7 @@ def get_all_clientes():
                     "idCliente": str(cliente.idCliente),
                     "email": cliente.email if cliente.email is not None else None,
                     "nome": cliente.nome,
-                    "dataNascimento": cliente.dataNascimento.isoformat() if cliente.dataNascimento is not None else None,
+                    "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
                     "cpf": cliente.cpf if cliente.cpf is not None else None,
                     "endereco": cliente.endereco if cliente.endereco is not None else None,
                     "telefone": cliente.telefone if cliente.telefone is not None else None,
@@ -188,8 +188,8 @@ def get_all_estoques():
                     "idProduto": str(estoque.idProduto.idProduto),
                     "nome": estoque.idProduto.nome,
                     "quantidade": str(estoque.quantidade),
-                    "dataEntrada": estoque.dataEntrada.isoformat(),
-                    "dataVencimento": estoque.dataVencimento.isoformat() if estoque.dataVencimento is not None else None,
+                    "dataEntrada": str(estoque.dataEntrada),
+                    "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
                     "observacoes": estoque.observacoes if estoque.observacoes is not None else None
                 }
                 for estoque in estoques
@@ -228,7 +228,7 @@ def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=No
             "idCliente": str(cliente.idCliente),
             "email": cliente.email if cliente.email is not None else None,
             "nome": cliente.nome,
-            "dataNascimento": cliente.dataNascimento.isoformat() if cliente.dataNascimento is not None else None,
+            "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
             "cpf": cliente.cpf if cliente.cpf is not None else None,
             "endereco": cliente.endereco if cliente.endereco is not None else None,
             "telefone": cliente.telefone if cliente.telefone is not None else None,
@@ -268,7 +268,7 @@ def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNasc
             "idUsuario": str(usuario.idUsuario),
             "email": usuario.email,
             "nome": usuario.nome,
-            "dataNascimento": usuario.dataNascimento.isoformat(),
+            "dataNascimento": str(usuario.dataNascimento),
             "cpf": usuario.cpf,
             "endereco": usuario.endereco,
             "telefone": usuario.telefone,
@@ -357,8 +357,8 @@ def update_stock(idEstoque, idProduto, quantidade=None, dataEntrada=None, dataVe
             "idProduto": str(estoque.idProduto.idProduto),
             "nome": estoque.idProduto.nome,
             "quantidade": str(estoque.quantidade),
-            "dataEntrada": estoque.dataEntrada,
-            "dataVencimento": estoque.dataVencimento.isoformat() if estoque.dataVencimento is not None else None,
+            "dataEntrada": str(estoque.dataEntrada),
+            "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
             "observacoes": estoque.observacoes if estoque.observacoes is not None else None
         }
 

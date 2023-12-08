@@ -96,29 +96,46 @@ def get_all_clients():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar clientes: " + str(e)})
+
+class ClienteUpdateRequest(BaseModel):
+    telefone: Optional[str] = None
+    email: Optional[str] = None
+    nome: Optional[str] = None
+    dataNascimento: Optional[str] = None
+    cpf: Optional[str] = None
+    endereco: Optional[str] = None
+    saldo: Optional[float] = None
     
 @router.patch("/update_cliente/{idCliente}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def update_cliente(
-    idCliente: str,
-    telefone: str =  None,
-    email: str = None,
-    nome: str = None,
-    dataNascimento: str = None,
-    cpf: str = None,
-    endereco: str = None,
-    saldo: float = None,
+    data: ClienteUpdateRequest,
+    idCliente: str
 ):
+    '''
+    Atualiza um cliente.
+    exemplo de entrada:
+    
+        {
+            "telefone": "999999999",
+            "email": "flavinhodopneu@gmail.com",
+            "nome": "Flavio",
+            "dataNascimento": "1990/10/08",
+            "cpf": "13578924680",
+            "endereco": "Rua bem ali na UFPI",
+            "saldo": 0
+        }
+    '''
     try:
         logging.info("Updating client")
         update_cliente = crud.update_cliente(
             uuid=idCliente,
-            telefone=telefone,
-            email=email,
-            nome=nome,
-            dataNascimento=dataNascimento,
-            cpf=cpf,
-            endereco=endereco,
-            saldo=saldo
+            telefone=data.telefone,
+            email=data.email,
+            nome=data.nome,
+            dataNascimento=data.dataNascimento,
+            cpf=data.cpf,
+            endereco=data.endereco,
+            saldo=data.saldo
         )
         if update_cliente:
             logging.info("Client updated")
