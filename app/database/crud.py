@@ -15,8 +15,27 @@ def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMe
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
 
-def open_caixa(saldoInicial, dataAbertura, observacao):
-    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura, observacao=observacao)
+def open_caixa(saldoInicial, dataAbertura, observacoes):
+    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura, observacoes=observacoes, somenteDinheiro = saldoInicial)
+
+def close_caixa(uuid, dataFechamento):
+    try:
+
+        caixa = models.Caixa.get(models.Caixa.idCaixa == uuid)
+
+        if caixa is None:
+            return None
+        if caixa.aberto == True:
+            caixa.dataFechamento = dataFechamento
+            caixa.aberto = False
+        caixa.save()
+
+        return True
+    
+    except DoesNotExist:
+        return False
+    
+    
 
 
 
