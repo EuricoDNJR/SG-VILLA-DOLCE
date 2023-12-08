@@ -231,7 +231,7 @@ def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNasc
     except DoesNotExist:
         return None
 
-def update_novo_saldo(uuid, novoSaldo = None):
+def update_novo_saldoInicial(uuid, novoSaldo = None):
     try:
 
         caixa = models.Caixa.get(models.Caixa.idCaixa == uuid)
