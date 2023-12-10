@@ -9,6 +9,9 @@ export const useAuthStore = defineStore('userData', {
         cargo: null
     }),
     getters: {
+        getToken() {
+          return this.nome;
+        },
         getNome() {
           return this.nome;
         },

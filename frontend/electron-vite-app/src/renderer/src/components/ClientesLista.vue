@@ -1,20 +1,51 @@
 <script setup>
   import { ref, reactive } from 'vue'
+  import { useAuthStore } from '../store.js';
 
-  function geraItems(){
-    const items = [];
+  const authStore = useAuthStore();
+  let clientes = [];
 
-    for(let i=0; i<30; i++){
-      items.push({
-        nome: `nome ${i}`,
-        telefone: `${i}`.repeat(8),
-        email: `nome-${i}@email.com`
-      })
+  async function requestAllClientes(){
+    const options = {
+        method: 'GET',
+        headers: {
+            'jwt-token': authStore.getToken,
+            'Content-Type': 'application/json'
+        }
+    };
+
+    const response = await fetch("http://127.0.0.1:8000/v1/cliente/get_all_clients/", options);
+
+    if(response.status !== 204){
+        responseJson = await response.json();
+        // {
+        //             "idCliente": str(cliente.idCliente),
+        //             "email": cliente.email if cliente.email is not None else None,
+        //             "nome": cliente.nome,
+        //             "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
+        //             "cpf": cliente.cpf if cliente.cpf is not None else None,
+        //             "endereco": cliente.endereco if cliente.endereco is not None else None,
+        //             "telefone": cliente.telefone if cliente.telefone is not None else None,
+        //             "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+        //         }
+        console.log(responseJson)
     }
-
-    return items.sort((a, b) => a.nome.localeCompare(b.nome));
+    
+    // clientes = items.sort((a, b) => a.nome.localeCompare(b.nome));
   }
-  const items = geraItems();
+  // function geraItems(){
+  //   const items = [];
+
+  //   for(let i=0; i<30; i++){
+  //     items.push({
+  //       nome: `nome ${i}`,
+  //       telefone: `${i}`.repeat(8),
+  //       email: `nome-${i}@email.com`
+  //     })
+  //   }
+
+  //   return items.sort((a, b) => a.nome.localeCompare(b.nome));
+  // }
 </script>
 
 <template>
@@ -51,10 +82,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in items">
-          <td>{{ item.nome }}</td>
-          <td>{{ item.telefone }}</td>
-          <td>{{ item.email }}</td>
+        <tr v-for="(cliente, index) in clientes">
+          <td>{{ cliente.nome }}</td>
+          <td>{{ cliente.telefone }}</td>
+          <td>{{ cliente.email }}</td>
           <td>
             <button class="view-profile-btn"><a href="#">ver</a></button>
           </td>
