@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Optional
 from pydantic import BaseModel
 from ...database import crud
@@ -88,7 +89,7 @@ def get_all_clients():
         logging.info("Getting all clients")
         clientes = crud.get_all_clientes()
         if clientes is not None:
-            return JSONResponse(status_code=status.HTTP_200_OK, content=clientes)
+            return JSONResponse(status_code=status.HTTP_200_OK, content=json.dumps(clientes))
         else:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
