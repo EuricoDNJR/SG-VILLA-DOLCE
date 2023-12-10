@@ -16,9 +16,7 @@
     };
 
     const response = await fetch("http://127.0.0.1:8000/v1/cliente/get_all_clients/", options);
-    const clientesStringify = await response.json();
-
-    clientes = JSON.parse(clientesStringify);
+    clientes = await response.json();
 
     loading.value = false;
   }
