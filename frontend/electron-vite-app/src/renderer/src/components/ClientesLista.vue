@@ -1,4 +1,21 @@
-<script setup></script>
+<script setup>
+  import { ref, reactive } from 'vue'
+
+  function geraItems(){
+    const items = [];
+
+    for(let i=0; i<30; i++){
+      items.push({
+        nome: `nome ${i}`,
+        telefone: `${i}`.repeat(8),
+        email: `nome-${i}@email.com`
+      })
+    }
+
+    return items.sort((a, b) => a.nome.localeCompare(b.nome));
+  }
+  const items = geraItems();
+</script>
 
 <template>
   <div class="page-content">
@@ -34,118 +51,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Mateus Assis</td>
-          <td>(225) 555-0118</td>
-          <td>mateus.assis@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Filipe Mateus</td>
-          <td>(225) 555-0118</td>
-          <td>filipe.mateus@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Lucas Lopes</td>
-          <td>(225) 555-0118</td>
-          <td>lucas.lopes@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Eurico Delmondes</td>
-          <td>(225) 555-0118</td>
-          <td>eurico.delmondes@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Mateus Assis</td>
-          <td>(225) 555-0118</td>
-          <td>mateus.assis@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Filipe Mateus</td>
-          <td>(225) 555-0118</td>
-          <td>filipe.mateus@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>             
-        <tr>
-          <td>Lucas Lopes</td>
-          <td>(225) 555-0118</td>
-          <td>lucas.lopes@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Eurico Delmondes</td>
-          <td>(225) 555-0118</td>
-          <td>eurico.delmondes@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Mateus Assis</td>
-          <td>(225) 555-0118</td>
-          <td>mateus.assis@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-        <tr>
-          <td>Filipe Mateus</td>
-          <td>(225) 555-0118</td>
-          <td>filipe.mateus@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Filipe Mateus</td>
-          <td>(225) 555-0118</td>
-          <td>filipe.mateus@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Filipe Mateus</td>
-          <td>(225) 555-0118</td>
-          <td>filipe.mateus@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Filipe Mateus</td>
-          <td>(225) 555-0118</td>
-          <td>filipe.mateus@example.com</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Filipe Mateus</td>
-          <td>(225) 555-0118</td>
-          <td>filipe.mateus@example.com</td>
+        <tr v-for="(item, index) in items">
+          <td>{{ item.nome }}</td>
+          <td>{{ item.telefone }}</td>
+          <td>{{ item.email }}</td>
           <td>
             <button class="view-profile-btn"><a href="#">ver</a></button>
           </td>
@@ -155,29 +64,141 @@
   </div>
 </section>
 
-
-<section class="pagination-btn">
-  <ul class="pagination">
-    <li class="pagination-item">
-      <a href="#" class="pagination-link">&lt;</a>
-    </li>
-    <li class="pagination-item">
-      <a href="#" class="pagination-link">1</a>
-    </li>
-    <li class="pagination-item">
-      <a href="#" class="pagination-link">2</a>
-    </li>
-    <li class="pagination-item">
-      <a href="#" class="pagination-link">3</a>
-    </li>
-    <li class="pagination-item">
-      <a href="#" class="pagination-link">4</a>
-    </li>
-    <li class="pagination-item">
-      <a href="#" class="pagination-link">&gt;</a>
-    </li>
-  </ul>
-</section>
-
 </div>
 </template>
+
+<style scoped>
+.page-content {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;  
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0px 10px 0px;
+}
+
+.toolbar h1 {
+    font-size: 2rem;
+}
+
+.toolbar > div {
+    display: flex;
+}
+
+.search-container form {
+    width: 300px;
+    height: 40px;
+    padding: 4px;
+    border: solid;
+    border-width: 2px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    background-color: #F9FBFF;
+}
+
+.search-box {
+    width: 250px;
+    height: 27px;
+    font-size: 20px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+.search-btn {
+    width: 40px;
+    height: 30px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+}
+
+.search-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.register-btn {
+    width: 180px;
+    height: 40px;
+    margin-left: 20px;
+    background: #000;
+    font-size: 20px;
+    border-radius: 5px;
+    border-style: none;
+    cursor: pointer;
+}
+
+.register-btn a {
+    text-decoration: none;
+    color: #ffffff;
+}
+
+/* 
+hr {
+    height: 2px;
+    border-width: 0px;
+    background-color: #EEEEEE;
+} */
+
+.clients-list {
+    height: 80vh;
+    overflow-x: auto;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    color: #333;
+    font-size: 15px;
+    text-align: left;
+}
+
+thead {
+    top: 0;
+    position: sticky;
+    background-color: #ffffff;
+}
+
+th {
+    padding: 12px 12px 12px 0px;
+    color: #7d7f88;
+    font-weight: bold;
+}
+
+td {
+    padding: 12px 12px 12px 0px;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-color: #B5B7C0;
+    font-size: 18px;
+}
+
+
+tr td:last-child {
+    text-align: right;
+}
+
+.view-profile-btn {
+    width: 90px;
+    height: 30px;
+    background: #6940aa7e;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #6940AA;
+    cursor: pointer;
+}
+
+.view-profile-btn a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #6940AA;
+    margin: 15px 0px 15px 0px;
+}
+</style>
