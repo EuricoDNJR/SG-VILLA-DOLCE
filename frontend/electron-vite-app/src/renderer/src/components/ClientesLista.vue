@@ -1,11 +1,12 @@
 <script setup>
-  import { ref, reactive } from 'vue'
+  import { ref, reactive, onMounted } from 'vue'
   import { useAuthStore } from '../store.js';
 
   const authStore = useAuthStore();
   let clientes = [];
+  const loading = ref(true);
 
-  async function requestAllClientes(){
+  const requestAllClientes = async () =>{
     const options = {
         method: 'GET',
         headers: {
@@ -15,44 +16,19 @@
     };
 
     const response = await fetch("http://127.0.0.1:8000/v1/cliente/get_all_clients/", options);
-    console.log(authStore.getToken);
-    if(response.status !== 204){
-        clientes = await response.json();
-        // {
-        //             "idCliente": str(cliente.idCliente),
-        //             "email": cliente.email if cliente.email is not None else None,
-        //             "nome": cliente.nome,
-        //             "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
-        //             "cpf": cliente.cpf if cliente.cpf is not None else None,
-        //             "endereco": cliente.endereco if cliente.endereco is not None else None,
-        //             "telefone": cliente.telefone if cliente.telefone is not None else None,
-        //             "saldo": str(cliente.saldo) if cliente.saldo is not None else None
-        //         }
-        console.log(clientes);
-    }
-    
-    // clientes = items.sort((a, b) => a.nome.localeCompare(b.nome));
+    const clientesStringify = await response.json();
+
+    clientes = JSON.parse(clientesStringify);
+
+    loading.value = false;
   }
-  // function geraItems(){
-  //   const items = [];
 
-  //   for(let i=0; i<30; i++){
-  //     items.push({
-  //       nome: `nome ${i}`,
-  //       telefone: `${i}`.repeat(8),
-  //       email: `nome-${i}@email.com`
-  //     })
-  //   }
-
-  //   return items.sort((a, b) => a.nome.localeCompare(b.nome));
-  // }
   requestAllClientes();
+    // clientes = items.sort((a, b) => a.nome.localeCompare(b.nome));
 </script>
 
 <template>
   <div class="page-content">
-
-<!-- <a href="#"><img src="assets/cliente-lista-imgs/back-img.svg" alt=""></a> -->
 
 <section class="main-content">
   <div class="toolbar">
@@ -72,7 +48,7 @@
     </div>
   </div>
 
-  <div class=clients-list>
+  <div v-if="!loading">
     <table>
       <thead>
         <tr>
@@ -87,13 +63,17 @@
           <td>{{ cliente.nome }}</td>
           <td>{{ cliente.telefone }}</td>
           <td>{{ cliente.email }}</td>
-          <td>
-            <button class="view-profile-btn"><a href="#">ver</a></button>
+          <td>             
+            <button class="view-profile-btn"><a href="#">ver</a></button>           
           </td>
         </tr>
       </tbody>
     </table>
   </div>
+  <div v-else>
+    <p>Carregando...</p>
+  </div>
+  
 </section>
 
 </div>
