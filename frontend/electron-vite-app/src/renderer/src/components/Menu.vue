@@ -28,8 +28,9 @@
           </ul>
         </div>
     </aside>
-
-    <router-view/>
+    <div class="router-view">
+      <router-view/>
+    </div>
   </main>
 </template>
 
@@ -38,25 +39,35 @@
       display: flex;
   }
 
+  .router-view{
+    padding: 20px;
+    width: 100%;
+  }
+
   aside {
+      top: 0px;
+      position: sticky;
       background-color: #6940AA;
       width: 18vw;
-      height: 100%;
+      height: 100vh;
+      min-width: 240px;
       padding: 20px 50px;
   }
 
   .user-info {
       display: flex;
       flex-direction: column;
-      margin-bottom: 60px;
+      margin-bottom: 40px;
+      font-size: 18px;
+      border-bottom: 1px solid rgb(172, 166, 166);
   }
 
   .user-info img {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 120px;
-      height: 120px;
+      width: 90px;
+      height: 90px;
       border-radius: 10px;
       margin-bottom: 15px;
       background-color: gray;
@@ -64,7 +75,6 @@
   }
 
   .user-info .user {
-      font-size: 22px;
       font-weight: bold;
       color: #fff;
       margin-bottom: 8px;
@@ -72,17 +82,15 @@
   }
 
   .user-info .position {
-      font-size: 20px;
       color: #ffffff87;
   }
 
-  .menu ul li {
+  .menu ul {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 30px;
       list-style: none;
-      /*font-size: 30px;
-      margin: 30px 0px 30px 0px;*/
-      margin-bottom: 40px;
-      /*font-weight: bold;
-      color: #fff;*/
   }
 
   .menu a {
@@ -94,13 +102,7 @@
   }
 
   .menu a:hover {
-      color: #ffffff;
-      
-  }
-
-  .page-content {
-      width: 82vw;
-      background: #ffffff;
+      color: #ffffff;  
   }
 
 </style>
