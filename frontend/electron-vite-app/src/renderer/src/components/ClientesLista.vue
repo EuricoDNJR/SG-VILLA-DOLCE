@@ -15,9 +15,9 @@
     };
 
     const response = await fetch("http://127.0.0.1:8000/v1/cliente/get_all_clients/", options);
-
+    console.log(authStore.getToken);
     if(response.status !== 204){
-        responseJson = await response.json();
+        clientes = await response.json();
         // {
         //             "idCliente": str(cliente.idCliente),
         //             "email": cliente.email if cliente.email is not None else None,
@@ -28,7 +28,7 @@
         //             "telefone": cliente.telefone if cliente.telefone is not None else None,
         //             "saldo": str(cliente.saldo) if cliente.saldo is not None else None
         //         }
-        console.log(responseJson)
+        console.log(clientes);
     }
     
     // clientes = items.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -46,6 +46,7 @@
 
   //   return items.sort((a, b) => a.nome.localeCompare(b.nome));
   // }
+  requestAllClientes();
 </script>
 
 <template>
@@ -82,7 +83,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(cliente, index) in clientes">
+        <tr v-for="(cliente, index) in clientes" :key="index">
           <td>{{ cliente.nome }}</td>
           <td>{{ cliente.telefone }}</td>
           <td>{{ cliente.email }}</td>

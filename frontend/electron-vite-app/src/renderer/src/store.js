@@ -10,7 +10,7 @@ export const useAuthStore = defineStore('userData', {
     }),
     getters: {
         getToken() {
-          return this.nome;
+          return this.token;
         },
         getNome() {
           return this.nome;
