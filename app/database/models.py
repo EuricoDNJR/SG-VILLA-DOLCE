@@ -49,7 +49,8 @@ class Cliente(BaseModel):
 class Caixa(BaseModel):
     idCaixa = UUIDField(primary_key=True, default=uuid.uuid4)
     saldoInicial = DecimalField()
-    dataAbertura = DateTimeField()
+    dataAbertura = DateField()
+    horaAbertura = TimeField()
     dataFechamento = DateTimeField(null=True)
     observacoes = TextField(null=True)
     aberto = BooleanField(default=True)
