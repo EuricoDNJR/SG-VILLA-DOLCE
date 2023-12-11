@@ -69,7 +69,7 @@
           <td>{{ cliente.telefone }}</td>
           <td>{{ cliente.email }}</td>
           <td>             
-            <button class="view-profile-btn"><a href="#">ver</a></button>           
+            <button class="view-profile-btn"><router-link class="router-link" :to="{ name: 'Ver Cliente' }">Ver</router-link></button>           
           </td>
         </tr>
       </tbody>
@@ -213,9 +213,12 @@ tr td:last-child {
 }
 
 .view-profile-btn a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
     text-decoration: none;
     font-weight: bold;
     color: #6940AA;
-    margin: 15px 0px 15px 0px;
 }
 </style>
