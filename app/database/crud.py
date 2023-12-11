@@ -3,6 +3,7 @@ from peewee import DoesNotExist
 from passlib.hash import bcrypt
 from decimal import Decimal
 
+
 def create_cliente(email, nome, dataNascimento, cpf, endereco, telefone, saldo):
     return models.Cliente.create(email=email, nome=nome, dataNascimento=dataNascimento, cpf=cpf, endereco=endereco, telefone=telefone, saldo=saldo)
 
@@ -14,6 +15,73 @@ def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMe
 
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
+
+def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
+    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, somenteDinheiro = saldoInicial)
+
+def close_caixa(uuid, dataFechamento):
+    try:
+
+        caixa = models.Caixa.get(models.Caixa.idCaixa == uuid)
+
+        if caixa is None:
+            return None
+        if caixa.aberto == True:
+            caixa.dataFechamento = dataFechamento
+            caixa.aberto = False
+        caixa.save()
+
+        return True
+    
+    except DoesNotExist:
+        return False
+    
+def get_caixa(date):
+
+    try:
+
+        caixa = models.Caixa.get(models.Caixa.dataAbertura == date)
+
+        if caixa.aberto == False:
+            return caixa
+        else:
+            None 
+    except:
+        return None
+    
+def get_all_caixa():
+    try:
+        # Tenta buscar todos os caixas 
+        caixas = models.Caixa.select()
+
+        # Verifica se há usuários
+        if caixas.exists():
+            # Retorna a lista de usuários se houver algum
+            return [
+                {
+                    "idCaixa": str(caixa.idCaixa),
+                    "saldoInicial": str(caixa.saldoInicial),
+                    "dataAbertura": str(caixa.dataAbertura),
+                    "dataFechamento": str(caixa.dataFechamento),
+                    "aberto": caixa.aberto,
+                    "observacoes": caixa.observacoes,
+                    "somenteDinheiro": str(caixa.somenteDinheiro),            
+                    "SaldoFinal": str(caixa.saldoFinal)                    
+                }
+
+                for caixa in caixas if caixa.aberto == False
+               
+            ]
+        else:
+            # Se não houver usuários, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+    
+
+
+
 
 def get_usuario(telefone):
     try:
@@ -278,6 +346,22 @@ def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNasc
     except DoesNotExist:
         return None
 
+def update_novo_saldoInicial(uuid, novoSaldo = None):
+    try:
+
+        caixa = models.Caixa.get(models.Caixa.idCaixa == uuid)
+
+        if caixa is None:
+            return None
+        if novoSaldo is not None:
+            caixa.saldoInicial = novoSaldo
+        caixa.save()
+
+        return { "saldoInicial": caixa.saldoInicial}
+    
+    except DoesNotExist:
+        return None
+    
 def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=None, valorVenda=None, unidadeMedida=None):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
