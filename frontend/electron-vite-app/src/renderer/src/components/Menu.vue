@@ -10,24 +10,26 @@
 
 <template>
   <main>
-    <aside>
-        <div class="user-info">
-          <img src="" alt="foto do usuário">
-          <span class="user" id="user">{{ nome }}</span>
-          <span class="position" id="position">{{ cargo }}</span>
-        </div>
-        <div class="menu">
-          <ul>
-            <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Dashboard</router-link></li>
-            <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Caixa</router-link></li>
-            <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Pedido</router-link></li>
-            <li><router-link class="router-link" :to="{ name: 'Clientes Lista' }">Clientes</router-link></li>
-            <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Funcionários</router-link></li>
-            <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Configurações</router-link></li>
-            <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Sair</router-link></li>
-          </ul>
-        </div>
-    </aside>
+    <section class="aside-in-normal-flow">
+      <aside>
+          <div class="user-info">
+            <img src="" alt="foto do usuário">
+            <span class="user" id="user">{{ nome }}</span>
+            <span class="position" id="position">{{ cargo }}</span>
+          </div>
+          <div class="menu">
+            <ul>
+              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Dashboard</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Caixa</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Pedido</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'Clientes Lista' }">Clientes</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Funcionários</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Configurações</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Sair</router-link></li>
+            </ul>
+          </div>
+      </aside>
+    </section>
     <div class="router-view">
       <router-view/>
     </div>
@@ -44,14 +46,20 @@
     width: 100%;
   }
 
+  .aside-in-normal-flow{
+    position: relative;
+    width: 18vw;
+    height: 100vh;
+    min-width: 240px;
+  }
+
   aside {
-      top: 0px;
-      position: sticky;
-      background-color: #6940AA;
-      width: 18vw;
-      height: 100vh;
-      min-width: 240px;
-      padding: 20px 50px;
+    position: fixed;
+    background-color: #6940AA;
+    width: 18vw;
+    height: 100vh;
+    min-width: 240px;
+    padding: 20px 50px;
   }
 
   .user-info {
