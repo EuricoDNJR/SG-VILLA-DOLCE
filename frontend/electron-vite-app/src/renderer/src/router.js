@@ -3,6 +3,8 @@ import Login from './components/Login.vue'
 import Menu from './components/Menu.vue'
 import Dashboard from './components/Dashboard.vue'
 import ClientesLista from './components/ClientesLista.vue'
+import ClientesInfo from './components/ClientesInfo.vue'
+
 
 const routes = [
   { 
@@ -21,9 +23,14 @@ const routes = [
         component: Dashboard,
       },
       { 
-        path: 'clientes-lista', 
+        path: 'clientes', 
         name: 'Clientes Lista', 
         component: ClientesLista,
+      },
+      { 
+        path: 'ver-cliente', 
+        name: 'Ver Cliente', 
+        component: ClientesInfo,
       }
     ]
   },
