@@ -14,15 +14,22 @@
             'Content-Type': 'application/json'
         }
     };
+    console.log(authStore.getToken);
 
     const response = await fetch("http://127.0.0.1:8000/v1/cliente/get_all_clients/", options);
-    clientes = await response.json();
 
+    if(response.ok && response.status !== 204){
+      clientes = await response.json();
+
+      // ORDEM ALFABÉTICA POR NOME
+      clientes = clientes.sort((clienteA, clienteB) => clienteA.nome.localeCompare(clienteB.nome));
+    }
+   
     loading.value = false;
   }
 
   requestAllClientes();
-    // clientes = items.sort((a, b) => a.nome.localeCompare(b.nome));
+    // 
 </script>
 
 <template>
