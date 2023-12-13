@@ -1,10 +1,19 @@
 <script setup>
   import { ref, reactive, onMounted } from 'vue'
-  import { useAuthStore } from '../store.js';
+  import { useRouter } from 'vue-router';
+  import { useAuthStore, useClienteStore } from '../store.js';
 
+  const router = useRouter();
   const authStore = useAuthStore();
+  const clienteStore = useClienteStore();
   let clientes = [];
   const loading = ref(true);
+
+  const redirectToClienteInfo = (cliente) => {
+    clienteStore.saveClienteInfo({...cliente, pontos: 5});
+
+    router.push("/menu/ver-cliente/");
+  }
 
   const requestAllClientes = async () =>{
     const options = {
@@ -29,7 +38,7 @@
   }
 
   requestAllClientes();
-    // 
+  
 </script>
 
 <template>
@@ -69,14 +78,13 @@
           <td>{{ cliente.telefone }}</td>
           <td>{{ cliente.email }}</td>
           <td>             
-            <button class="view-profile-btn"><router-link class="router-link" :to="{ name: 'Ver Cliente' }">Ver</router-link></button>           
+            <button class="view-profile-btn" @click="redirectToClienteInfo(cliente)">Ver</button>          
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <div class=loader-container v-else>
-  </div>
+  <div class=loader-container v-else></div>
   
 </section>
 
@@ -94,7 +102,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      /* margin: 20px 0px 10px 0px; */
+      margin-bottom: 10px;
   }
 
   .toolbar h1 {
@@ -209,14 +217,6 @@
       border-style: solid;
       border-color: #6940AA;
       cursor: pointer;
-  }
-
-  .view-profile-btn a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-decoration: none;
       font-weight: bold;
       color: hsl(263, 45%, 46%);
   }
