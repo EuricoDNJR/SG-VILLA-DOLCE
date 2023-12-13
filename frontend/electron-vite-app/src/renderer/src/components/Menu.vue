@@ -42,12 +42,7 @@
   }
 
   .router-view-div{
-    padding: 20px;
-    width: 100%;
-  }
-
-  .router-view{
-    padding: 20px;
+    padding: 40px 40px 0px 40px;
     width: 100%;
   }
 
@@ -72,7 +67,7 @@
       flex-direction: column;
       margin-bottom: 40px;
       font-size: 18px;
-      border-bottom: 1px solid rgb(172, 166, 166);
+      border-bottom: 1px solid #ffffff87;
   }
 
   .user-info img {
