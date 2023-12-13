@@ -75,8 +75,8 @@
       </tbody>
     </table>
   </div>
-  <div v-else>
-    <p>Carregando...</p>
+  <div class=loader-container v-else>
+    <p id="loader"></p>
   </div>
   
 </section>
@@ -85,140 +85,168 @@
 </template>
 
 <style scoped>
-.page-content {
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;  
-}
+  /* @keyframes spin {
+      0% {
+          transform: rotate(0deg);
+      }
+      100% {
+          transform: rotate(360deg);
+      }
+  } */
 
-.toolbar {
+  .page-content {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px 0px 10px 0px;
-}
+    flex-direction: column;
+    background: #ffffff;  
+  }
 
-.toolbar h1 {
-    font-size: 2rem;
-}
+  .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      /* margin: 20px 0px 10px 0px; */
+  }
 
-.toolbar > div {
+  .toolbar h1 {
+      font-size: 2rem;
+  }
+
+  .toolbar > div {
+      display: flex;
+  }
+
+  .search-container form {
+      width: 300px;
+      height: 40px;
+      padding: 4px;
+      border: solid;
+      border-width: 2px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      background-color: #F9FBFF;
+  }
+
+  .search-box {
+      width: 250px;
+      height: 27px;
+      font-size: 20px;
+      background-color: transparent;
+      border: none;
+      outline: none;
+  }
+
+  .search-btn {
+      width: 40px;
+      height: 30px;
+      cursor: pointer;
+      border: none;
+      background-color: transparent;
+  }
+
+  .search-btn img {
+      width: 20px;
+      height: 20px;
+  }
+
+  .register-btn {
+      width: 180px;
+      height: 40px;
+      margin-left: 20px;
+      background: #000;
+      font-size: 20px;
+      border-radius: 5px;
+      border-style: none;
+      cursor: pointer;
+  }
+
+  .register-btn a {
+      text-decoration: none;
+      color: #ffffff;
+  }
+
+  /* 
+  hr {
+      height: 2px;
+      border-width: 0px;
+      background-color: #EEEEEE;
+  } */
+
+  .clients-list {
+      height: 80vh;
+      overflow-x: auto;
+  }
+
+  table {
+      border-collapse: collapse;
+      width: 100%;
+      color: #333;
+      font-size: 15px;
+      text-align: left;
+  }
+
+  thead {
+      top: 0;
+      position: sticky;
+      background-color: #ffffff;
+  }
+
+  th {
+      padding: 12px 12px 12px 0px;
+      color: #7d7f88;
+      font-weight: bold;
+  }
+
+  td {
+      padding: 12px 12px 12px 0px;
+      border-top: 1px solid;
+      border-bottom: 1px solid;
+      border-color: #B5B7C0;
+      font-size: 18px;
+  }
+
+
+  tr td:last-child {
+      text-align: right;
+  }
+
+  .view-profile-btn {
+      width: 90px;
+      height: 30px;
+      background: #6940aa7e;
+      font-size: 18px;
+      border-radius: 5px;
+      border-style: solid;
+      border-color: #6940AA;
+      cursor: pointer;
+  }
+
+  .view-profile-btn a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-decoration: none;
+      font-weight: bold;
+      color: hsl(263, 45%, 46%);
+  }
+
+  .loader-container{
     display: flex;
-}
-
-.search-container form {
-    width: 300px;
-    height: 40px;
-    padding: 4px;
-    border: solid;
-    border-width: 2px;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-    background-color: #F9FBFF;
-}
-
-.search-box {
-    width: 250px;
-    height: 27px;
-    font-size: 20px;
-    background-color: transparent;
-    border: none;
-    outline: none;
-}
-
-.search-btn {
-    width: 40px;
-    height: 30px;
-    cursor: pointer;
-    border: none;
-    background-color: transparent;
-}
-
-.search-btn img {
-    width: 20px;
-    height: 20px;
-}
-
-.register-btn {
-    width: 180px;
-    height: 40px;
-    margin-left: 20px;
-    background: #000;
-    font-size: 20px;
-    border-radius: 5px;
-    border-style: none;
-    cursor: pointer;
-}
-
-.register-btn a {
-    text-decoration: none;
-    color: #ffffff;
-}
-
-/* 
-hr {
-    height: 2px;
-    border-width: 0px;
-    background-color: #EEEEEE;
-} */
-
-.clients-list {
-    height: 80vh;
-    overflow-x: auto;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-    color: #333;
-    font-size: 15px;
-    text-align: left;
-}
-
-thead {
-    top: 0;
-    position: sticky;
-    background-color: #ffffff;
-}
-
-th {
-    padding: 12px 12px 12px 0px;
-    color: #7d7f88;
-    font-weight: bold;
-}
-
-td {
-    padding: 12px 12px 12px 0px;
-    border-top: 1px solid;
-    border-bottom: 1px solid;
-    border-color: #B5B7C0;
-    font-size: 18px;
-}
-
-
-tr td:last-child {
-    text-align: right;
-}
-
-.view-profile-btn {
-    width: 90px;
-    height: 30px;
-    background: #6940aa7e;
-    font-size: 18px;
-    border-radius: 5px;
-    border-style: solid;
-    border-color: #6940AA;
-    cursor: pointer;
-}
-
-.view-profile-btn a {
-    display: flex;
-    align-items: center;
     justify-content: center;
-    height: 100%;
-    text-decoration: none;
-    font-weight: bold;
-    color: #6940AA;
-}
+    align-items: center;
+    width: 100%;
+    height: 70vh;
+  }
+
+  #loader{
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #333;
+      border-radius: 50%;
+      width: 250px;
+      height: 250px;
+      animation: spin 1s linear infinite; /* Aplica a animação */
+  }
+
+
 </style>
