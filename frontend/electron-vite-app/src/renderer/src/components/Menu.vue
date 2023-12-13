@@ -10,7 +10,7 @@
 
 <template>
   <main>
-    <section class="aside-in-normal-flow">
+    <div class="aside-in-normal-flow">
       <aside>
           <div class="user-info">
             <img src="" alt="foto do usuário">
@@ -29,9 +29,9 @@
             </ul>
           </div>
       </aside>
-    </section>
-    <div class="router-view">
-      <router-view/>
+    </div>
+    <div class="router-view-div">
+      <router-view class="router-view"/>
     </div>
   </main>
 </template>
@@ -39,6 +39,11 @@
 <style scoped>
   main {
       display: flex;
+  }
+
+  .router-view-div{
+    padding: 20px;
+    width: 100%;
   }
 
   .router-view{
