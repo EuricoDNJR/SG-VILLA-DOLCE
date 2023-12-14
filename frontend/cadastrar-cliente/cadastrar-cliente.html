@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Cliente</title>
+</head>
+
+<body>
+    <main>
+        <aside>
+            <div class="user-info">
+                <img src="assets/imgs/profile-img.jpg" alt="profile-img">
+                <span class="user">Dua Lipa</span>
+                <span class="position">Gerente</span>
+            </div>
+            <div class="menu">
+                <ul>
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#">Caixa</a></li>
+                    <li><a href="#">Pedido</a></li>
+                    <li><a href="#">Clientes</a></li>
+                    <li><a href="#">Funcionários</a></li>
+                    <li><a href="#">Configurações</a></li>
+                    <li><a href="#">Sair</a></li>
+                </ul>
+            </div>
+        </aside>
+        <div class="page-content">
+            <a id="id-seta" href="#"><img src="assets/imgs/back-img.svg" alt=""></a>
+
+            <div id="cliente-info">
+
+                <div id="info-title">
+                    <h1>Cadastrar Cliente</h1>
+                </div>
+
+                <form id="info-form" action="#" method="post">
+                    <div class="info-form">
+
+                        <label class = "text-nome" for="nome">Nome:</label>
+                        <input class="label-input" type="text" id="nome" name="nome" required><br>
+
+                    </div>
+
+                    <div class="info-form">
+                        <label class = "text-nome" for="telefone">Telefone:</label>
+                        <input class="label-input" type="tel" id="telefone" name="telefone" pattern="[0-9]{11}" placeholder="Apenas números" required><br>
+                    </div>
+
+
+                    <div class="info-form">
+                        
+                        <label class = "text-nome" for="email">E-mail:</label>
+                        <input class="label-input" type="email" id="email" name="email" required><br>
+                        
+                    </div>
+
+                    <div class="info-form">
+                        
+                        <label class = "text-nome" for="cpf">CPF:</label>
+                        <input class="label-input" type="text" id="cpf" name="cpf" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" placeholder="000.000.000-00" required><br>
+                        
+                    </div>
+
+                    <div class="info-form">
+                        
+                        <label for="dataNascimento">Data de Nascimento:</label>
+                        <input type="date" id="dataNascimento" name="dataNascimento" required><br>
+                        
+                    </div>
+
+                    <div class="info-form">
+                        
+                        <label class = "text-nome" for="endereco">Endereço:</label>
+                        <textarea class="label-input" id="endereco" name="endereco" rows="4"required></textarea><br>
+                       
+                    </div>
+
+                    <input type="submit" value="Enviar">
+            </div>
+
+            </form>
+
+
+        </div>
+        </div>
+    </main>
+</body>
+
+</html>

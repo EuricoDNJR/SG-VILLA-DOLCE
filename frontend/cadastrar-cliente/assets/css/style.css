@@ -1,0 +1,131 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+main {
+    display: flex;
+}
+
+aside {
+    background-color: #6940AA;
+    width: 18vw;
+    height: 100vh;
+    padding: 50px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 60px;
+}
+
+.user-info img {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    object-fit: cover;
+}
+
+.user-info .user {
+    font-size: 30px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+    cursor: default;
+}
+
+.user-info .position {
+    font-size: 20px;
+    color: #ffffff87;
+}
+
+.menu ul li {
+    list-style: none;
+    /*font-size: 30px;
+    margin: 30px 0px 30px 0px;*/
+    margin-bottom: 40px;
+    /*font-weight: bold;
+    color: #fff;*/
+}
+
+.menu a {
+    text-decoration: none;
+    font-size: 30px;
+    font-weight: bold;
+    color: #ffffff87;
+    
+}
+
+.menu a:hover {
+    color: #ffffff;
+    transition: 0.5s;
+}
+
+.page-content {
+    width: 82vw;
+    background: #ffffff;
+    padding: 50px;
+}
+
+hr {
+    height: 2px;
+    border-width: 0px;
+    background-color: #EEEEEE;
+}
+
+
+
+
+
+.info-title {
+    display: block;
+    text-align: center;
+}
+
+.info-form {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.label-input {
+    margin-top: 4px;
+    font-size: 20px;
+    width: 90%; /* Altere o valor conforme necessário para ajustar o tamanho */
+    border-radius: 10px; /* Isso arredondará as bordas do input */
+    border: 2px solid #000000;   
+    padding: 15px 10px 5px 10px;
+}
+
+#endereco {
+    padding: 5px;
+    resize: none;
+}
+
+.text-nome {
+    display: inline-block;
+    width: 90%;
+    text-align: left;
+}
+
+#cliente-info {
+    margin: auto;
+    margin-top: 10px;
+    text-align: center;
+    color: white;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    background: linear-gradient(150deg, #6940AA,  #7A62C0, rgb(156, 169, 207) );
+    border-radius: 10px;
+}
+
+#info-title {
+    margin-bottom: 20px;
+    color: black;
+}
