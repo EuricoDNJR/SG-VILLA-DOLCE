@@ -1,10 +1,26 @@
 <script setup>
-  import { ref } from 'vue'
+  import { ref, reactive } from 'vue'
   import { useAuthStore } from '../store.js';
-
+  import { useRoute } from 'vue-router';
+  
   const authStore = useAuthStore();
   const nome = ref(authStore.getNome);
   const cargo = ref(authStore.getCargo);
+  const isCurrentPage = reactive({
+    dashboard: true,
+    caixa: false,
+    pedido: false,
+    clientes: false,
+    funcionarios: false,
+    configuracoes: false
+  });
+
+  function currentPage(currentPageName){
+    for (let key in isCurrentPage) {
+      isCurrentPage[key] = key === currentPageName;
+    }
+    console.log(isCurrentPage);
+  }
   
 </script>
 
@@ -19,13 +35,13 @@
           </div>
           <div class="menu">
             <ul>
-              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Dashboard</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Caixa</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Pedido</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'Clientes Lista' }">Clientes</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Funcionários</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Configurações</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'Dashboard' }">Sair</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('dashboard')" :class="{isCurrentPage: isCurrentPage.dashboard}">Dashboard</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('caixa')" :class="{isCurrentPage: isCurrentPage.caixa}">Caixa</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('pedido')" :class="{isCurrentPage: isCurrentPage.pedido}">Pedido</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'clientes' }" @click="currentPage('clientes')" :class="{isCurrentPage: isCurrentPage.clientes}">Clientes</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('funcionarios')" :class="{isCurrentPage: isCurrentPage.funcionarios}">Funcionários</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('configuracoes')" :class="{isCurrentPage: isCurrentPage.configuracoes}">Configurações</router-link></li>
+              <li><router-link class="router-link" :to="{ name: 'dashboard' }">Sair</router-link></li>
             </ul>
           </div>
       </aside>
@@ -102,7 +118,7 @@
       list-style: none;
   }
 
-  .menu a {
+  .router-link {
       text-decoration: none;
       font-size: 22px;
       font-weight: bold;
@@ -110,8 +126,12 @@
       transition: color 0.5s;   
   }
 
-  .menu a:hover {
+  .router-link:hover {
       color: #ffffff;  
+  }
+
+  .isCurrentPage{
+    color: #ffffff;  
   }
 
 </style>
