@@ -18,7 +18,7 @@
       }
     }
 
-    clienteStore.saveClienteInfo({...cliente, pontos: 5});
+    clienteStore.saveClienteInfo({...cliente, pontos: Math.floor(cliente.saldo/15)});
 
     router.push("/menu/ver-cliente/");
   }
