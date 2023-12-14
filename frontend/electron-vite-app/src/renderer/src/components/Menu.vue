@@ -23,7 +23,6 @@
   function resetUserInfo(){
     authStore.reset();
   }
-  
 </script>
 
 <template>
