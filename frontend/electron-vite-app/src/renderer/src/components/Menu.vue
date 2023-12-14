@@ -1,7 +1,6 @@
 <script setup>
   import { ref, reactive } from 'vue'
   import { useAuthStore } from '../store.js';
-  import { useRoute } from 'vue-router';
   
   const authStore = useAuthStore();
   const nome = ref(authStore.getNome);
@@ -19,7 +18,10 @@
     for (let key in isCurrentPage) {
       isCurrentPage[key] = key === currentPageName;
     }
-    console.log(isCurrentPage);
+  }
+
+  function resetUserInfo(){
+    authStore.reset();
   }
   
 </script>
@@ -35,13 +37,13 @@
           </div>
           <div class="menu">
             <ul>
-              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('dashboard')" :class="{isCurrentPage: isCurrentPage.dashboard}">Dashboard</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('caixa')" :class="{isCurrentPage: isCurrentPage.caixa}">Caixa</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('pedido')" :class="{isCurrentPage: isCurrentPage.pedido}">Pedido</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'clientes' }" @click="currentPage('clientes')" :class="{isCurrentPage: isCurrentPage.clientes}">Clientes</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('funcionarios')" :class="{isCurrentPage: isCurrentPage.funcionarios}">Funcionários</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'dashboard' }" @click="currentPage('configuracoes')" :class="{isCurrentPage: isCurrentPage.configuracoes}">Configurações</router-link></li>
-              <li><router-link class="router-link" :to="{ name: 'dashboard' }">Sair</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('dashboard')" :class="{isCurrentPage: isCurrentPage.dashboard}">Dashboard</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('caixa')" :class="{isCurrentPage: isCurrentPage.caixa}">Caixa</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('pedido')" :class="{isCurrentPage: isCurrentPage.pedido}">Pedido</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'clientes' }" @click="currentPage('clientes')" :class="{isCurrentPage: isCurrentPage.clientes}">Clientes</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('funcionarios')" :class="{isCurrentPage: isCurrentPage.funcionarios}">Funcionários</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('configuracoes')" :class="{isCurrentPage: isCurrentPage.configuracoes}">Configurações</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'login' }" @click="resetUserInfo">Sair</router-link></li>
             </ul>
           </div>
       </aside>
@@ -118,15 +120,15 @@
       list-style: none;
   }
 
-  .router-link {
+  .redirect {
       text-decoration: none;
       font-size: 22px;
       font-weight: bold;
       color: #ffffff87;
-      transition: color 0.5s;   
+      transition: color 0.5s;
   }
 
-  .router-link:hover {
+  .redirect:hover {
       color: #ffffff;  
   }
 
