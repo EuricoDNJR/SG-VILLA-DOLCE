@@ -47,7 +47,6 @@ function createCliente(){
 
 async function requestRegisterCliente(){
     const cliente = createCliente();
-    console.log(cliente);
 
     if(cliente){
         const options = {
