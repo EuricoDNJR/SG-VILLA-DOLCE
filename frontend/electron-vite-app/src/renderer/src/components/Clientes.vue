@@ -7,7 +7,9 @@
   const authStore = useAuthStore();
   const clienteStore = useClienteStore();
   let clientes = [];
+  let clientesFiltered = [];
   const loading = ref(true);
+  const searchText = ref('');
 
   const redirectToClienteInfo = (cliente) => {
     clienteStore.saveClienteInfo({...cliente, pontos: 5});
@@ -32,8 +34,17 @@
 
       // ORDEM ALFABÉTICA POR NOME
       clientes = clientes.sort((clienteA, clienteB) => clienteA.nome.localeCompare(clienteB.nome));
+      clientesFiltered = [...clientes];
     }
    
+    loading.value = false;
+  }
+
+  const searchCliente = () => {
+    clientesFiltered = clientes.filter((cliente) => cliente.nome.toLowerCase().includes(searchText.value.toLowerCase()));
+  
+    // Recarregando tabela para atualizar os clientes
+    loading.value = true;
     loading.value = false;
   }
 
@@ -52,9 +63,8 @@
     <div>
       <div class="search-container">
         <form action="#" method="get">
-          <input type="text" class="search-box" name="search" placeholder="Buscar">
-          <button type="submit" class="search-btn"><img src="../assets/cliente-lista-imgs/magnifying-glass-solid.svg"
-              alt="search icone"></button>
+          <input type="text" class="search-box" @input="searchCliente" v-model="searchText" name="search" placeholder="Buscar">
+          <img class=search-btn-img src="../assets/cliente-lista-imgs/magnifying-glass-solid.svg" alt="search icone">
         </form>
       </div>
 
@@ -73,7 +83,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(cliente, index) in clientes" :key="index">
+        <tr v-for="(cliente, index) in clientesFiltered" :key="index">
           <td>{{ cliente.nome }}</td>
           <td>{{ cliente.telefone }}</td>
           <td>{{ cliente.email }}</td>
@@ -121,6 +131,7 @@
       border-width: 2px;
       border-radius: 5px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
       background-color: #F9FBFF;
   }
@@ -134,22 +145,14 @@
       outline: none;
   }
 
-  .search-btn {
-      width: 40px;
-      height: 30px;
-      cursor: pointer;
-      border: none;
-      background-color: transparent;
-  }
-
-  .search-btn img {
+  .search-btn-img {
       width: 20px;
       height: 20px;
   }
 
-  .search-btn:hover{
+  /* .search-btn:hover{
     background-color: rgb(231, 231, 231);
-  }
+  } */
 
   .register-btn {
       width: 180px;
