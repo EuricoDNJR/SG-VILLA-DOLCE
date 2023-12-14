@@ -53,8 +53,8 @@
       <div class="search-container">
         <form action="#" method="get">
           <input type="text" class="search-box" name="search" placeholder="Buscar">
-          <button type="submit" class="search-btn"><!--<img src="assets/cliente-lista-imgs/magnifying-glass-solid.svg"
-              alt="search icone">--></button>
+          <button type="submit" class="search-btn"><img src="../assets/cliente-lista-imgs/magnifying-glass-solid.svg"
+              alt="search icone"></button>
         </form>
       </div>
 
@@ -147,6 +147,10 @@
       height: 20px;
   }
 
+  .search-btn:hover{
+    background-color: rgb(231, 231, 231);
+  }
+
   .register-btn {
       width: 180px;
       height: 40px;
@@ -163,6 +167,13 @@
       color: #ffffff;
   }
 
+  .register-btn:hover{
+      background-color: #111111;
+  }
+
+  .register-btn:active{
+      background-color: #1a1a1a;
+  }
   /* 
   hr {
       height: 2px;
