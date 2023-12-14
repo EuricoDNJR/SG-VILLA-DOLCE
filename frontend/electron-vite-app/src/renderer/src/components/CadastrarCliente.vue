@@ -28,16 +28,16 @@ function createCliente(){
     if(nome === '' || telefone === ''){
         cliente = null;
     }else{
-        if(email === ''){
+        if(cliente.email === ''){
             cliente.email = null;
         }
-        if(cpf === ''){
-            cliente.telefone = null;
+        if(cliente.cpf === ''){
+            cliente.cpf = null;
         }
-        if(dataNascimento === ''){
+        if(cliente.dataNascimento === ''){
             cliente.dataNascimento = null;
         }
-        if(endereco === ''){
+        if(cliente.endereco === ''){
             cliente.endereco = null;
         }
     }
@@ -60,9 +60,6 @@ async function requestRegisterCliente(){
         };
 
         const response = await fetch("http://127.0.0.1:8000/v1/cliente/create_client/", options);
-        const responseJson = await response.json();
-        console.log(response);
-        console.log(responseJson);
     }
 }
 
