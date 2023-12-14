@@ -60,6 +60,7 @@
     height: 100vh;
     min-width: 240px;
     padding: 20px 50px;
+    z-index: 9999;
   }
 
   .user-info {
