@@ -44,16 +44,19 @@ export const useClienteStore = defineStore('clienteData', {
       email: null,
       telefone: null,
       cpf: null,
-      data_nascimento: null,
+      dataNascimento: null,
       endereco: null,
       saldo: null,
       pontos: null
   }),
   
   getters: {
+      getIdCliente() {
+        return this.idCliente;
+      },
       getNome() {
         return this.nome;
-          },
+      },
       getEmail() {
         return this.email;
       },
@@ -64,7 +67,7 @@ export const useClienteStore = defineStore('clienteData', {
         return this.cpf;
           },
       getDataNascimento() {
-        return this.data_nascimento;
+        return this.dataNascimento;
       },
       getEndereco() {
         return this.endereco;
@@ -77,25 +80,27 @@ export const useClienteStore = defineStore('clienteData', {
       }
   },
   actions: {
-    saveClienteInfo({idCliente, nome, email, telefone, cpf, data_nascimento, endereco, saldo, pontos}){
+    saveClienteInfo({idCliente, nome, email, telefone, cpf, dataNascimento, endereco, saldo, pontos}){
       this.idCliente = idCliente;
       this.nome = nome;
       this.email = email;
       this.telefone = telefone;
       this.cpf = cpf;
-      this.data_nascimento = data_nascimento;
+      this.dataNascimento = dataNascimento.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
       this.endereco = endereco;
       this.saldo = saldo;
       this.pontos = pontos;
     },
-
+    updateClienteInfo(infos) {
+      Object.assign(this.$state, infos);
+    },
     reset() {
       this.idCliente = null;
       this.nome = null;
       this. email = null;
       this.telefone = null;
       this.cpf = null;
-      this.data_nascimento = null;
+      this.dataNascimento = null;
       this.endereco = null;
       this.saldo = null;
       this.pontos = null;
