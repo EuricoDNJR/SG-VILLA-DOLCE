@@ -17,6 +17,10 @@
     router.push("/menu/ver-cliente/");
   }
 
+  const redirectToCadastrarCliente = () => {
+    router.push("/menu/cadastrar-cliente/");
+  }
+
   const requestAllClientes = async () =>{
     const options = {
         method: 'GET',
@@ -68,7 +72,7 @@
         </form>
       </div>
 
-      <button class="register-btn"><a href="#">Cadastrar cliente</a></button>
+      <button class="register-btn" @click="redirectToCadastrarCliente">Cadastrar cliente</button>
     </div>
   </div>
 
@@ -163,10 +167,6 @@
       border-radius: 5px;
       border-style: none;
       cursor: pointer;
-  }
-
-  .register-btn a {
-      text-decoration: none;
       color: #ffffff;
   }
 
