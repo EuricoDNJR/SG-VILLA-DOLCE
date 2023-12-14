@@ -4,17 +4,19 @@ import Menu from './components/Menu.vue'
 import Dashboard from './components/Dashboard.vue'
 import Clientes from './components/Clientes.vue'
 import ClientesInfo from './components/ClientesInfo.vue'
+import CadastrarCliente from './components/CadastrarCliente.vue'
+
 
 
 const routes = [
   { 
     path: '/', 
-    name: 'Login', 
+    name: 'login', 
     component: Login,
   },
   { 
     path: '/menu', 
-    name: 'Menu', 
+    name: 'menu', 
     component: Menu,
     children: [
       { 
@@ -31,6 +33,11 @@ const routes = [
         path: 'ver-cliente', 
         name: 'clientesInfo', 
         component: ClientesInfo,
+      },
+      { 
+        path: 'cadastrar-cliente', 
+        name: 'cadastrarCliente', 
+        component: CadastrarCliente,
       }
     ]
   },
