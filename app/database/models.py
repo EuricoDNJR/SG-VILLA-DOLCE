@@ -50,8 +50,12 @@ class Caixa(BaseModel):
     idCaixa = UUIDField(primary_key=True, default=uuid.uuid4)
     saldoInicial = DecimalField()
     dataAbertura = DateField()
-    dataFechamento = DateField(null=True)
+    horaAbertura = TimeField()
+    dataFechamento = DateTimeField(null=True)
     observacoes = TextField(null=True)
+    aberto = BooleanField(default=True)
+    somenteDinheiro = DecimalField()
+    saldoFinal = DecimalField(null=True)
 
     class Meta:
             table_name = "Caixa"

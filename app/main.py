@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database.dbmain import db
 from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque
-from .routers.v1 import cliente, usuario, produto, estoque
+from .routers.v1 import cliente, usuario, produto, estoque, caixa
 from contextlib import asynccontextmanager
 
 import logging
@@ -39,6 +39,7 @@ app.include_router(cliente.router, prefix="/v1/cliente", tags=["Cliente"])
 app.include_router(usuario.router, prefix="/v1/usuario", tags=["Usuario"])
 app.include_router(produto.router, prefix="/v1/produto", tags=["Produto"])
 app.include_router(estoque.router, prefix="/v1/estoque", tags=["Estoque"])
+app.include_router(caixa.router, prefix="/v1/caixa", tags=["Caixa"])
 
 @app.get("/")
 def read_root():
