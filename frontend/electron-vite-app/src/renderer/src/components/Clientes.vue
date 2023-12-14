@@ -12,6 +12,12 @@
   const searchText = ref('');
 
   const redirectToClienteInfo = (cliente) => {
+    for (let chave in cliente) {
+      if (cliente[chave] === null) {
+        cliente[chave] = "";
+      }
+    }
+
     clienteStore.saveClienteInfo({...cliente, pontos: 5});
 
     router.push("/menu/ver-cliente/");
