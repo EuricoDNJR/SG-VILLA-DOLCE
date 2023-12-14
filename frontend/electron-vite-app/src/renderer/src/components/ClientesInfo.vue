@@ -1,100 +1,193 @@
 <script setup>
 
-import { ref } from 'vue'
-import { useClienteStore } from '../store.js';
+import { reactive, ref } from 'vue'
+import { useAuthStore, useClienteStore } from '../store.js';
+import { useRouter } from 'vue-router';
 
+const authStore = useAuthStore();
+const router = useRouter();
 const clienteStore = useClienteStore();
 const nome = ref(clienteStore.getNome);
 const email = ref(clienteStore.getEmail);
 const telefone = ref(clienteStore.getTelefone);
 const cpf = ref(clienteStore.getCpf);
-const data_nascimento = ref(clienteStore.getDataNascimento);
+const dataNascimento = ref(clienteStore.getDataNascimento);
 const endereco = ref(clienteStore.getEndereco);
 const saldo = ref(clienteStore.getSaldo);
 const pontos = ref(clienteStore.getPontos);
+const editSaveBtnText = ref('Editar');
+const isEditable = ref(false);
+
+function getClienteInfoChange(){
+    let data = {};
+    
+    if(nome.value != clienteStore.getNome){
+        data.nome = nome.value ;
+    }
+    if(email.value != clienteStore.getEmail){
+        data.email = email.value;
+    }
+    if(telefone.value != clienteStore.getTelefone){
+        data.telefone = telefone.value ;
+    }
+    if(cpf.value != clienteStore.getCpf){
+        data.cpf = cpf.value ;
+    }
+    if(dataNascimento.value != clienteStore.getDataNascimento){
+        data.dataNascimento = dataNascimento.value;
+    }
+    if(endereco.value != clienteStore.getEndereco){
+        data.endereco = endereco.value;
+    }
+
+    return data;
+}
+
+function onlyValidateData(data){
+    return data;
+}
+
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
+}
+
+async function updateClienteInfo(){
+    const data = getClienteInfoChange();
+
+    if(!isEmpty(data)){
+        clienteStore.updateClienteInfo(data);
+        const validatedData = onlyValidateData(data);
+
+        const options = {
+            method: 'PATCH',
+            headers: {
+                'jwt-token': authStore.getToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(validatedData)
+        };
+
+        const response = await fetch(`http://127.0.0.1:8000/v1/cliente/update_cliente/${clienteStore.getIdCliente}/`, options);
+    }
+}
+
+function ToogleEditableClienteInfo(){
+    if(editSaveBtnText.value === "Editar"){
+        isEditable.value = true;
+        editSaveBtnText.value = "Salvar";
+    }else{
+        updateClienteInfo();
+        
+        isEditable.value = false;
+        editSaveBtnText.value = "Editar";
+    }
+}
+
+async function deleteCliente(){
+    const options = {
+        method: 'DELETE',
+        headers: {
+            'jwt-token': authStore.getToken,
+            'Content-Type': 'application/json'
+        }
+    };
+
+    const response = await fetch(`http://127.0.0.1:8000/v1/cliente/delete_cliente/${clienteStore.getIdCliente}/`, options);
+
+    if(response.status === 200){
+        router.push("/menu/clientes/");
+    }
+    
+}
+
+function deleteClienteConfirmation(){
+    if(window.confirm('Tem certeza que deseja prosseguir?')){
+        deleteCliente();
+    }
+}
 
 </script>
 
 <template>
    <div class="page-content">
+        <!-- <a href="#"><img src="assets/imgs/back-img.svg" alt=""></a> -->
 
-    <!-- <a href="#"><img src="assets/imgs/back-img.svg" alt=""></a> -->
-
-    <div id="cliente-info">
-        
-        <div class="toolbar">
-            <h1>Cliente</h1>
-
-            <div>
-                <button id="edit-btn"><a href="#">Editar</a></button>
-                <button id="delete-btn"><a href="#">Apagar</a></button>
-            </div>
-        </div>
-        
-        <hr>
-
-        <div class="info-field">
-            <label for="name">Nome:</label>
-            <p id="name">{{ nome }}</p>
-        </div>
-
-        <hr>
-
-        <div class="info-field">    
-            <label for="email">E-mail:</label>
-            <p id="email">{{ email }}</p>
-        </div>
-
-        <hr>
-
-        <div class="info-field">
-            <label for="phone">Telefone:</label>
-            <p id="phone">{{ telefone }}</p>
-        </div>
-
-        <hr>
-
-        <div class="info-field">
-            <label for="cpf">CPF:</label>
-            <p id="cpf">{{ cpf }}</p>
-        </div>
-
-        <hr>
-
-        <div class="info-field">
-            <label for="date_of_birth">Data de Nascimento:</label>
-            <p id="date_of_birth">{{ data_nascimento }}</p>
-        </div>
+        <div id="cliente-info">
             
-        <hr>
+            <div class="toolbar">
+                <h1>Cliente</h1>
 
-        <div class="info-field">
-            <label for="address">Endereço:</label>
-            <p id="address">{{ endereco }}</p>
-        </div>
-
-        <hr>
-
-        <div class="info-field">
-            <label for="credit">Saldo:</label>
-            <p id="credit">R$ {{ saldo.replace('.', ',') }}</p>
-        </div>
-
-        <hr>
-    </div>
-
-    <div class="card-field">
-        <div class="card">
-            <div class="card-top-area">
-                <h3 class="card-title">Villa Dolce Açai</h3>
-                <img src="../assets/clientes-info-imgs/selo-img.png" alt="card stamp">
+                <div>
+                    <button class="edit-btn" @click="ToogleEditableClienteInfo" :class="{saveBtn: isEditable}">{{ editSaveBtnText }}</button>
+                    <button class="delete-btn" @click="deleteClienteConfirmation">Apagar</button>
+                </div>
             </div>
-            <div class="card-main-area">
-                <p>Pontos:</p>
-                <span>{{ pontos }}</span>
+            
+            <hr>
+
+            <div class="info-field">
+                <label for="name">Nome:</label>
+                <input id="name" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="nome">
+            </div>
+
+            <hr>
+
+            <div class="info-field">    
+                <label for="email">E-mail:</label>
+                <input id="email" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="email">
+            </div>
+
+            <hr>
+
+            <div class="info-field">
+                <label for="phone">Telefone:</label>
+                <input id="phone" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="telefone">
+            </div>
+
+            <hr>
+
+            <div class="info-field">
+                <label for="cpf">CPF:</label>
+                <input id="cpf" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="cpf">
+            </div>
+
+            <hr>
+
+            <div class="info-field">
+                <label for="date_of_birth">Data de Nascimento:</label>
+                <input id="date_of_birth" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="dataNascimento">
+            </div>
+                
+            <hr>
+
+            <div class="info-field">
+                <label for="address">Endereço:</label>
+                <input id="address" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="endereco">
+            </div>
+
+            <hr>
+
+            <div class="info-field">
+                <label for="credit">Saldo:</label>
+                <p id="credit">R$ {{ saldo.replace('.', ',') }}</p>
+            </div>
+
+            <hr>
+        </div>
+
+        <div class="card-field">
+            <div class="card">
+                <div class="card-top-area">
+                    <h3 class="card-title">Villa Dolce Açai</h3>
+                    <img src="../assets/clientes-info-imgs/selo-img.png" alt="card stamp">
+                </div>
+                <div class="card-main-area">
+                    <p>Pontos:</p>
+                    <span>{{ pontos }}</span>
+                </div>
             </div>
         </div>
-    </div>
+        
     </div>
 </template>
 
@@ -117,7 +210,7 @@ const pontos = ref(clienteStore.getPontos);
         margin-bottom: 10px;
     }
 
-    #edit-btn {
+    .edit-btn {
         width: 100px;
         height: 40px;
         background: #16c09849;
@@ -127,9 +220,11 @@ const pontos = ref(clienteStore.getPontos);
         border-color: #119a7a;
         cursor: pointer;
         margin-right: 5px;
+        color: #119a7a;
+        font-weight: bold;
     }
 
-    #delete-btn {
+    .delete-btn {
         width: 100px;
         height: 40px;
         background: #df04044d;
@@ -138,18 +233,14 @@ const pontos = ref(clienteStore.getPontos);
         border-style: solid;
         border-color: #DF0404;
         cursor: pointer;
-    }
-
-    #edit-btn a {
-        text-decoration: none;
-        color: #119a7a;
-        font-weight: bold;
-    }
-
-    #delete-btn a {
-        text-decoration: none;
         color: #DF0404;
         font-weight: bold;
+    }
+
+    .saveBtn {
+        background-color: #267fec49;
+        border-color: #177cbf;
+        color: #177cbf;
     }
 
     .info-field {
@@ -162,20 +253,32 @@ const pontos = ref(clienteStore.getPontos);
         font-size: 20px;
     }
 
+    .info-field input {
+        display: block;
+        font-size: 20px;
+        margin-left: 10px;
+        border: none;
+        flex: 1;
+    }
+
     .info-field p {
         font-size: 20px;
         margin-left: 10px;
+    }
+
+    .editableItem{
+        background-color: rgb(237, 237, 237);
+        border: 1px solid black;
     }
 
     .card-field {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 10px;
+        margin: 10px 0px 10px 0px;
     }
 
     .card {
-        /* background: linear-gradient(166deg, #6940AA 45%, #ACC0FE 100%); */
         background: linear-gradient(264deg, rgba(65, 2, 165, 0.60) 26.97%, rgba(3, 23, 203, 0.60) 100%);
         width: 32vw;
         height: 33vh;
@@ -223,22 +326,5 @@ const pontos = ref(clienteStore.getPontos);
         font-size: 6rem;
         top: 0px;
     }
-
-
-/* 
-    .card-top-area {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .card-main-area {
-        display: flex;
-        text-align: center;
-    }
-
-    .card-main-area span {
-        margin-left: 55px;
-        font-size: 110px;
-    } */
 
 </style>
