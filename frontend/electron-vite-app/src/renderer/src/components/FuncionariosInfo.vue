@@ -13,6 +13,7 @@
     const dataNascimento = ref(funcionarioStore.getDataNascimento);
     const endereco = ref(funcionarioStore.getEndereco);
     const cargo = ref(funcionarioStore.getCargo);
+    const cargos = ["Colaborador", "Admin"];
     const editSaveBtnText = ref('Editar');
     const isEditable = ref(false);
 
@@ -173,7 +174,11 @@
             <div class="info-field">
                 <label for="cargo">Cargo:</label>
                 
-                <p id="cargo">{{ cargo }}</p>
+                <select id="cargo" :class="{ editableItem: isEditable }" v-model="cargo" :disabled="!isEditable">
+                    <option v-for="(cargo, index) in cargos" :key="index">
+                        {{ cargo }}
+                    </option>
+                </select>
             </div>
 
             <hr>
@@ -252,7 +257,7 @@
         flex: 1;
     }
 
-    .info-field p {
+    .info-field select {
         font-size: 20px;
         margin-left: 10px;
     }
