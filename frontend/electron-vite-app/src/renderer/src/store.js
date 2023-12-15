@@ -107,3 +107,70 @@ export const useClienteStore = defineStore('clienteData', {
     }
   }
 });
+
+export const useFuncionarioStore = defineStore('funcionarioData', {
+  id: 'funcionario',
+
+  state: () => ({
+      idUsuario: null,
+      nome: null,
+      email: null,
+      telefone: null,
+      cpf: null,
+      dataNascimento: null,
+      endereco: null,
+      cargo: null,
+  }),
+  
+  getters: {
+      getIdUsuario() {
+        return this.idUsuario;
+      },
+      getNome() {
+        return this.nome;
+      },
+      getEmail() {
+        return this.email;
+      },
+      getTelefone() {
+        return this.telefone;
+      },
+      getCpf() {
+        return this.cpf;
+          },
+      getDataNascimento() {
+        return this.dataNascimento;
+      },
+      getEndereco() {
+        return this.endereco;
+      },
+      getCargo() {
+        return this.cargo;
+      },
+  },
+  actions: {
+    saveFuncionarioInfo({idUsuario, nome, email, telefone, cpf, dataNascimento, endereco, cargo}){
+      this.idUsuario = idUsuario;
+      this.nome = nome;
+      this.email = email;
+      this.telefone = telefone;
+      this.cpf = cpf;
+      this.dataNascimento = dataNascimento.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
+      this.endereco = endereco;
+      this.cargo = cargo;
+    },
+    updateFuncionarioInfo(infos) {
+      Object.assign(this.$state, infos);
+    },
+    reset() {
+      this.idUsuario= null;
+      this.nome = null;
+      this. email = null;
+      this.telefone = null;
+      this.cpf = null;
+      this.dataNascimento = null;
+      this.endereco = null;
+      this.cargo = null;
+    }
+  }
+});
