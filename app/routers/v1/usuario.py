@@ -186,7 +186,7 @@ class UpdateUserRequest(BaseModel):
     cargo: Optional[str] = None
    
 @router.patch("/update_user/{idUsuario}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def update_user(idUser: str, 
+def update_user(idUsuario: str, 
                 data: UpdateUserRequest,
                 jwt_token: str = Header()):
     '''
@@ -214,7 +214,7 @@ def update_user(idUser: str,
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Updating user")
         update_user = crud.update_user(
-            uuid=idUser,
+            uuid=idUsuario,
             email=data.email,
             senha=data.senha,
             nome=data.nome,
@@ -236,7 +236,7 @@ def update_user(idUser: str,
             content={"message": "Erro ao atualizar usuário: " + str(e)})
     
 @router.delete("/delete_user/{idUsuario}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def delete_user(idUser: str, jwt_token: str = Header()):
+def delete_user(idUsuario: str, jwt_token: str = Header()):
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
@@ -245,7 +245,7 @@ def delete_user(idUser: str, jwt_token: str = Header()):
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Deleting user")
-        delete_user = crud.delete_user(idUser)
+        delete_user = crud.delete_user(idUsuario)
         if delete_user is None:
             logging.error("User not found")
             return Response(status_code=status.HTTP_204_NO_CONTENT)
