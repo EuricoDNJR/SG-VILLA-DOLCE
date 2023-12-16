@@ -16,6 +16,15 @@ def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMe
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
 
+def create_pagamento(valorTotal, valorRecebimento, valorDevolvido, tipoPagamento):
+    return models.Pagamento.create(valorTotal=valorTotal, valorRecebimento=valorRecebimento, valorDevolvido=valorDevolvido, tipoPagamento=tipoPagamento)
+
+def create_pedido(idCliente, idPagamento, idUsuario, idCaixa):
+    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa)
+
+def create_produto_pedido(idPedido, idProduto, quantidade):
+    return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade)
+    
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
     return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, somenteDinheiro = saldoInicial)
 
@@ -394,6 +403,24 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
             "quantidade": str(produto.quantidade)
         }
 
+    except DoesNotExist:
+        return None
+
+def update_balance_client(uuid, valor):
+    try:
+        cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
+        cliente.saldo += valor
+        cliente.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def update_quantity_product(uuid, quantidade):
+    try:
+        produto = models.Produto.get(models.Produto.idProduto == uuid)
+        produto.quantidade -= quantidade
+        produto.save()
+        return True
     except DoesNotExist:
         return None
 
