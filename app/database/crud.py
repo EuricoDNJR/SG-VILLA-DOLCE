@@ -167,6 +167,27 @@ def get_all_estoques_by_product(uuid):
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
+def get_pedido_by_id(idPedido):
+    try:
+        pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
+
+        return {
+            "idPedido": str(pedido.idPedido),
+            "idCliente": str(pedido.idCliente.idCliente),
+            "nomeCliente": pedido.idCliente.nome,
+            "idPagamento": str(pedido.idPagamento.idPagamento),
+            "valorTotal": str(pedido.idPagamento.valorTotal),
+            "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+            "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+            "tipoPagamento": pedido.idPagamento.tipoPagamento,
+            "idUsuario": str(pedido.idUsuario.idUsuario),
+            "nomeUsuario": pedido.idUsuario.nome,
+            "idCaixa": str(pedido.idCaixa.idCaixa),
+            "idProdutos": get_all_produtos_pedidos_by_id(idPedido)
+        }
+    except DoesNotExist:
+        return None
+
 def get_all_users():
     try:
         # Tenta buscar todos os usuários
@@ -332,27 +353,6 @@ def get_all_produtos_pedidos_by_id(idPedido):
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
-def get_pedido_by_id(idPedido):
-    try:
-        pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
-
-        return {
-            "idPedido": str(pedido.idPedido),
-            "idCliente": str(pedido.idCliente.idCliente),
-            "nomeCliente": pedido.idCliente.nome,
-            "idPagamento": str(pedido.idPagamento.idPagamento),
-            "valorTotal": str(pedido.idPagamento.valorTotal),
-            "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
-            "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
-            "tipoPagamento": pedido.idPagamento.tipoPagamento,
-            "idUsuario": str(pedido.idUsuario.idUsuario),
-            "nomeUsuario": pedido.idUsuario.nome,
-            "idCaixa": str(pedido.idCaixa.idCaixa),
-            "idProdutos": get_all_produtos_pedidos_by_id(idPedido)
-        }
-    except DoesNotExist:
-        return None
-
 def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
@@ -490,6 +490,15 @@ def update_balance_client(uuid, valor):
     except DoesNotExist:
         return None
 
+def update_balance_client_delete(idCliente, valorTotal):
+    try:
+        cliente = models.Cliente.get(models.Cliente.idCliente == idCliente)
+        cliente.saldo -= Decimal(str(valorTotal))
+        cliente.save()
+        return True
+    except DoesNotExist:
+        return None
+
 def update_quantity_product(uuid, quantidade):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
@@ -584,6 +593,48 @@ def delete_stock_registre(uuid):
         produto.quantidade -= estoque.quantidade
         produto.save()
         estoque.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
+
+def delete_replace_quantity_product(idPedido):
+    try:
+        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
+        if produtos_pedidos.exists():
+            for produto_pedido in produtos_pedidos:
+                produto = get_product_by_id(produto_pedido.idProduto.idProduto)
+                produto.quantidade += produto_pedido.quantidade
+                produto.save()
+            return True
+        else:
+            return None
+    except DoesNotExist:
+        return None
+
+def delete_produto_pedido(idPedido):
+    try:
+        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
+        if produtos_pedidos.exists():
+            for produto_pedido in produtos_pedidos:
+                produto_pedido.delete_instance()
+            return True
+        else:
+            return None
+    except DoesNotExist:
+        return None
+
+def delete_pagamento(idPagamento):
+    try:
+        pagamento = models.Pagamento.get(models.Pagamento.idPagamento == idPagamento)
+        pagamento.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
+
+def delete_pedido(idPedido):
+    try:
+        pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
+        pedido.delete_instance()
         return True
     except DoesNotExist:
         return None
