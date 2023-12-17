@@ -278,6 +278,36 @@ def get_all_estoques():
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
+def get_all_pedidos():
+    try:
+        # Tenta buscar todos os pedidos
+        pedidos = models.Pedido.select()
+
+        # Verifica se há pedidos
+        if pedidos.exists():
+            # Retorna a lista de pedidos se houver algum
+            return [
+                {
+                    "idPedido": str(pedido.idPedido),
+                    "idCliente": str(pedido.idCliente.idCliente),
+                    "nomeCliente": pedido.idCliente.nome,
+                    "idPagamento": str(pedido.idPagamento.idPagamento),
+                    "valorTotal": str(pedido.idPagamento.valorTotal),
+                    "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+                    "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+                    "tipoPagamento": pedido.idPagamento.tipoPagamento,
+                    "idUsuario": str(pedido.idUsuario.idUsuario),
+                    "nomeUsuario": pedido.idUsuario.nome,
+                    "idCaixa": str(pedido.idCaixa.idCaixa)
+                }
+                for pedido in pedidos
+            ]
+        else:
+            # Se não houver pedidos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
 def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
