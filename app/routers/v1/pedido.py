@@ -21,14 +21,12 @@ class PagamentoPedido(BaseModel):
     tipoPagamento: str
 
 class ProdutoPedido(BaseModel):
-    idPedido: str
     idProduto: str 
     quantidade: float
 
 class CreateOrderRequest(BaseModel):
     idCliente: str
     Pagamento: PagamentoPedido
-    idUsuario: str
     idCaixa: str
     idProdutos: List[ProdutoPedido]
 
@@ -37,6 +35,23 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     """
     Criação de pedido.
     exemplo de entrada:
+
+        {
+            "idCliente": "6ffe7706-4c87-4f3b-8ecb-b8c44b1c416b",
+            "Pagamento": {
+                "valorTotal": 10.00,
+                "valorRecebimento": 12.00,
+                "valorDevolvido": 2.00,
+                "tipoPagamento": "Dinheiro"
+            },
+            "idCaixa": "6bacd806-aeaa-4bc4-b1e3-a670596816c6",
+            "idProdutos": [
+                {
+                "idProduto": "d7bb1db7-6f65-4d7d-a1e0-270e9a306603",
+                "quantidade": 2
+                }
+            ]
+        }
     """
     
     logging.info("Getting user")
@@ -57,7 +72,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     pedido = crud.create_pedido(
         idCliente=data.idCliente,
         idPagamento=pagamento.idPagamento,
-        idUsuario=data.idUsuario,
+        idUsuario=jwt_token,
         idCaixa=data.idCaixa,
     )
     if pedido is None:
