@@ -138,10 +138,7 @@ def get_all_orders():
         logging.info("Getting all orders")
         pedidos = crud.get_all_pedidos()
         if pedidos is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao buscar pedidos"}
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Orders found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
     except Exception as e:
@@ -170,3 +167,86 @@ def get_order(idPedido: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar pedido: " + str(e)}
         )
+
+@router.delete("/delete_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def delete_order(idPedido: str, jwt_token: str = Header()):
+    """
+    Deleta um pedido.
+    """
+    logging.info("Deleting order")
+    logging.info("Deleting products of order {} by {}".format(idPedido, jwt_token))
+    logging.info("Getting order")
+    try:
+        pedido = crud.get_pedido_by_id(idPedido=idPedido)
+        if pedido is None:
+            logging.error("Order not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("Order found")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedido: " + str(e)}
+        )
+    try:
+        logging.info("Getting products of order and replacing quantity")
+        if crud.delete_replace_quantity_product(pedido["idPedido"]):
+            logging.info("Quantity of products replaced")
+        else:
+            logging.info("Quantity of products not replaced")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao recolocar produtos do pedido: " + str(e)}
+        )
+    try:
+        logging.info("Deleting products of order")
+        if crud.delete_produto_pedido(pedido["idPedido"]):
+            logging.info("Products of order deleted")
+        else:
+            logging.info("Products of order not deleted")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao deletar produtos do pedido: " + str(e)}
+        )
+    try:
+        logging.info("Updating balance of client")
+        if crud.update_balance_client_delete(idCliente=pedido["idCliente"], valorTotal=pedido["valorTotal"]):
+            logging.info("Balance of client updated")
+        else:
+            logging.info("Balance of client not updated")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao atualizar saldo do cliente: " + str(e)}
+        )
+    try:
+        logging.info("Deleting order")
+        if crud.delete_pedido(pedido["idPedido"]):
+            logging.info("Order deleted")
+        else:
+            logging.info("Order not deleted")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro deletar pedido: " + str(e)}
+        )
+    try:
+        logging.info("Deleting payment of order")
+        if crud.delete_pagamento(pedido["idPagamento"]):
+            logging.info("Payment of order deleted")
+        else:
+            logging.info("Payment of order not deleted")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao deletar pagamento do pedido: " + str(e)}
+        )
+    logging.info("Order deleted successfully")
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido deletado com sucesso"})
