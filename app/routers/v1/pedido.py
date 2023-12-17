@@ -37,18 +37,22 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     exemplo de entrada:
 
         {
-            "idCliente": "6ffe7706-4c87-4f3b-8ecb-b8c44b1c416b",
+            "idCliente": "ea68b806-ff49-4604-b52a-89c0db6da721",
             "Pagamento": {
                 "valorTotal": 10.00,
                 "valorRecebimento": 12.00,
                 "valorDevolvido": 2.00,
                 "tipoPagamento": "Dinheiro"
             },
-            "idCaixa": "6bacd806-aeaa-4bc4-b1e3-a670596816c6",
+            "idCaixa": "852cb8c5-9a79-41a7-8fe2-356f9c2748b0",
             "idProdutos": [
                 {
-                "idProduto": "d7bb1db7-6f65-4d7d-a1e0-270e9a306603",
+                "idProduto": "d05ecaa4-96d1-4a10-ae81-223ac683affa",
                 "quantidade": 2
+                },
+                {
+                "idProduto": "51889c6b-4b30-4fa6-969c-eea8bb786ba0",
+                "quantidade": 0.300
                 }
             ]
         }
