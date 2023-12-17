@@ -308,6 +308,51 @@ def get_all_pedidos():
     except DoesNotExist:
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
+
+def get_all_produtos_pedidos_by_id(idPedido):
+    try:
+        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
+
+        # Verifica se há produtos_pedidos
+        if produtos_pedidos.exists():
+            # Retorna a lista de produtos_pedidos se houver algum
+            return [
+                {
+                    "idProdutoPedido": str(produto_pedido.idProdutoPedido),
+                    "idProduto": str(produto_pedido.idProduto.idProduto),
+                    "nome": produto_pedido.idProduto.nome,
+                    "quantidade": str(produto_pedido.quantidade)
+                }
+                for produto_pedido in produtos_pedidos
+            ]
+        else:
+            # Se não houver produtos_pedidos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
+def get_pedido_by_id(idPedido):
+    try:
+        pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
+
+        return {
+            "idPedido": str(pedido.idPedido),
+            "idCliente": str(pedido.idCliente.idCliente),
+            "nomeCliente": pedido.idCliente.nome,
+            "idPagamento": str(pedido.idPagamento.idPagamento),
+            "valorTotal": str(pedido.idPagamento.valorTotal),
+            "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+            "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+            "tipoPagamento": pedido.idPagamento.tipoPagamento,
+            "idUsuario": str(pedido.idUsuario.idUsuario),
+            "nomeUsuario": pedido.idUsuario.nome,
+            "idCaixa": str(pedido.idCaixa.idCaixa),
+            "idProdutos": get_all_produtos_pedidos_by_id(idPedido)
+        }
+    except DoesNotExist:
+        return None
+
 def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
