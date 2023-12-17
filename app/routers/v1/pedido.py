@@ -150,3 +150,23 @@ def get_all_orders():
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar pedidos: " + str(e)}
         )
+
+@router.get("/get_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_order(idPedido: str):
+    """
+    Retorna um pedido.
+    """
+    try:
+        logging.info("Getting order")
+        pedido = crud.get_pedido_by_id(idPedido=idPedido)
+        if pedido is None:
+            logging.error("Order not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("Order found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=pedido)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedido: " + str(e)}
+        )
