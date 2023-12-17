@@ -68,7 +68,7 @@ class Produto(BaseModel):
     valorCusto = DecimalField()
     valorVenda = DecimalField()
     unidadeMedida = CharField()
-    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
 
     class Meta:
         table_name = "Produto"
@@ -76,7 +76,7 @@ class Produto(BaseModel):
 class Estoque(BaseModel):
     idEstoque = UUIDField(primary_key=True, default=uuid.uuid4)
     idProduto = ForeignKeyField(Produto, backref='estoque')
-    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0)
+    quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
     dataEntrada = DateField()
     dataVencimento = DateField(null=True)
     observacoes = TextField(null=True)
