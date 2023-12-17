@@ -129,4 +129,24 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     logging.info("Order created successfully")
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(pedido.idPedido), "message": "Pedido criado com sucesso"})
 
-
+@router.get("/get_all_orders/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_orders():
+    """
+    Retorna todos os pedidos.
+    """
+    try:
+        logging.info("Getting all orders")
+        pedidos = crud.get_all_pedidos()
+        if pedidos is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao buscar pedidos"}
+            )
+        logging.info("Orders found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedidos: " + str(e)}
+        )
