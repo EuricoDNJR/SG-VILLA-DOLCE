@@ -49,37 +49,38 @@
   }
 
   async function requestLogin(data){   
-      let userData;
+      let userData = null;
 
       loaderIsVisible.value = true;
-
-      const options = {
+      
+      try {
+        const options = {
           method: "POST",
           headers: {
               "Content-Type": "application/json"
           },
           body: JSON.stringify(data)
-      };
+        };
 
-      const response = await fetch("http://127.0.0.1:8000/v1/usuario/login/", options);
-      const responseJson = await response.json();
+        const response = await fetch("http://127.0.0.1:8000/v1/usuario/login/", options);
+        const responseJson = await response.json();
+
+        if(!response.ok){
+          printErrorMessage(responseJson.message);
+        }else{
+            printLoginSuccessfulMessage();
+            
+            userData = {
+                token: responseJson.token,
+                nome: responseJson.nome,
+                cargo: responseJson.cargo
+            };
+        }
+      } catch (error) {
+        printErrorMessage("Erro inesperado, tente novamente");
+      }
 
       loaderIsVisible.value = false;
-
-
-      if(!response.ok){
-          printErrorMessage(responseJson.message);
-
-          userData = null;
-      }else{
-          printLoginSuccessfulMessage();
-          
-          userData = {
-              token: responseJson.token,
-              nome: responseJson.nome,
-              cargo: responseJson.cargo
-          };
-      }
 
       return userData;
   }
