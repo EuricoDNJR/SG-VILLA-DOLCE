@@ -54,8 +54,8 @@ class Caixa(BaseModel):
     dataFechamento = DateTimeField(null=True)
     observacoes = TextField(null=True)
     aberto = BooleanField(default=True)
-    somenteDinheiro = DecimalField()
-    saldoFinal = DecimalField(null=True)
+    somenteDinheiro = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    saldoFinal = DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
     class Meta:
             table_name = "Caixa"
