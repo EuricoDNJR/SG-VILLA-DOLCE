@@ -26,7 +26,8 @@ def create_produto_pedido(idPedido, idProduto, quantidade):
     return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade)
     
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
-    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, somenteDinheiro = saldoInicial)
+    #return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, somenteDinheiro = saldoInicial)
+    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes)
 
 def close_caixa(uuid, dataFechamento):
     try:
@@ -559,6 +560,19 @@ def update_stock(idEstoque, idProduto, quantidade=None, dataEntrada=None, dataVe
 
     except DoesNotExist:
         return None
+
+def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
+    try:
+        caixa = models.Caixa.get(models.Caixa.idCaixa == idCaixa)
+        caixa.saldoFinal += Decimal(str(valorTotal))
+        caixa.save()
+        if tipoPagamento == 'Dinheiro':
+            caixa.somenteDinheiro += Decimal(str(valorTotal))
+            caixa.save()
+        return True
+    except DoesNotExist:
+        return None
+
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
