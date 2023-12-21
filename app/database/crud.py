@@ -699,6 +699,14 @@ def delete_pedido(idPedido):
         return True
     except DoesNotExist:
         return None
+
+def delete_cargo(uuid):
+    try:
+        cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
+        cargo.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
     
 def update_stock_product(uuid, quantidade):
     try:
