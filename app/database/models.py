@@ -102,3 +102,10 @@ class ProdutoPedido(BaseModel):
 
     class Meta:
         table_name = "ProdutoPedido"
+
+class Cargo(BaseModel):
+    idCargo = UUIDField(primary_key=True, default=uuid.uuid4)
+    nome = CharField(unique=True)
+
+    class Meta:
+        table_name = "Cargo"
