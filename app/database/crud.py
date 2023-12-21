@@ -191,6 +191,14 @@ def get_pedido_by_id(idPedido):
     except DoesNotExist:
         return None
 
+def get_cargo_by_id(uuid):
+    try:
+        cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
+
+        return cargo
+    except DoesNotExist:
+        return None
+
 def get_all_users():
     try:
         # Tenta buscar todos os usuários
