@@ -510,6 +510,25 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
     except DoesNotExist:
         return None
 
+def update_cargo(uuid, nome=None):
+    try:
+        cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
+        if cargo is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if nome is not None:
+            cargo.nome = nome
+
+        cargo.save()
+
+        return {
+            "idCargo": str(cargo.idCargo),
+            "nome": cargo.nome
+        }
+
+    except DoesNotExist:
+        return None
+
 def update_balance_client(uuid, valor):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
