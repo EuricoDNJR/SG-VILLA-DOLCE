@@ -33,3 +33,14 @@ def get_role(idCargo: str):
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar o cargo"})
+    
+@router.get("/get_all_roles", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_roles():
+    try:
+        cargos = crud.get_all_cargos()
+        if cargos is None:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        return JSONResponse(status_code=status.HTTP_200_OK, content=cargos)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar os cargos"})
