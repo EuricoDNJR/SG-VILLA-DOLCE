@@ -44,3 +44,17 @@ def get_all_roles():
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar os cargos"})
+
+class UpdateRoleRequest(BaseModel):
+    nome: Optional[str] = None    
+@router.patch("/update_role/{idCargo}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def update_role(idCargo: str, data: UpdateRoleRequest):
+    try:
+        update_cargo = crud.update_cargo(idCargo, data.nome)
+        if update_cargo:
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Cargo atualizado com sucesso"})
+        else:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o cargo"})
