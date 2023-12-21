@@ -54,8 +54,8 @@ class Caixa(BaseModel):
     dataFechamento = DateTimeField(null=True)
     observacoes = TextField(null=True)
     aberto = BooleanField(default=True)
-    somenteDinheiro = DecimalField()
-    saldoFinal = DecimalField(null=True)
+    somenteDinheiro = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    saldoFinal = DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
     class Meta:
             table_name = "Caixa"
@@ -68,7 +68,7 @@ class Produto(BaseModel):
     valorCusto = DecimalField()
     valorVenda = DecimalField()
     unidadeMedida = CharField()
-    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
 
     class Meta:
         table_name = "Produto"
@@ -76,7 +76,7 @@ class Produto(BaseModel):
 class Estoque(BaseModel):
     idEstoque = UUIDField(primary_key=True, default=uuid.uuid4)
     idProduto = ForeignKeyField(Produto, backref='estoque')
-    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0)
+    quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
     dataEntrada = DateField()
     dataVencimento = DateField(null=True)
     observacoes = TextField(null=True)
@@ -89,8 +89,16 @@ class Pedido(BaseModel):
     idCliente = ForeignKeyField(Cliente, backref='pedido')
     idPagamento = ForeignKeyField(Pagamento, backref='pedido')
     idUsuario = ForeignKeyField(Usuario, backref='pedido')
-    idProduto = ForeignKeyField(Produto, backref='pedido')
     idCaixa = ForeignKeyField(Caixa, backref='pedido')
 
     class Meta:
         table_name = "Pedido"
+
+class ProdutoPedido(BaseModel):
+    idProdutoPedido = UUIDField(primary_key=True, default=uuid.uuid4)
+    idPedido = ForeignKeyField(Pedido, backref='produtos_pedidos')
+    idProduto = ForeignKeyField(Produto, backref='produtos_pedidos')
+    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+
+    class Meta:
+        table_name = "ProdutoPedido"

@@ -30,8 +30,8 @@ def create_stock_registre(data:CreateStockRegistreRequest, jwt_token: str = Head
         {
             "idProduto": "168d9d25-6ce7-4904-8f42-cbdeee98163d",
             "quantidade": 5,
-            "dataEntrada": "11/10/2023",
-            "dataVencimento": "12/12/2023",
+            "dataEntrada": "2023-10-01",
+            "dataVencimento": "2024-06-01",
             "observacoes": "Mercadoria adquirida por meio de brinde"
         }
     """
