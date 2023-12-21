@@ -24,6 +24,9 @@ def create_pedido(idCliente, idPagamento, idUsuario, idCaixa):
 
 def create_produto_pedido(idPedido, idProduto, quantidade):
     return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade)
+
+def create_cargo(nome):
+    return models.Cargo.create(nome=nome)
     
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
     return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes)
