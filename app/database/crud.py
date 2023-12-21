@@ -26,7 +26,6 @@ def create_produto_pedido(idPedido, idProduto, quantidade):
     return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade)
     
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
-    #return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, somenteDinheiro = saldoInicial)
     return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes)
 
 def close_caixa(uuid, dataFechamento):
