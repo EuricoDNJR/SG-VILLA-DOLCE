@@ -5,15 +5,27 @@
     const caixaStatus = ref('fechado');
     const caixaAction = ref('Abrir');
     const somenteDinheiro = ref("0.00");
-    const saldoTotal = ref(5.2);
+    const saldoTotal = ref("0.00");
 
-    function toogleCaixaStatus(){
-        if(caixaStatus.value === 'fechado'){
-            caixaStatus.value = 'aberto';
-            caixaAction.value = 'Fechar';
+    function caixaIsOpen(){
+        return caixaStatus.value === 'aberto';
+    }
+
+    function openCaixa(){
+        caixaStatus.value = 'aberto';
+        caixaAction.value = 'Fechar';
+    }
+
+    function closeCaixa(){
+        caixaStatus.value = 'fechado';
+        caixaAction.value = 'Abrir';
+    }
+
+    function toggleCaixaStatus(){
+        if(caixaIsOpen()){
+            closeCaixa();
         }else{
-            caixaStatus.value = 'fechado';
-            caixaAction.value = 'Abrir';
+            openCaixa();
         }
     }
 
@@ -22,7 +34,7 @@
 <template>
    <div class="page-content">
         <section class="main-content">
-            <form @submit.prevent="toogleCaixaStatus">
+            <form @submit.prevent="toggleCaixaStatus">
                 <div>
                     <h1 :class="{caixaAberto: caixaStatus === 'aberto'}" id="caixa-status">Caixa {{ caixaStatus }}</h1>
                     
