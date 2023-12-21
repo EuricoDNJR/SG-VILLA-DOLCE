@@ -58,3 +58,15 @@ def update_role(idCargo: str, data: UpdateRoleRequest):
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o cargo"})
+    
+@router.delete("/delete_role/{idCargo}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def delete_role(idCargo: str):
+    try:
+        delete_cargo = crud.delete_cargo(idCargo)
+        if delete_cargo:
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Cargo deletado com sucesso"})
+        else:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao deletar o cargo"})
