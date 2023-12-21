@@ -24,3 +24,12 @@ def create_role(data: CreateRoleRequest):
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao criar o cargo"})
+
+@router.get("/get_role/{idCargo}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_role(idCargo: str):
+    try:
+        cargo = crud.get_cargo_by_id(idCargo)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"uuid": str(cargo.idCargo), "Nome": cargo.nome})
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar o cargo"})
