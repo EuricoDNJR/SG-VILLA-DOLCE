@@ -1,15 +1,12 @@
 <script setup>
 
-    import { ref } from 'vue';
+    import { ref, computed } from 'vue';
 
     const caixaStatus = ref('fechado');
     const caixaAction = ref('Abrir');
     const somenteDinheiro = ref("0.00");
     const saldoTotal = ref("0.00");
-
-    function caixaIsOpen(){
-        return caixaStatus.value === 'aberto';
-    }
+    const caixaIsOpen = computed(() => caixaStatus.value === 'aberto');
 
     function openCaixa(){
         caixaStatus.value = 'aberto';
@@ -22,7 +19,7 @@
     }
 
     function toggleCaixaStatus(){
-        if(caixaIsOpen()){
+        if(caixaIsOpen.value){
             closeCaixa();
         }else{
             openCaixa();
@@ -53,7 +50,7 @@
                 <button id="caixa-btn">{{ caixaAction }} caixa</button>
             </form>
 
-            <div class="caixa-list">
+            <div v-show="caixaIsOpen" class="caixa-list">
                 <div class="responsive-table">
                     <table>
                         <thead>
