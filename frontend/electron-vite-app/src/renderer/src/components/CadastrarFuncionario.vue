@@ -1,11 +1,11 @@
 <script setup>
-import {ref } from 'vue'
-import { useAuthStore} from '../store.js';
-// import { useRouter } from 'vue-router';
+import { ref } from 'vue'
+import { useAuthStore, useCargosStore, useSnackbarStore } from '../utils/store';
+import { fetchPost } from '../utils/common';
 
 const authStore = useAuthStore();
-// const router = useRouter();
-// const clienteStore = useClienteStore();
+const cargoStore = useCargosStore();
+const snackbarStore = useSnackbarStore();
 const nome = ref('');
 const senha = ref('');
 const telefone = ref('');
@@ -13,7 +13,7 @@ const email = ref('');
 const cpf = ref('');
 const dataNascimento = ref('');
 const endereco = ref('');
-const cargos = ["Colaborador", "Admin"];
+const cargos = cargoStore.getCargos;
 const cargo = ref(cargos[0]);
 
 function createColaborador(){
@@ -32,19 +32,22 @@ function createColaborador(){
 }
 
 async function requestRegisterColaborador(){
-    const colaborador = createColaborador();
+    try{
+        const colaborador = createColaborador();
+        const url ="http://127.0.0.1:8000/v1/usuario/create_user/";
+        const body = colaborador;
+        const token = authStore.getToken;
 
-    if(colaborador){
-        const options = {
-            method: 'POST',
-            headers: {
-                'jwt-token': authStore.getToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(colaborador)
-        };
+        const response = await fetchPost(url, body, token);
 
-        const response = await fetch("http://127.0.0.1:8000/v1/usuario/create_user/", options);
+        if(response.status === 201){
+            snackbarStore.snackbar("Colaborador cadastrado com sucesso", 'green');
+        }else{
+            snackbarStore.snackbar("Falha ao cadastrar colaborador", 'red');
+        }
+    }catch(e){
+        snackbarStore.snackbar("Falha ao cadastrar colaborador", 'red');
+        console.log(e);
     }
 }
 

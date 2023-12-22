@@ -1,25 +1,19 @@
 <script setup>
   import { ref, reactive, onMounted } from 'vue'
   import { useRouter } from 'vue-router';
-  import { useAuthStore, useClienteStore } from '../store.js';
+  import { useAuthStore, useClienteStore, useSnackbarStore } from '../utils/store';
+  import { fetchGet, replaceNullToEmptyString } from '../utils/common';
 
   const router = useRouter();
   const authStore = useAuthStore();
   const clienteStore = useClienteStore();
+  const snackbarStore = useSnackbarStore();
   let clientes = [];
   let clientesFiltered = [];
   const loading = ref(true);
   const searchText = ref('');
 
-  const redirectToClienteInfo = (cliente) => {
-    for (let chave in cliente) {
-      if (cliente[chave] === null) {
-        cliente[chave] = "";
-      }
-    }
-
-    clienteStore.saveClienteInfo({...cliente, pontos: Math.floor(cliente.saldo/15)});
-
+  const redirectToClienteInfo = () => {
     router.push("/menu/ver-cliente/");
   }
 
@@ -27,34 +21,44 @@
     router.push("/menu/cadastrar-cliente/");
   }
 
+  const handleClienteInfoAndRedirect = (cliente) => {
+    replaceNullToEmptyString(cliente);
+
+    clienteStore.saveClienteInfo({...cliente, pontos: Math.floor(cliente.saldo/15)});
+
+    redirectToClienteInfo();
+  }
+
   const requestAllClientes = async () =>{
-    const options = {
-        method: 'GET',
-        headers: {
-            'jwt-token': authStore.getToken,
-            'Content-Type': 'application/json'
-        }
-    };
-    console.log(authStore.getToken);
+    try{
+      const url = "http://127.0.0.1:8000/v1/cliente/get_all_clients/";
+      const token = authStore.getToken;
+      
+      const response = await fetchGet(url, token);
 
-    const response = await fetch("http://127.0.0.1:8000/v1/cliente/get_all_clients/", options);
+      if(response.status === 200){
+        clientes = await response.json();
 
-    if(response.ok && response.status !== 204){
-      clientes = await response.json();
-
-      // ORDEM ALFABÉTICA POR NOME
-      clientes = clientes.sort((clienteA, clienteB) => clienteA.nome.localeCompare(clienteB.nome));
-      clientesFiltered = [...clientes];
+        // ORDEM ALFABÉTICA POR NOME
+        clientes = clientes.sort((clienteA, clienteB) => clienteA.nome.localeCompare(clienteB.nome));
+        clientesFiltered = [...clientes];
+      }else{
+        snackbarStore.snackbar("Falha ao carregar clientes", 'red');
+      }
+    }catch(e){
+      console.log(e);
+      snackbarStore.snackbar("Falha ao carregar clientes", 'red');
     }
    
     loading.value = false;
   }
 
   const searchCliente = () => {
-    clientesFiltered = clientes.filter((cliente) => cliente.nome.toLowerCase().includes(searchText.value.toLowerCase()));
-  
     // Recarregando tabela para atualizar os clientes
     loading.value = true;
+
+    clientesFiltered = clientes.filter((cliente) => cliente.nome.toLowerCase().includes(searchText.value.toLowerCase()));
+  
     loading.value = false;
   }
 
@@ -98,7 +102,7 @@
           <td>{{ cliente.telefone }}</td>
           <td>{{ cliente.email }}</td>
           <td>             
-            <button class="view-profile-btn" @click="redirectToClienteInfo(cliente)">Ver</button>          
+            <button class="view-profile-btn" @click="handleClienteInfoAndRedirect(cliente)">Ver</button>          
           </td>
         </tr>
       </tbody>

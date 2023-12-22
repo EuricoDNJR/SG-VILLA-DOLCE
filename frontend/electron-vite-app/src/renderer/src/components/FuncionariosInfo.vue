@@ -1,11 +1,14 @@
 <script setup>
-    import { reactive, ref } from 'vue'
-    import { useAuthStore, useFuncionarioStore } from '../store.js';
+    import { ref } from 'vue'
+    import { useAuthStore, useFuncionarioStore, useCargosStore, useSnackbarStore } from '../utils/store';
+    import { fetchPatch, fetchDelete, isEmptyObject } from '../utils/common';
     import { useRouter } from 'vue-router';
 
     const authStore = useAuthStore();
+    const cargoStore = useCargosStore();
     const router = useRouter();
     const funcionarioStore = useFuncionarioStore();
+    const snackbarStore = useSnackbarStore()
     const nome = ref(funcionarioStore.getNome);
     const email = ref(funcionarioStore.getEmail);
     const telefone = ref(funcionarioStore.getTelefone);
@@ -13,57 +16,77 @@
     const dataNascimento = ref(funcionarioStore.getDataNascimento);
     const endereco = ref(funcionarioStore.getEndereco);
     const cargo = ref(funcionarioStore.getCargo);
-    const cargos = ["Colaborador", "Admin"];
     const editSaveBtnText = ref('Editar');
     const isEditable = ref(false);
+    const cargos = cargoStore.getCargos;
+
 
     async function updateFuncionarioInfo(rotaAPI){
         const data = getFuncionarioInfoChange(funcionarioStore);
 
-        if(!isEmpty(data)){
-            funcionarioStore.updateFuncionarioInfo(data);
-            const validatedData = onlyValidateData(data);
+        if(!isEmptyObject(data)){
+            try{
+                funcionarioStore.updateFuncionarioInfo(data);
+            
+                const url = `http://127.0.0.1:8000/v1/${rotaAPI}/`;
+                const body = data;
+                const token = authStore.getToken;
 
-            const options = {
-                method: 'PATCH',
-                headers: {
-                    'jwt-token': authStore.getToken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(validatedData)
-            };
+                const response = await fetchPatch(url, body, token);
 
-            const response = await fetch(`http://127.0.0.1:8000/v1/${rotaAPI}/`, options);
+                if(response.status === 200){
+                    snackbarStore.snackbar("As informações do colaborador foram atualizadas com sucesso", 'green');
+                }else{
+                    snackbarStore.snackbar("Falha ao atualizar informações do colaborador", 'red');
+                }
+            }catch(e){
+                console.log(e);
+                snackbarStore.snackbar("Falha ao atualizar informações do colaborador", 'red');
+            }
         }
     }
 
+    function isEditarbtn(){
+        return editSaveBtnText.value === "Editar"
+    }
+
+    function setSalvarBtn(){
+        isEditable.value = true;
+        editSaveBtnText.value = "Salvar";
+    }
+
+    function setEditarBtn(){
+        isEditable.value = false;
+        editSaveBtnText.value = "Editar";
+    }   
+
     function ToogleEditableInfo(){
-        if(editSaveBtnText.value === "Editar"){
-            isEditable.value = true;
-            editSaveBtnText.value = "Salvar";
+        if(isEditarbtn()){
+            setSalvarBtn();
         }else{
             updateFuncionarioInfo(`usuario/update_user/${funcionarioStore.getIdUsuario}`);
             
-            isEditable.value = false;
-            editSaveBtnText.value = "Editar";
+            setEditarBtn()
         }
     }
 
     async function deleteRequest(rotaAPI, rotaPAGE){
-        const options = {
-            method: 'DELETE',
-            headers: {
-                'jwt-token': authStore.getToken,
-                'Content-Type': 'application/json'
+        try{
+            const url = `http://127.0.0.1:8000/v1/${rotaAPI}/`;
+            const token = authStore.getToken;
+
+            const response = await fetchDelete(url, token);
+
+            if(response.status === 200){
+                snackbarStore.snackbar("Colaborador deletado com sucesso", 'green');
+                router.push(rotaPAGE);
+            }else{
+                snackbarStore.snackbar("Falha ao deletar colaborador", 'red');
             }
-        };
-
-        const response = await fetch(`http://127.0.0.1:8000/v1/${rotaAPI}/`, options);
-
-        if(response.status === 200){
-            router.push(rotaPAGE);
+        }catch(e){
+            console.log(e);
+            snackbarStore.snackbar("Falha ao deletar colaborador", 'red');
         }
-        
     }
 
     function deleteFuncionarioConfirmation(){
@@ -101,15 +124,6 @@
         return data;
     }
 
-    function onlyValidateData(data){
-        return data;
-    }
-
-    function isEmpty(obj) {
-        return Object.keys(obj).length === 0;
-    }
-
-   
 </script>
 
 <template>
@@ -174,7 +188,7 @@
             <div class="info-field">
                 <label for="cargo">Cargo:</label>
                 
-                <select id="cargo" :class="{ editableItem: isEditable }" v-model="cargo" :disabled="!isEditable">
+                <select  id="cargo" :class="{ editableItem: isEditable }" v-model="cargo" :disabled="!isEditable">
                     <option v-for="(cargo, index) in cargos" :key="index">
                         {{ cargo }}
                     </option>
@@ -183,7 +197,6 @@
 
             <hr>
         </div>
-        
     </div>
 </template>
 

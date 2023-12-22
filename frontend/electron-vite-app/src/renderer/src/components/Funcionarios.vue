@@ -1,21 +1,24 @@
 <script setup>
   import { ref, reactive, onMounted } from 'vue'
   import { useRouter } from 'vue-router';
-  import { useAuthStore, useFuncionarioStore } from '../store.js';
+  import { useAuthStore, useFuncionarioStore, useSnackbarStore } from '../utils/store';
+  import { fetchGet, replaceNullToEmptyString } from '../utils/common';
 
   const router = useRouter();
   const authStore = useAuthStore();
   const funcionarioStore = useFuncionarioStore();
+  const snackbarStore = useSnackbarStore();
   let funcionarios = [];
   let funcionariosFiltered = [];
   const loading = ref(true);
   const searchText = ref('');
 
   const searchFuncionario = () => {
-    funcionariosFiltered = funcionarios.filter((funcionario) => funcionario.nome.toLowerCase().includes(searchText.value.toLowerCase()));
-  
     // Recarregando a tabela para atualizar os clientes
     loading.value = true;
+
+    funcionariosFiltered = funcionarios.filter((funcionario) => funcionario.nome.toLowerCase().includes(searchText.value.toLowerCase()));
+   
     loading.value = false;
   }
 
@@ -23,35 +26,37 @@
     router.push("/menu/cadastrar-funcionario/");
   }
 
-  const redirectToFuncionarioInfo = (funcionario) => {
-    for (let chave in funcionario) {
-      if (funcionario[chave] === null) {
-        funcionario[chave] = "";
-      }
-    }
-    console.log(funcionario);
-    funcionarioStore.saveFuncionarioInfo({...funcionario});
-
+  const redirectToFuncionarioInfo = () => {
     router.push("/menu/ver-funcionario/");
   }
 
+  const handleColaboradorInfoAndRedirect = (funcionario) => {
+    replaceNullToEmptyString(funcionario);
+
+    funcionarioStore.saveFuncionarioInfo({...funcionario});
+
+    redirectToFuncionarioInfo();
+  }
+
   const requestAllFuncionarios = async () =>{
-    const options = {
-        method: 'GET',
-        headers: {
-            'jwt-token': authStore.getToken,
-            'Content-Type': 'application/json'
-        }
-    };
+    try{
+      const url = "http://127.0.0.1:8000/v1/usuario/get_all_users/";
+      const token = authStore.getToken;
+      
+      const response = await fetchGet(url, token);
 
-    const response = await fetch("http://127.0.0.1:8000/v1/usuario/get_all_users/", options);
+      if(response.status === 200){
+        funcionarios = await response.json();
 
-    if(response.status === 200){
-      funcionarios = await response.json();
-
-      // ORDEM ALFABÉTICA POR NOME
-      funcionarios = funcionarios.sort((funcionarioA, funcionarioB) => funcionarioA.nome.localeCompare(funcionarioB.nome));
-      funcionariosFiltered = [...funcionarios];
+        // ORDEM ALFABÉTICA POR NOME
+        funcionarios = funcionarios.sort((funcionarioA, funcionarioB) => funcionarioA.nome.localeCompare(funcionarioB.nome));
+        funcionariosFiltered = [...funcionarios];
+      }else{
+        snackbarStore.snackbar("Falha ao carregar colaboradores", 'red');
+      }
+    }catch(e){
+      console.log(e);
+      snackbarStore.snackbar("Falha ao carregar colaboradores", 'red');
     }
    
     loading.value = false;
@@ -97,7 +102,7 @@
               <td>{{ funcionario.telefone }}</td>
               <td>{{ funcionario.email }}</td>
               <td>             
-                <button class="view-profile-btn" @click="redirectToFuncionarioInfo(funcionario)">Ver</button>          
+                <button class="view-profile-btn" @click="handleColaboradorInfoAndRedirect(funcionario)">Ver</button>          
               </td>
             </tr>
           </tbody>
