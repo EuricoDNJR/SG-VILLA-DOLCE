@@ -1,7 +1,8 @@
 <script setup>
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../store.js';
+  import { useAuthStore, useCargosStore } from '../utils/store';
+  import { getAllRolesArray, fetchPost } from '../utils/common'
   
   const router = useRouter();
   const cellphone = ref('');
@@ -12,7 +13,8 @@
   const passwordFieldType = ref("password");
   const showHideBtnText = ref('Mostrar');
   const backgroundColorVariable = ref('');
-  const authStore = useAuthStore()
+  const authStore = useAuthStore();
+  const cargoStore = useCargosStore();
 
   function getDadosLoginForm() {
     return {
@@ -33,14 +35,14 @@
     messageIsVisible.value = false;
   }
 
-  function printMessage(msg,){
+  function printMessage(msg){
       message.value = msg;
       messageIsVisible.value = true;
   }
 
   function printErrorMessage(msg){
     backgroundColorVariable.value = "#ff3333";
-    printMessage("*" + msg);
+    printMessage(msg);
   }
 
   function printLoginSuccessfulMessage(){
@@ -54,15 +56,7 @@
       loaderIsVisible.value = true;
       
       try {
-        const options = {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        };
-
-        const response = await fetch("http://127.0.0.1:8000/v1/usuario/login/", options);
+        const response = await fetchPost("http://127.0.0.1:8000/v1/usuario/login/", data);
         const responseJson = await response.json();
 
         if(!response.ok){
@@ -75,8 +69,10 @@
                 nome: responseJson.nome,
                 cargo: responseJson.cargo
             };
+
         }
       } catch (error) {
+        console.log(error);
         printErrorMessage("Erro inesperado, tente novamente");
       }
 
@@ -93,28 +89,36 @@
     const formatedData = formatDadosLogin(data);
 
     const userData = await requestLogin(formatedData);
-
-    // const userData = {
-    //     token: "gd4fsd-0e9-af",
-    //     nome: "Eurico Delmondes do Nascimento Junior",
-    //     cargo: "Dev Back-END"
-  
-    // };
   
     if(userData){
         authStore.successfulLogin({...userData, img: null});
+
+        const cargos = await getAllRolesArray(userData.token);
+        cargoStore.saveCargos(cargos);
 
         router.push('/menu/dashboard');
     } 
   }
 
+  function isMostrarBtn(){
+    return showHideBtnText.value === "Mostrar";
+  }
+
+  function setMostrarBtn(){
+      passwordFieldType.value = "password";
+      showHideBtnText.value = "Mostrar";
+  }
+
+  function setPasswordBtn(){
+      passwordFieldType.value = "text";
+      showHideBtnText.value = "Ocultar";
+  }
+
   function togglePasswordVisibility (){
-      if(showHideBtnText.value === "Mostrar"){
-          passwordFieldType.value = "text";
-          showHideBtnText.value = "Ocultar";
+      if(isMostrarBtn()){
+        setPasswordBtn();
       }else{
-          passwordFieldType.value = "password";
-          showHideBtnText.value = "Mostrar";
+        setMostrarBtn();
       }
   }
 </script>
