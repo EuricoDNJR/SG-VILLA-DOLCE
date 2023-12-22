@@ -197,3 +197,28 @@ export const useCargosStore = defineStore('cargosData', {
     }
   }
 });
+
+export const useSnackbarStore = defineStore('snackbar', {
+  state: () => ({
+    showSnackbar: false,
+    message: '',
+    backgroundColor: '#6940AA',
+    colors: {
+      green: "#16c098",
+      red: "#df0404",
+      purple: '#6940AA',
+    },
+  }),
+  actions: {
+    snackbar(message, color) {
+      this.showSnackbar = true;
+      this.message = message;
+      this.backgroundColor = this.colors[color];
+    },
+    closeSnackbar() {
+      this.showSnackbar = false;
+      this.message = '';
+      this.backgroundColor = this.colors['purple'];
+    }
+  }
+});
