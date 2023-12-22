@@ -1,11 +1,11 @@
 <script setup>
-import {ref } from 'vue'
-import { useAuthStore} from '../store.js';
-// import { useRouter } from 'vue-router';
+import { ref } from 'vue'
+import { useAuthStore, useSnackbarStore } from '../utils/store';
+import { fetchPost } from '../utils/common';
+
 
 const authStore = useAuthStore();
-// const router = useRouter();
-// const clienteStore = useClienteStore();
+const snackbarStore = useSnackbarStore();
 const nome = ref('');
 const email = ref('');
 const telefone = ref('');
@@ -13,6 +13,19 @@ const cpf = ref('');
 const dataNascimento = ref('');
 const endereco = ref('');
 
+function isValidCliente(cliente){
+    return (cliente.nome.length > 0) && (cliente.telefone.length > 0);
+}
+
+function emptyStringToNull(string){
+    let newValue = null;
+
+    if(string.length > 0){
+        newValue = string;
+    }
+
+    return newValue;
+}
 
 function createCliente(){
     let cliente = {
@@ -25,21 +38,13 @@ function createCliente(){
         saldo: "0"
     };
     
-    if(nome === '' || telefone === ''){
-        cliente = null;
+    if(isValidCliente(cliente)){
+        cliente.email = emptyStringToNull(cliente.email);
+        cliente.cpf = emptyStringToNull(cliente.cpf);
+        cliente.dataNascimento = emptyStringToNull(cliente.dataNascimento);
+        cliente.endereco = emptyStringToNull(cliente.endereco);
     }else{
-        if(cliente.email === ''){
-            cliente.email = null;
-        }
-        if(cliente.cpf === ''){
-            cliente.cpf = null;
-        }
-        if(cliente.dataNascimento === ''){
-            cliente.dataNascimento = null;
-        }
-        if(cliente.endereco === ''){
-            cliente.endereco = null;
-        }
+        cliente = null;
     }
 
     return cliente;
@@ -49,16 +54,25 @@ async function requestRegisterCliente(){
     const cliente = createCliente();
 
     if(cliente){
-        const options = {
-            method: 'POST',
-            headers: {
-                'jwt-token': authStore.getToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(cliente)
-        };
+        try{
+            const url = "http://127.0.0.1:8000/v1/cliente/create_client/";
+            const body = cliente;
+            const token = authStore.getToken;
 
-        const response = await fetch("http://127.0.0.1:8000/v1/cliente/create_client/", options);
+            const response = await fetchPost(url, body, token);
+
+            if(response.status === 201){
+                snackbarStore.snackbar("Cliente cadastrado com sucesso", 'green');
+            }else{
+                snackbarStore.snackbar("Falha ao cadastrar cliente", 'red');
+            }
+            
+        }catch(e){
+            console.log(e);
+            snackbarStore.snackbar("Falha ao cadastrar cliente", 'red');
+        }        
+    }else{
+        snackbarStore.snackbar("Os campos de nome e telefone são obrigatórios", 'red');
     }
 }
 
