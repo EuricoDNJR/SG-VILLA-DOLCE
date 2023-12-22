@@ -59,9 +59,7 @@
         const response = await fetchPost("http://127.0.0.1:8000/v1/usuario/login/", data);
         const responseJson = await response.json();
 
-        if(!response.ok){
-          printErrorMessage(responseJson.message);
-        }else{
+        if(response.status === 200){
             printLoginSuccessfulMessage();
             
             userData = {
@@ -69,7 +67,8 @@
                 nome: responseJson.nome,
                 cargo: responseJson.cargo
             };
-
+        }else{
+            printErrorMessage(responseJson.message);
         }
       } catch (error) {
         console.log(error);
@@ -97,6 +96,8 @@
         cargoStore.saveCargos(cargos);
 
         router.push('/menu/dashboard');
+
+        console.log(authStore.getToken);
     } 
   }
 
