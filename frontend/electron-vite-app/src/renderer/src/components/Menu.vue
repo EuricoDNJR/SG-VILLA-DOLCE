@@ -86,6 +86,8 @@
     gap: 45px;
     color: white;
     animation: slideDown 0.3s ease forwards;
+    text-align: center;
+    font-weight: bold;
   }
 
   .close-btn{
@@ -93,6 +95,7 @@
     border: none;
     font-weight: bold;
     padding: 10px;
+    color: rgb(28, 28, 28);
   }
 
   .close-btn:hover{
