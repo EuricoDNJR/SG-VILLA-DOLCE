@@ -1,28 +1,100 @@
 <script setup>
 
     import { ref, computed } from 'vue';
+    import { fetchPost } from '../utils/common';
+    import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
 
-    const caixaStatus = ref('fechado');
-    const caixaAction = ref('Abrir');
-    const somenteDinheiro = ref("0.00");
-    const saldoTotal = ref("0.00");
+    const authStore = useAuthStore();
+    const snackbarStore = useSnackbarStore();
+    const caixaStore = useCaixaStore();
+    const somenteDinheiro = ref('0.00');
+    const saldoTotal = ref('0.00');
+    
+    const caixaStatus = computed(() => caixaStore.getStatus);
+    const saldoInicial = ref(caixaStore.getSaldoInicial);
+    const observacoes = ref(caixaStore.getObservacoes);
+    const caixaAction = computed(() => caixaStore.getAction);
     const caixaIsOpen = computed(() => caixaStatus.value === 'aberto');
+    const dataEHoraAbertura = computed(() => caixaStore.getDataAbertura + " " + caixaStore.getHoraAbertura);
+
+    function createCaixaInfo(){
+        const caixaInfo = {
+            saldoInicial: saldoInicial.value,
+            observacoes: observacoes.value,
+        };
+
+        return caixaInfo;
+    }
+
+    async function requestOpenCaixa(body){
+        let responseJson = null;
+
+        try{
+            const url = 'http://127.0.0.1:8000/v1/caixa/open_caixa/';
+            const token = authStore.getToken;
+
+            const response = await fetchPost(url, body, token);
+
+            if(response.status === 200){
+                responseJson = await response.json();
+            }else{
+                snackbarStore.snackbar("Falha ao abrir caixa", 'red');
+            }
+        }catch(e){
+            console.log(e);
+            snackbarStore.snackbar("Falha ao abrir caixa", 'red');
+        }
+
+        return responseJson;
+    }
+    
+    async function requestCloseCaixa(){
+        try{
+            const url = `http://127.0.0.1:8000/v1/caixa/close_caixa/${caixaStore.getId}/`;
+            const body = {};
+            const token = authStore.getToken;
+
+            const response = await fetchPost(url, body, token);
+
+            if(response.status === 200){
+                const responseJson = await response.json();
+            }else{
+                snackbarStore.snackbar("Falha ao fechar caixa", 'red');
+            }
+        }catch(e){
+            console.log(e);
+            snackbarStore.snackbar("Falha ao fechar caixa", 'red');
+        }
+    }
 
     function openCaixa(){
-        caixaStatus.value = 'aberto';
-        caixaAction.value = 'Fechar';
+        const caixaInfo = createCaixaInfo();
+
+        requestOpenCaixa(caixaInfo).then((responseJson) => {
+            if(responseJson){
+                caixaStore.saveOpenCaixa(responseJson);
+            }
+        })
     }
 
     function closeCaixa(){
-        caixaStatus.value = 'fechado';
-        caixaAction.value = 'Abrir';
+        requestCloseCaixa();
+
+        caixaStore.closeCaixa();
+
+        saldoInicial.value = caixaStore.getSaldoInicial;
+        observacoes.value = caixaStore.getObservacoes;
     }
 
     function toggleCaixaStatus(){
         if(caixaIsOpen.value){
-            closeCaixa();
+            if(window.confirm('Fechar o caixa')){
+                closeCaixa();
+            }
         }else{
-            openCaixa();
+            if(window.confirm('Abrir o caixa')){
+                openCaixa();
+            }
         }
     }
 
@@ -33,17 +105,17 @@
         <section class="main-content">
             <form @submit.prevent="toggleCaixaStatus">
                 <div>
-                    <h1 :class="{caixaAberto: caixaStatus === 'aberto'}" id="caixa-status">Caixa {{ caixaStatus }}</h1>
+                    <h1 :class="{caixaAberto: caixaIsOpen}" id="caixa-status">Caixa {{ caixaStatus }}</h1>
                     
                     <label for="opening-balance">Saldo inicial(dinheiro):</label>
-                    <input type="text" id="opening-balance" required>
+                    <input v-model="saldoInicial" :disabled="caixaIsOpen" type="number" min="0" step=".01" required>
                     
                     <label for="observation">Observação:</label>
-                    <textarea name="observation" id="observation"></textarea>
+                    <textarea v-model="observacoes" :disabled="caixaIsOpen" name="observation" id="observation"></textarea>
 
                     <div v-show="caixaStatus === 'aberto'">
                         <label for="opening-time">Data/Hora de abertura:</label>
-                        <p id="opening-time">15/12/2023 8:00</p>
+                        <p id="opening-time">{{ dataEHoraAbertura }}</p>
                     </div>
                 </div>
                     
