@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('userData', {
     }
   });
 
-export const useClienteStore = defineStore('clienteData', {
+export const useClienteStore = defineStore('cliente', {
   id: 'cliente',
 
   state: () => ({
@@ -108,7 +108,7 @@ export const useClienteStore = defineStore('clienteData', {
   }
 });
 
-export const useFuncionarioStore = defineStore('funcionarioData', {
+export const useFuncionarioStore = defineStore('funcionario', {
   id: 'funcionario',
 
   state: () => ({
@@ -175,7 +175,7 @@ export const useFuncionarioStore = defineStore('funcionarioData', {
   }
 });
 
-export const useCargosStore = defineStore('cargosData', {
+export const useCargosStore = defineStore('cargos', {
   id: 'cargos',
 
   state: () => ({
@@ -219,6 +219,61 @@ export const useSnackbarStore = defineStore('snackbar', {
       this.showSnackbar = false;
       this.message = '';
       this.backgroundColor = this.colors['purple'];
+    }
+  }
+});
+
+export const useCaixaStore = defineStore('caixa', {
+  state: () => ({
+    id: undefined,
+    status: 'fechado',
+    action: 'Abrir',
+    saldoInicial: 0,
+    dataAbertura: undefined,
+    horaAbertura: undefined,
+    observacoes: '',  
+  }),
+  getters: {
+    getId(){
+      return this.id;
+    },
+    getStatus() {
+      return this.status;
+    },
+    getAction() {
+      return this.action;
+    },
+    getSaldoInicial() {
+      return this.saldoInicial;
+    },
+    getDataAbertura() {
+      return this.dataAbertura;
+    },
+    getHoraAbertura() {
+      return this.horaAbertura;
+    },
+    getObservacoes() {
+      return this.observacoes;
+    },
+  },
+  actions: {
+    saveOpenCaixa({uuid, SaldoInicial, Observacoes, DataAbertura, HoraAbertura}) {
+      this.id = uuid;
+      this.saldoInicial = SaldoInicial;
+      this.dataAbertura = DataAbertura.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
+      this.horaAbertura = HoraAbertura;
+      this.observacoes = Observacoes;
+      this.status = 'aberto';
+      this.action =  'Fechar';
+    },
+    closeCaixa() {
+      this.id = undefined;
+      this.saldoInicial = 0;
+      this.dataAbertura = undefined;
+      this.horaAbertura = undefined;
+      this.observacoes = '';  
+      this.status = 'fechado';
+      this.action =  'Abrir';
     }
   }
 });
