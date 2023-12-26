@@ -197,3 +197,4 @@ async function requestRegisterColaborador(){
     }
 
 </style>
+
