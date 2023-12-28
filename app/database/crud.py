@@ -16,11 +16,11 @@ def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMe
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
 
-def create_pagamento(valorTotal, valorRecebimento, valorDevolvido, tipoPagamento):
+def create_pagamento(valorTotal, valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
     return models.Pagamento.create(valorTotal=Decimal(str(valorTotal)), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
 
-def create_pedido(idCliente, idPagamento, idUsuario, idCaixa):
-    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa)
+def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):
+    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status)
 
 def create_produto_pedido(idPedido, idProduto, quantidade):
     return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade)
@@ -204,6 +204,7 @@ def get_pedido_by_id(idPedido):
             "idUsuario": str(pedido.idUsuario.idUsuario),
             "nomeUsuario": pedido.idUsuario.nome,
             "idCaixa": str(pedido.idCaixa.idCaixa),
+            "status": pedido.status,
             "idProdutos": get_all_produtos_pedidos_by_id(idPedido)
         }
     except DoesNotExist:
@@ -329,34 +330,32 @@ def get_all_estoques():
         return None
 
 def get_all_pedidos():
-    try:
-        # Tenta buscar todos os pedidos
-        pedidos = models.Pedido.select()
+    # Tenta buscar todos os pedidos
+    pedidos = models.Pedido.select()
 
-        # Verifica se há pedidos
-        if pedidos.exists():
-            # Retorna a lista de pedidos se houver algum
-            return [
-                {
-                    "idPedido": str(pedido.idPedido),
-                    "idCliente": str(pedido.idCliente.idCliente),
-                    "nomeCliente": pedido.idCliente.nome,
-                    "idPagamento": str(pedido.idPagamento.idPagamento),
-                    "valorTotal": str(pedido.idPagamento.valorTotal),
-                    "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
-                    "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
-                    "tipoPagamento": pedido.idPagamento.tipoPagamento,
-                    "idUsuario": str(pedido.idUsuario.idUsuario),
-                    "nomeUsuario": pedido.idUsuario.nome,
-                    "idCaixa": str(pedido.idCaixa.idCaixa)
-                }
-                for pedido in pedidos
-            ]
-        else:
-            # Se não houver pedidos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há pedidos
+    if pedidos.exists():
+        # Retorna a lista de pedidos se houver algum
+        return [
+            {
+                "idPedido": str(pedido.idPedido),
+                "idCliente": str(pedido.idCliente.idCliente),
+                "nomeCliente": pedido.idCliente.nome,
+                "idPagamento": str(pedido.idPagamento.idPagamento),
+                "valorTotal": str(pedido.idPagamento.valorTotal),
+                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+                "tipoPagamento": pedido.idPagamento.tipoPagamento,
+                "idUsuario": str(pedido.idUsuario.idUsuario),
+                "nomeUsuario": pedido.idUsuario.nome,
+                "idCaixa": str(pedido.idCaixa.idCaixa),
+                "status": pedido.status
+            }
+            for pedido in pedidos
+        ]
+    else:
+        print("Não há pedidos")
+        # Se não houver pedidos, retorna None
         return None
 
 def get_all_produtos_pedidos_by_id(idPedido):
