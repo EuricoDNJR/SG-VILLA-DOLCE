@@ -26,9 +26,9 @@ class Usuario(BaseModel):
 class Pagamento(BaseModel):
     idPagamento = UUIDField(primary_key=True, default=uuid.uuid4)
     valorTotal = DecimalField(max_digits=10, decimal_places=2)
-    valorRecebimento = DecimalField(max_digits=10, decimal_places=2)
-    valorDevolvido = DecimalField(max_digits=10, decimal_places=2)
-    tipoPagamento = CharField()
+    valorRecebimento = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    valorDevolvido = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    tipoPagamento = CharField(null=True)
 
     class Meta:
         table_name = "Pagamento"
@@ -90,6 +90,7 @@ class Pedido(BaseModel):
     idPagamento = ForeignKeyField(Pagamento, backref='pedido')
     idUsuario = ForeignKeyField(Usuario, backref='pedido')
     idCaixa = ForeignKeyField(Caixa, backref='pedido')
+    status = CharField()
 
     class Meta:
         table_name = "Pedido"
