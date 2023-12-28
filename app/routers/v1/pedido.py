@@ -16,9 +16,9 @@ router = APIRouter()
 
 class PagamentoPedido(BaseModel):
     valorTotal: float
-    valorRecebimento: float
-    valorDevolvido: float
-    tipoPagamento: str
+    valorRecebimento: Optional[float] = 0.0
+    valorDevolvido: Optional[float] = 0.0
+    tipoPagamento: Optional[str] = None
 
 class ProdutoPedido(BaseModel):
     idProduto: str 
@@ -29,6 +29,7 @@ class CreateOrderRequest(BaseModel):
     Pagamento: PagamentoPedido
     idCaixa: str
     idProdutos: List[ProdutoPedido]
+    status: str
 
 @router.post("/create_order/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
 def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
@@ -72,24 +73,13 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             content={"message": "Erro ao criar pagamento"}
         )
     logging.info("Payment created")
-    try:
-        logging.info("Updating caixa balance")
-        if crud.update_balance_caixa_pedido(data.idCaixa, data.Pagamento.valorTotal, data.Pagamento.tipoPagamento):
-            logging.info("Balance of caixa updated")
-        else:
-            logging.info("Balance of caixa not updated")
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao atualizar saldo do caixa"}
-        )
     logging.info("Creating instance of order")
     pedido = crud.create_pedido(
         idCliente=data.idCliente,
         idPagamento=pagamento.idPagamento,
         idUsuario=jwt_token,
         idCaixa=data.idCaixa,
+        status=data.status
     )
     if pedido is None:
         return JSONResponse(
@@ -126,18 +116,31 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao atualizar quantidade de produtos"}
         )
-    try:
-        logging.info("Updating balance of client")
-        if crud.update_balance_client(data.idCliente, data.Pagamento.valorTotal):
-            logging.info("Balance of client updated")
-        else:
-            logging.info("Balance of client not updated")
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao atualizar saldo do cliente"}
-        )
+    if data.status == "Pago":
+        try:
+            logging.info("Updating caixa balance")
+            if crud.update_balance_caixa_pedido(data.idCaixa, data.Pagamento.valorTotal, data.Pagamento.tipoPagamento):
+                logging.info("Balance of caixa updated")
+            else:
+                logging.info("Balance of caixa not updated")
+        except Exception as e:
+            logging.error(e)
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao atualizar saldo do caixa"}
+            )
+        try:
+            logging.info("Updating balance of client")
+            if crud.update_balance_client(data.idCliente, data.Pagamento.valorTotal):
+                logging.info("Balance of client updated")
+            else:
+                logging.info("Balance of client not updated")
+        except Exception as e:
+            logging.error(e)
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao atualizar saldo do cliente"}
+            )
     logging.info("Order created successfully")
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(pedido.idPedido), "message": "Pedido criado com sucesso"})
 
