@@ -80,8 +80,8 @@ def open_caixa(data: CaixaRequest, jwt_token: str = Header()):
 
 
 
-@router.post("/close_caixa/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def close_caixa(uuid: str, jwt_token: str = Header()):
+@router.patch("/close_caixa/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def close_caixa(idCaixa: str, jwt_token: str = Header()):
     
     try:
         logging.info("Getting user")
@@ -97,7 +97,7 @@ def close_caixa(uuid: str, jwt_token: str = Header()):
         dataFechamento = agora.strftime("%Y-%m-%d %H:%M:%S")
 
 
-        caixa = crud.close_caixa(uuid = uuid, dataFechamento=dataFechamento)
+        caixa = crud.close_caixa(uuid = idCaixa, dataFechamento=dataFechamento)
 
         if caixa is False:
             return JSONResponse(
