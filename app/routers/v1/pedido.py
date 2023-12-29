@@ -1,6 +1,7 @@
 import logging
 from pydantic import BaseModel
 from typing import Optional, List
+from decimal import Decimal
 from ...dependencies import get_token_header
 from ...database import crud
 from fastapi.responses import JSONResponse
@@ -181,6 +182,69 @@ def get_order(idPedido: str):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar pedido: " + str(e)}
+        )
+
+class AddInOrderRequest(BaseModel):
+    idProdutos: List[ProdutoPedido]
+    valorTotal: float
+    
+@router.patch("/add_in_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def add_in_order(idPedido: str, data: AddInOrderRequest):
+    """
+    Adiciona produtos em um pedido.
+    exemplo de entrada:
+
+        {
+            "idProdutos": [
+                {
+                "idProduto": "d05ecaa4-96d1-4a10-ae81-223ac683affa",
+                "quantidade": 2
+                },
+                {
+                "idProduto": "51889c6b-4b30-4fa6-969c-eea8bb786ba0",
+                "quantidade": 0.300
+                }
+            ],
+            valorTotal: 10.00
+        }
+    """
+    logging.info("Getting order by id")
+    try:
+        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        if pedido is None:
+            logging.error("Order not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("Order found")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedido: " + str(e)}
+        )
+    logging.info("Adding new product(s) to order")
+    try:
+        for produto in data.idProdutos:
+            crud.create_produto_pedido(
+                idPedido=pedido.idPedido,
+                idProduto=produto.idProduto,
+                quantidade=produto.quantidade
+            )
+            if crud.update_quantity_product(produto.idProduto, produto.quantidade):
+                logging.info("Quantity of product {} updated".format(produto.idProduto))
+            else:
+                logging.info("Quantity of product {} not updated".format(produto.idProduto))
+        logging.info("Updating total value of order")
+        if crud.update_pagamento_valorTotal(pedido.idPagamento, data.valorTotal):
+            logging.info("Total value of order updated")
+        else:
+            logging.info("Total value of order not updated")
+        logging.info("New product(s) added to order")
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto(s) adicionado(s) ao pedido com sucesso"})
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": str(e)}
         )
 
 @router.delete("/delete_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
