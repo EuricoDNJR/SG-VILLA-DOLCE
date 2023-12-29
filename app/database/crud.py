@@ -210,6 +210,13 @@ def get_pedido_by_id(idPedido):
     except DoesNotExist:
         return None
 
+def get_pedido_object_by_id(idPedido):
+    try:
+        pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
+
+        return pedido
+    except DoesNotExist:
+        return None
 def get_cargo_by_id(uuid):
     try:
         cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
@@ -615,6 +622,14 @@ def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
         if tipoPagamento == 'Dinheiro':
             caixa.somenteDinheiro += Decimal(str(valorTotal))
             caixa.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def update_pagamento_valorTotal(idPagamento, valorTotal):
+    try:
+        idPagamento.valorTotal = Decimal(str(valorTotal))
+        idPagamento.save()
         return True
     except DoesNotExist:
         return None
