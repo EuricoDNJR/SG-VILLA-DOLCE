@@ -77,13 +77,17 @@
         })
     }
 
+    function resetCaixaInfo(){
+        saldoInicial.value = caixaStore.getSaldoInicialResetValue;
+        observacoes.value = caixaStore.getObservacoesResetValue;
+    }
+
     function closeCaixa(){
         requestCloseCaixa();
 
-        caixaStore.closeCaixa();
+        caixaStore.resetCaixa();
 
-        saldoInicial.value = caixaStore.getSaldoInicial;
-        observacoes.value = caixaStore.getObservacoes;
+        resetCaixaInfo();
     }
 
     function toggleCaixaStatus(){
@@ -142,23 +146,6 @@
                                 <td>R$ 000,00</td>
                                 <td>Dinheiro</td>
                             </tr>
-                            
-                            <tr>
-                                <td>05/12/2023 15:03</td>
-                                <td>Saldo inicial</td>
-                                <td>R$ 100,00</td>
-                                <td>R$ 000,00</td>
-                                <td>Dinheiro</td>
-                            </tr>
-
-                            <tr>
-                                <td>05/12/2023 15:03</td>
-                                <td>Saldo inicial</td>
-                                <td>R$ 100,00</td>
-                                <td>R$ 000,00</td>
-                                <td>Dinheiro</td>
-                            </tr>
-
                         </tbody>   
                     </table>
                 </div>
