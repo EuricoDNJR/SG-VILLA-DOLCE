@@ -1,7 +1,7 @@
 <script setup>
 
     import { ref, computed } from 'vue';
-    import { fetchPost } from '../utils/common';
+    import { fetchPost, fetchPatch } from '../utils/common';
     import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
 
     const authStore = useAuthStore();
@@ -54,7 +54,7 @@
             const body = {};
             const token = authStore.getToken;
 
-            const response = await fetchPost(url, body, token);
+            const response = await fetchPatch(url, body, token);
 
             if(response.status === 200){
                 const responseJson = await response.json();
