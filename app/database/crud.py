@@ -629,7 +629,6 @@ def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
 def update_pagamento(idPagamento, tipoPagamento, valorRecebimento=0.0, valorDevolvido=0.0):
     try:
         pagamento = models.Pagamento.get(models.Pagamento.idPagamento == idPagamento)
-        print(valorRecebimento)
         pagamento.valorRecebimento = Decimal(str(valorRecebimento))
         pagamento.valorDevolvido = Decimal(str(valorDevolvido))
         pagamento.tipoPagamento = tipoPagamento
