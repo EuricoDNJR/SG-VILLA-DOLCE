@@ -1,7 +1,7 @@
 <script setup>
     import { ref } from 'vue'
     import { useAuthStore, useFuncionarioStore, useCargosStore, useSnackbarStore } from '../utils/store';
-    import { fetchPatch, fetchDelete, isEmptyObject } from '../utils/common';
+    import { fetchPatch, fetchDelete, isEmptyObject, confirmDialog } from '../utils/common';
     import { useRouter } from 'vue-router';
 
     const authStore = useAuthStore();
@@ -90,10 +90,8 @@
     }
 
     function deleteFuncionarioConfirmation(){
-        if(window.confirm('Tem certeza que deseja prosseguir?')){
-            deleteRequest(`usuario/delete_user/${funcionarioStore.getIdUsuario}`, 
-                              "/menu/funcionarios/");
-        }
+        confirmDialog("Tem certeza que deseja prosseguir?", () =>  deleteRequest(`usuario/delete_user/${funcionarioStore.getIdUsuario}`, 
+                              "/menu/funcionarios/"));
     }
 
     function getFuncionarioInfoChange(store){

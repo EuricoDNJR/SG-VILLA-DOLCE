@@ -2,7 +2,7 @@
 
 import { reactive, ref } from 'vue'
 import { useAuthStore, useClienteStore, useSnackbarStore } from '../utils/store';
-import { fetchPatch, fetchDelete, isEmptyObject } from '../utils/common'
+import { fetchPatch, fetchDelete, isEmptyObject, confirmDialog } from '../utils/common'
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -115,9 +115,7 @@ async function deleteCliente(){
 }
 
 function deleteClienteConfirmation(){
-    if(window.confirm('Tem certeza que deseja prosseguir?')){
-        deleteCliente();
-    }
+    confirmDialog("Tem certeza que deseja prosseguir?", deleteCliente);
 }
 
 </script>

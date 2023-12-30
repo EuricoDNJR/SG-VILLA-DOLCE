@@ -1,7 +1,7 @@
 <script setup>
 
     import { ref, computed } from 'vue';
-    import { fetchPost, fetchPatch } from '../utils/common';
+    import { fetchPost, fetchPatch, confirmDialog } from '../utils/common';
     import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
 
     const authStore = useAuthStore();
@@ -92,13 +92,9 @@
 
     function toggleCaixaStatus(){
         if(caixaIsOpen.value){
-            if(window.confirm('Fechar o caixa')){
-                closeCaixa();
-            }
+            confirmDialog("Deseja fechar o caixa?", closeCaixa);
         }else{
-            if(window.confirm('Abrir o caixa')){
-                openCaixa();
-            }
+            confirmDialog("Deseja abrir o caixa?", openCaixa);
         }
     }
 
