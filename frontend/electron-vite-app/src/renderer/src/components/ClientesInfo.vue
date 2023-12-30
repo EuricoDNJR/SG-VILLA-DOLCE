@@ -1,12 +1,14 @@
 <script setup>
 
 import { reactive, ref } from 'vue'
-import { useAuthStore, useClienteStore } from '../store.js';
+import { useAuthStore, useClienteStore, useSnackbarStore } from '../utils/store';
+import { fetchPatch, fetchDelete, isEmptyObject } from '../utils/common'
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const clienteStore = useClienteStore();
+const snackbarStore = useSnackbarStore();
 const nome = ref(clienteStore.getNome);
 const email = ref(clienteStore.getEmail);
 const telefone = ref(clienteStore.getTelefone);
@@ -43,61 +45,73 @@ function getClienteInfoChange(){
     return data;
 }
 
-function onlyValidateData(data){
-    return data;
-}
-
-function isEmpty(obj) {
-  return Object.keys(obj).length === 0;
-}
-
 async function updateClienteInfo(){
     const data = getClienteInfoChange();
 
-    if(!isEmpty(data)){
-        clienteStore.updateClienteInfo(data);
-        const validatedData = onlyValidateData(data);
+    if(!isEmptyObject(data)){
+        try{
+            clienteStore.updateClienteInfo(data);
 
-        const options = {
-            method: 'PATCH',
-            headers: {
-                'jwt-token': authStore.getToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(validatedData)
-        };
+            const url = `http://127.0.0.1:8000/v1/cliente/update_cliente/${clienteStore.getIdCliente}/`;
+            const body = data;
+            const token = authStore.getToken;
 
-        const response = await fetch(`http://127.0.0.1:8000/v1/cliente/update_cliente/${clienteStore.getIdCliente}/`, options);
+            const response = await fetchPatch(url, body, token);
+            
+            if(response.status === 200){
+                snackbarStore.snackbar("As informações do cliente foram atualizadas com sucesso", 'green');
+            }else{
+                snackbarStore.snackbar("Falha ao atualizar informações do cliente", 'red');
+            }
+        }catch(e){
+            console.log(e);
+            snackbarStore.snackbar("Falha ao atualizar informações do cliente", 'red');
+        }
+           
     }
 }
 
+function isEditarbtn(){
+    return editSaveBtnText.value === "Editar"
+}
+
+function setSalvarBtn(){
+    isEditable.value = true;
+    editSaveBtnText.value = "Salvar";
+}
+
+function setEditarBtn(){
+    isEditable.value = false;
+    editSaveBtnText.value = "Editar";
+}   
+
 function ToogleEditableClienteInfo(){
-    if(editSaveBtnText.value === "Editar"){
-        isEditable.value = true;
-        editSaveBtnText.value = "Salvar";
+    if(isEditarbtn()){
+        setSalvarBtn();
     }else{
         updateClienteInfo();
         
-        isEditable.value = false;
-        editSaveBtnText.value = "Editar";
+        setEditarBtn();
     }
 }
 
 async function deleteCliente(){
-    const options = {
-        method: 'DELETE',
-        headers: {
-            'jwt-token': authStore.getToken,
-            'Content-Type': 'application/json'
+    try{
+        const url = `http://127.0.0.1:8000/v1/cliente/delete_cliente/${clienteStore.getIdCliente}/`;
+        const token = authStore.getToken;
+        
+        const response = await fetchDelete(url, token);
+
+        if(response.status === 200){
+            snackbarStore.snackbar("Cliente deletado com sucesso", 'green');
+            router.push("/menu/clientes/");
+        }else{
+            snackbarStore.snackbar("Falha ao deletar cliente", 'red');
         }
-    };
-
-    const response = await fetch(`http://127.0.0.1:8000/v1/cliente/delete_cliente/${clienteStore.getIdCliente}/`, options);
-
-    if(response.status === 200){
-        router.push("/menu/clientes/");
+    }catch(e){
+        console.log(e);
+        snackbarStore.snackbar("Falha ao deletar cliente", 'red');
     }
-    
 }
 
 function deleteClienteConfirmation(){

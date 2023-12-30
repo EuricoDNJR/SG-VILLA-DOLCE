@@ -8,6 +8,7 @@ import CadastrarCliente from './components/CadastrarCliente.vue'
 import Funcionarios from './components/Funcionarios.vue'
 import FuncionariosInfo from './components/FuncionariosInfo.vue'
 import CadastrarFuncionario from './components/CadastrarFuncionario.vue'
+import Caixa from './components/Caixa.vue'
 
 
 
@@ -56,6 +57,11 @@ const routes = [
         path: 'cadastrar-funcionario', 
         name: 'cadastrarFuncionario', 
         component: CadastrarFuncionario,
+      },
+      { 
+        path: 'caixa', 
+        name: 'caixa', 
+        component: Caixa,
       },
     ]
   },

@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('userData', {
     }
   });
 
-export const useClienteStore = defineStore('clienteData', {
+export const useClienteStore = defineStore('cliente', {
   id: 'cliente',
 
   state: () => ({
@@ -108,7 +108,7 @@ export const useClienteStore = defineStore('clienteData', {
   }
 });
 
-export const useFuncionarioStore = defineStore('funcionarioData', {
+export const useFuncionarioStore = defineStore('funcionario', {
   id: 'funcionario',
 
   state: () => ({
@@ -171,6 +171,110 @@ export const useFuncionarioStore = defineStore('funcionarioData', {
       this.dataNascimento = null;
       this.endereco = null;
       this.cargo = null;
+    }
+  }
+});
+
+export const useCargosStore = defineStore('cargos', {
+  id: 'cargos',
+
+  state: () => ({
+      cargos: []
+  }),
+
+  getters: {
+      getCargos() {
+        return this.cargos;
+      },
+  },
+
+  actions: {
+    saveCargos(cargos){
+      this.cargos = cargos;
+    },
+    reset() {
+      this.cargos = [];
+    }
+  }
+});
+
+export const useSnackbarStore = defineStore('snackbar', {
+  state: () => ({
+    showSnackbar: false,
+    message: '',
+    backgroundColor: '#6940AA',
+    colors: {
+      green: "#16c098",
+      red: "#df0404",
+      purple: '#6940AA',
+    },
+  }),
+  actions: {
+    snackbar(message, color) {
+      this.showSnackbar = true;
+      this.message = message;
+      this.backgroundColor = this.colors[color];
+    },
+    closeSnackbar() {
+      this.showSnackbar = false;
+      this.message = '';
+      this.backgroundColor = this.colors['purple'];
+    }
+  }
+});
+
+export const useCaixaStore = defineStore('caixa', {
+  state: () => ({
+    id: undefined,
+    status: 'fechado',
+    action: 'Abrir',
+    saldoInicial: 0,
+    dataAbertura: undefined,
+    horaAbertura: undefined,
+    observacoes: '',  
+  }),
+  getters: {
+    getId(){
+      return this.id;
+    },
+    getStatus() {
+      return this.status;
+    },
+    getAction() {
+      return this.action;
+    },
+    getSaldoInicial() {
+      return this.saldoInicial;
+    },
+    getDataAbertura() {
+      return this.dataAbertura;
+    },
+    getHoraAbertura() {
+      return this.horaAbertura;
+    },
+    getObservacoes() {
+      return this.observacoes;
+    },
+  },
+  actions: {
+    saveOpenCaixa({uuid, SaldoInicial, Observacoes, DataAbertura, HoraAbertura}) {
+      this.id = uuid;
+      this.saldoInicial = SaldoInicial;
+      this.dataAbertura = DataAbertura.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
+      this.horaAbertura = HoraAbertura;
+      this.observacoes = Observacoes;
+      this.status = 'aberto';
+      this.action =  'Fechar';
+    },
+    resetCaixa() {
+      this.$reset();
+
+      const resettedCaixa = {
+        saldoInicialR: this.saldoInicial,
+        observacoesR: this.observacoes,
+      };
+
+      return resettedCaixa
     }
   }
 });
