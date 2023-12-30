@@ -266,14 +266,15 @@ export const useCaixaStore = defineStore('caixa', {
       this.status = 'aberto';
       this.action =  'Fechar';
     },
-    closeCaixa() {
-      this.id = undefined;
-      this.saldoInicial = 0;
-      this.dataAbertura = undefined;
-      this.horaAbertura = undefined;
-      this.observacoes = '';  
-      this.status = 'fechado';
-      this.action =  'Abrir';
+    resetCaixa() {
+      this.$reset();
+
+      const resettedCaixa = {
+        saldoInicialR: this.saldoInicial,
+        observacoesR: this.observacoes,
+      };
+
+      return resettedCaixa
     }
   }
 });
