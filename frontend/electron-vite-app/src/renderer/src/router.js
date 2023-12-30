@@ -9,7 +9,7 @@ import Funcionarios from './components/Funcionarios.vue'
 import FuncionariosInfo from './components/FuncionariosInfo.vue'
 import CadastrarFuncionario from './components/CadastrarFuncionario.vue'
 import Caixa from './components/Caixa.vue'
-
+import Pedido from './components/Pedido.vue'
 
 
 const routes = [
@@ -62,6 +62,11 @@ const routes = [
         path: 'caixa', 
         name: 'caixa', 
         component: Caixa,
+      },
+      { 
+        path: 'pedido', 
+        name: 'pedido', 
+        component: Pedido,
       },
     ]
   },
