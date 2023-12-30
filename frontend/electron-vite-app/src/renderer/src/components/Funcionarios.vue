@@ -78,7 +78,7 @@
           <div class="search-container">
             <form action="#" method="get">
               <input type="text" class="search-box" @input="searchFuncionario" v-model="searchText" name="search" placeholder="Buscar">
-              <img class=search-btn-img src="../assets/cliente-lista-imgs/magnifying-glass-solid.svg" alt="search icone">
+              <img class=search-btn-img src="../assets/search-imgs/magnifying-glass-solid.svg" alt="search icone">
             </form>
           </div>
 
