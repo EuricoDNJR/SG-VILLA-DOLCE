@@ -626,10 +626,30 @@ def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
     except DoesNotExist:
         return None
 
+def update_pagamento(idPagamento, tipoPagamento, valorRecebimento=0.0, valorDevolvido=0.0):
+    try:
+        pagamento = models.Pagamento.get(models.Pagamento.idPagamento == idPagamento)
+        print(valorRecebimento)
+        pagamento.valorRecebimento = Decimal(str(valorRecebimento))
+        pagamento.valorDevolvido = Decimal(str(valorDevolvido))
+        pagamento.tipoPagamento = tipoPagamento
+        pagamento.save()
+        return True
+    except DoesNotExist:
+        return None
+
 def update_pagamento_valorTotal(idPagamento, valorTotal):
     try:
         idPagamento.valorTotal = Decimal(str(valorTotal))
         idPagamento.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def update_pedido_status(pedido, status):
+    try:
+        pedido.status = status
+        pedido.save()
         return True
     except DoesNotExist:
         return None
