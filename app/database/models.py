@@ -99,7 +99,7 @@ class ProdutoPedido(BaseModel):
     idProdutoPedido = UUIDField(primary_key=True, default=uuid.uuid4)
     idPedido = ForeignKeyField(Pedido, backref='produtos_pedidos')
     idProduto = ForeignKeyField(Produto, backref='produtos_pedidos')
-    quantidade = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
 
     class Meta:
         table_name = "ProdutoPedido"
