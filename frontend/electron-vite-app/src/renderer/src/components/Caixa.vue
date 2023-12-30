@@ -77,17 +77,17 @@
         })
     }
 
-    function resetCaixaInfo(){
-        saldoInicial.value = caixaStore.getSaldoInicialResetValue;
-        observacoes.value = caixaStore.getObservacoesResetValue;
+    function resetCaixaInfo({saldoInicialR, observacoesR}){
+        saldoInicial.value = saldoInicialR;
+        observacoes.value = observacoesR;
     }
 
     function closeCaixa(){
         requestCloseCaixa();
 
-        caixaStore.resetCaixa();
-
-        resetCaixaInfo();
+        const resettedCaixa = caixaStore.resetCaixa();
+        
+        resetCaixaInfo(resettedCaixa);
     }
 
     function toggleCaixaStatus(){
