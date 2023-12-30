@@ -94,4 +94,12 @@ export function replaceNullToEmptyString(obj){
 export function isEmptyObject(obj) {
     return Object.keys(obj).length === 0;
 }
+
+export function confirmDialog(msg, callback){
+    window.ipcRenderer.confirmDialog(msg).then((isYes) => {
+        if(isYes){
+            callback();
+        }
+    });
+}
   
