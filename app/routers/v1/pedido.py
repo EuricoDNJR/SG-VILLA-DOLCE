@@ -56,7 +56,8 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
                 "idProduto": "51889c6b-4b30-4fa6-969c-eea8bb786ba0",
                 "quantidade": 0.300
                 }
-            ]
+            ],
+            "status": "Pago"
         }
     """
     
@@ -246,6 +247,87 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": str(e)}
         )
+
+class FinishOrderRequest(BaseModel):
+    valorRecebimento: float
+    valorDevolvido: Optional[float] = 0.0
+    tipoPagamento: str
+
+@router.patch("/finish_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def finish_order(idPedido: str, data: FinishOrderRequest):
+    """
+    Finaliza um pedido.
+    exemplo de entrada:
+    
+        {
+            "valorRecebimento": 50.00,
+            "valorDevolvido": 29.20,
+            "tipoPagamento": "Dinheiro"
+        }
+    """
+    logging.info("Getting order by id")
+    try:
+        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        if pedido is None:
+            logging.error("Order not found")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("Order found")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedido: " + str(e)}
+        )
+    try:
+        logging.info("Updating status of order")
+        if crud.update_pedido_status(pedido, "Pago"):
+            logging.info("Status of order updated")
+        else:
+            logging.info("Status of order not updated")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": str(e)}
+        )
+    try:
+        logging.info("Updating payment of order")
+        if crud.update_pagamento(idPagamento=pedido.idPagamento, valorRecebimento=data.valorRecebimento, valorDevolvido=data.valorDevolvido, tipoPagamento=data.tipoPagamento):
+            logging.info("Payment of order updated")
+        else:
+            logging.info("Payment of order not updated")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": str(e)}
+        )
+    try:
+        logging.info("Updating caixa balance")
+        if crud.update_balance_caixa_pedido(pedido.idCaixa, pedido.idPagamento.valorTotal, pedido.idPagamento.tipoPagamento):
+            logging.info("Balance of caixa updated")
+        else:
+            logging.info("Balance of caixa not updated")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": str(e)}
+        )
+    try:
+        logging.info("Updating balance of client")
+        if crud.update_balance_client(pedido.idCliente, pedido.idPagamento.valorTotal):
+            logging.info("Balance of client updated")
+        else:
+            logging.info("Balance of client not updated")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": str(e)}
+        )
+    logging.info("Order finished successfully")
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido finalizado com sucesso"})
 
 @router.delete("/delete_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def delete_order(idPedido: str, jwt_token: str = Header()):
