@@ -50,7 +50,7 @@
             <ul>
               <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('dashboard')" :class="{isCurrentPage: isCurrentPage.dashboard}">Dashboard</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'caixa' }" @click="currentPage('caixa')" :class="{isCurrentPage: isCurrentPage.caixa}">Caixa</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('pedido')" :class="{isCurrentPage: isCurrentPage.pedido}">Pedido</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'pedido' }" @click="currentPage('pedido')" :class="{isCurrentPage: isCurrentPage.pedido}">Pedido</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'clientes' }" @click="currentPage('clientes')" :class="{isCurrentPage: isCurrentPage.clientes}">Clientes</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'funcionarios' }" @click="currentPage('funcionarios')" :class="{isCurrentPage: isCurrentPage.funcionarios}">Colaboradores</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('configuracoes')" :class="{isCurrentPage: isCurrentPage.configuracoes}">Configurações</router-link></li>
