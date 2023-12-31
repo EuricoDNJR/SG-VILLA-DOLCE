@@ -388,6 +388,46 @@ def get_all_produtos_pedidos_by_id(idPedido):
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
+def update_balance_client(pedido):
+    try:
+        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
+
+        # Verifica se há produtos_pedidos
+        if produtos_pedidos.exists():
+            # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
+            for produto_pedido in produtos_pedidos:
+                if produto_pedido.idProduto.categoria == 'Açaí':
+                    pedido.idCliente.saldo += produto_pedido.idProduto.valorVenda * produto_pedido.quantidade
+                    print(pedido.idCliente.saldo)
+                    pedido.idCliente.save()
+            return True
+        else:
+            # Se não houver produtos_pedidos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
+def update_balance_client_cancel(pedido):
+    try:
+        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
+
+        # Verifica se há produtos_pedidos
+        if produtos_pedidos.exists():
+            # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
+            for produto_pedido in produtos_pedidos:
+                if produto_pedido.idProduto.categoria == 'Açaí':
+                    pedido.idCliente.saldo -= produto_pedido.idProduto.valorVenda * produto_pedido.quantidade
+                    print(pedido.idCliente.saldo)
+                    pedido.idCliente.save()
+            return True
+        else:
+            # Se não houver produtos_pedidos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+        
 def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
@@ -532,15 +572,6 @@ def update_cargo(uuid, nome=None):
             "nome": cargo.nome
         }
 
-    except DoesNotExist:
-        return None
-
-def update_balance_client(uuid, valor):
-    try:
-        cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
-        cliente.saldo += Decimal(str(valor))
-        cliente.save()
-        return True
     except DoesNotExist:
         return None
 
