@@ -41,7 +41,7 @@ class Cliente(BaseModel):
     cpf = CharField(unique=True, null=True)
     endereco = CharField(null=True)
     telefone = CharField(unique=True)
-    saldo = DecimalField(decimal_places=2, null=True)
+    saldo = DecimalField(decimal_places=2, null=True, default=0.0)
    
     class Meta:
         table_name = "Cliente"

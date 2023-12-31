@@ -133,7 +133,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             )
         try:
             logging.info("Updating balance of client")
-            if crud.update_balance_client(data.idCliente, data.Pagamento.valorTotal):
+            if crud.update_balance_client(pedido):
                 logging.info("Balance of client updated")
             else:
                 logging.info("Balance of client not updated")
@@ -141,7 +141,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             logging.error(e)
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao atualizar saldo do cliente"}
+                content={"message": str(e)}
             )
     logging.info("Order created successfully")
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(pedido.idPedido), "message": "Pedido criado com sucesso"})
@@ -308,18 +308,6 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
             content={"message":"Erro ao verificar status do pedido: " + str(e)}
         )
     try:
-        logging.info("Updating status of order")
-        if crud.update_pedido_status(pedido, "Pago"):
-            logging.info("Status of order updated")
-        else:
-            logging.info("Status of order not updated")
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
-        )
-    try:
         logging.info("Updating payment of order")
         if crud.update_pagamento(idPagamento=pedido.idPagamento, valorRecebimento=data.valorRecebimento, valorDevolvido=data.valorDevolvido, tipoPagamento=data.tipoPagamento):
             logging.info("Payment of order updated")
@@ -345,7 +333,7 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
         )
     try:
         logging.info("Updating balance of client")
-        if crud.update_balance_client(pedido.idCliente, pedido.idPagamento.valorTotal):
+        if crud.update_balance_client(pedido):
             logging.info("Balance of client updated")
         else:
             logging.info("Balance of client not updated")
@@ -355,8 +343,20 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": str(e)}
         )
+    try:
+        logging.info("Updating status of order")
+        if crud.update_pedido_status(pedido, "Pago"):
+            logging.info("Status of order updated")
+        else:
+            logging.info("Status of order not updated")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": str(e)}
+        )
     logging.info("Order finished successfully")
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido finalizado com sucesso"})
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido finalizado com sucesso", "saldo_cliente": str(pedido.idCliente.saldo)})
 
 @router.patch("/cancel_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def cancel_order(idPedido: str):
@@ -403,7 +403,7 @@ def cancel_order(idPedido: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": str(e)}
         )
-    if pedido.status == "Pendente":
+    if pedido.status == "Pago":
         try:
             logging.info("Updating caixa balance")
             if crud.update_balance_caixa_pedido(pedido.idCaixa, -abs(pedido.idPagamento.valorTotal), pedido.idPagamento.tipoPagamento):
@@ -418,7 +418,7 @@ def cancel_order(idPedido: str):
             )
         try:
             logging.info("Updating balance of client")
-            if crud.update_balance_client_delete(pedido.idCliente, -abs(pedido.idPagamento.valorTotal)):
+            if crud.update_balance_client_cancel(pedido):
                 logging.info("Balance of client updated")
             else:
                 logging.info("Balance of client not updated")
@@ -501,18 +501,6 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao deletar produtos do pedido: " + str(e)}
-        )
-    try:
-        logging.info("Updating balance of client")
-        if crud.update_balance_client_delete(idCliente=pedido["idCliente"], valorTotal=pedido["valorTotal"]):
-            logging.info("Balance of client updated")
-        else:
-            logging.info("Balance of client not updated")
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao atualizar saldo do cliente: " + str(e)}
         )
     try:
         logging.info("Deleting order")
