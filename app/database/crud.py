@@ -16,11 +16,11 @@ def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMe
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
 
-def create_pagamento(valorTotal, valorRecebimento, valorDevolvido, tipoPagamento):
+def create_pagamento(valorTotal, valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
     return models.Pagamento.create(valorTotal=Decimal(str(valorTotal)), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
 
-def create_pedido(idCliente, idPagamento, idUsuario, idCaixa):
-    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa)
+def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):
+    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status)
 
 def create_produto_pedido(idPedido, idProduto, quantidade):
     return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade)
@@ -204,11 +204,19 @@ def get_pedido_by_id(idPedido):
             "idUsuario": str(pedido.idUsuario.idUsuario),
             "nomeUsuario": pedido.idUsuario.nome,
             "idCaixa": str(pedido.idCaixa.idCaixa),
+            "status": pedido.status,
             "idProdutos": get_all_produtos_pedidos_by_id(idPedido)
         }
     except DoesNotExist:
         return None
 
+def get_pedido_object_by_id(idPedido):
+    try:
+        pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
+
+        return pedido
+    except DoesNotExist:
+        return None
 def get_cargo_by_id(uuid):
     try:
         cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
@@ -329,34 +337,32 @@ def get_all_estoques():
         return None
 
 def get_all_pedidos():
-    try:
-        # Tenta buscar todos os pedidos
-        pedidos = models.Pedido.select()
+    # Tenta buscar todos os pedidos
+    pedidos = models.Pedido.select()
 
-        # Verifica se há pedidos
-        if pedidos.exists():
-            # Retorna a lista de pedidos se houver algum
-            return [
-                {
-                    "idPedido": str(pedido.idPedido),
-                    "idCliente": str(pedido.idCliente.idCliente),
-                    "nomeCliente": pedido.idCliente.nome,
-                    "idPagamento": str(pedido.idPagamento.idPagamento),
-                    "valorTotal": str(pedido.idPagamento.valorTotal),
-                    "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
-                    "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
-                    "tipoPagamento": pedido.idPagamento.tipoPagamento,
-                    "idUsuario": str(pedido.idUsuario.idUsuario),
-                    "nomeUsuario": pedido.idUsuario.nome,
-                    "idCaixa": str(pedido.idCaixa.idCaixa)
-                }
-                for pedido in pedidos
-            ]
-        else:
-            # Se não houver pedidos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há pedidos
+    if pedidos.exists():
+        # Retorna a lista de pedidos se houver algum
+        return [
+            {
+                "idPedido": str(pedido.idPedido),
+                "idCliente": str(pedido.idCliente.idCliente),
+                "nomeCliente": pedido.idCliente.nome,
+                "idPagamento": str(pedido.idPagamento.idPagamento),
+                "valorTotal": str(pedido.idPagamento.valorTotal),
+                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+                "tipoPagamento": pedido.idPagamento.tipoPagamento,
+                "idUsuario": str(pedido.idUsuario.idUsuario),
+                "nomeUsuario": pedido.idUsuario.nome,
+                "idCaixa": str(pedido.idCaixa.idCaixa),
+                "status": pedido.status
+            }
+            for pedido in pedidos
+        ]
+    else:
+        print("Não há pedidos")
+        # Se não houver pedidos, retorna None
         return None
 
 def get_all_produtos_pedidos_by_id(idPedido):
@@ -382,6 +388,46 @@ def get_all_produtos_pedidos_by_id(idPedido):
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
+def update_balance_client(pedido):
+    try:
+        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
+
+        # Verifica se há produtos_pedidos
+        if produtos_pedidos.exists():
+            # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
+            for produto_pedido in produtos_pedidos:
+                if produto_pedido.idProduto.categoria == 'Açaí':
+                    pedido.idCliente.saldo += produto_pedido.idProduto.valorVenda * produto_pedido.quantidade
+                    print(pedido.idCliente.saldo)
+                    pedido.idCliente.save()
+            return True
+        else:
+            # Se não houver produtos_pedidos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
+def update_balance_client_cancel(pedido):
+    try:
+        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
+
+        # Verifica se há produtos_pedidos
+        if produtos_pedidos.exists():
+            # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
+            for produto_pedido in produtos_pedidos:
+                if produto_pedido.idProduto.categoria == 'Açaí':
+                    pedido.idCliente.saldo -= produto_pedido.idProduto.valorVenda * produto_pedido.quantidade
+                    print(pedido.idCliente.saldo)
+                    pedido.idCliente.save()
+            return True
+        else:
+            # Se não houver produtos_pedidos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+        
 def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
@@ -529,15 +575,6 @@ def update_cargo(uuid, nome=None):
     except DoesNotExist:
         return None
 
-def update_balance_client(uuid, valor):
-    try:
-        cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
-        cliente.saldo += Decimal(str(valor))
-        cliente.save()
-        return True
-    except DoesNotExist:
-        return None
-
 def update_balance_client_delete(idCliente, valorTotal):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == idCliente)
@@ -616,6 +653,33 @@ def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
         if tipoPagamento == 'Dinheiro':
             caixa.somenteDinheiro += Decimal(str(valorTotal))
             caixa.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def update_pagamento(idPagamento, tipoPagamento, valorRecebimento=0.0, valorDevolvido=0.0):
+    try:
+        pagamento = models.Pagamento.get(models.Pagamento.idPagamento == idPagamento)
+        pagamento.valorRecebimento = Decimal(str(valorRecebimento))
+        pagamento.valorDevolvido = Decimal(str(valorDevolvido))
+        pagamento.tipoPagamento = tipoPagamento
+        pagamento.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def update_pagamento_valorTotal(idPagamento, valorTotal):
+    try:
+        idPagamento.valorTotal = Decimal(str(valorTotal))
+        idPagamento.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def update_pedido_status(pedido, status):
+    try:
+        pedido.status = status
+        pedido.save()
         return True
     except DoesNotExist:
         return None
