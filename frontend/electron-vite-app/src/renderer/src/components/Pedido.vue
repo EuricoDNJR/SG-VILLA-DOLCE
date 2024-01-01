@@ -1,7 +1,17 @@
-<script setup></script>
+<script setup>
+
+import { ref, computed } from 'vue';
+import { fetchPost, fetchPatch, confirmDialog } from '../utils/common';
+import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
+
+const caixaStore = useCaixaStore();
+
+const caixaIsOpen = computed(() => caixaStore.getStatus === 'aberto');
+
+</script>
 
 <template>
-   <div class="page-content">
+   <div v-if="caixaIsOpen" class="page-content">
         <section class="main-content">
             <div class="toolbar">
 
@@ -89,11 +99,11 @@
 
                 <div>
                     <div class="search-container">
-                    <form action="#" method="get">
-                        <input type="text" class="search-box" name="search" placeholder="Buscar">
-                        <button type="submit" class="search-btn"><img src="../assets/search-imgs/magnifying-glass-solid.svg"
-                            alt="search icone"></button>
-                    </form>
+                        <form action="#" method="get">
+                            <input type="text" class="search-box" name="search" placeholder="Buscar">
+                            <button type="submit" class="search-btn"><img src="../assets/search-imgs/magnifying-glass-solid.svg"
+                                alt="search icone"></button>
+                        </form>
                     </div>
 
                     <button class="register-btn"><a href="#">Cadastrar cliente</a></button>
@@ -164,6 +174,9 @@
             </div>
         </section>
     </div>
+    <div v-else class="close-caixa">
+        <h1>CAIXA FECHADO</h1>
+    </div>
 </template>
 
 <style scoped>
@@ -173,6 +186,19 @@
         background: #ffffff;  
     }
 
+    .close-caixa{
+        display: flex;
+        justify-content: center;
+    }
+
+    .close-caixa h1{
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #d51818;
+        font-weight: bold;
+        font-size: 5em;
+    }
     .toolbar {
         display: flex;
         justify-content: space-between;
