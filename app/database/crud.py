@@ -155,6 +155,21 @@ def get_cliente(telefone):
     except DoesNotExist:
         return None
 
+def get_client_discounts(uuid):
+    try:
+        cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
+        pontos = cliente.saldo / Decimal(15)
+        descontos = pontos * Decimal(0.1)
+        valor_prox_desconto = int(descontos + 1) * 150
+        return {
+            "descontos": str(int(descontos)),
+            "pontos": str(int(cliente.saldo / Decimal(15))),
+            "saldo": str(cliente.saldo),
+            "proximo_desconto": str(valor_prox_desconto - cliente.saldo)
+        }
+    except DoesNotExist:
+        return None
+
 def get_product_by_id(uuid):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
