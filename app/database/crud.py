@@ -590,15 +590,6 @@ def update_cargo(uuid, nome=None):
     except DoesNotExist:
         return None
 
-def update_balance_client_delete(idCliente, valorTotal):
-    try:
-        cliente = models.Cliente.get(models.Cliente.idCliente == idCliente)
-        cliente.saldo -= Decimal(str(valorTotal))
-        cliente.save()
-        return True
-    except DoesNotExist:
-        return None
-
 def update_quantity_product(uuid, quantidade):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
