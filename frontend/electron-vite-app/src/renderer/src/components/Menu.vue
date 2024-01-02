@@ -9,7 +9,7 @@
   const isCurrentPage = reactive({
     dashboard: true,
     caixa: false,
-    pedido: false,
+    pedidos: false,
     clientes: false,
     funcionarios: false,
     configuracoes: false
@@ -50,7 +50,7 @@
             <ul>
               <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('dashboard')" :class="{isCurrentPage: isCurrentPage.dashboard}">Dashboard</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'caixa' }" @click="currentPage('caixa')" :class="{isCurrentPage: isCurrentPage.caixa}">Caixa</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'pedido' }" @click="currentPage('pedido')" :class="{isCurrentPage: isCurrentPage.pedido}">Pedido</router-link></li>
+              <li><router-link class="redirect" :to="{ name: 'pedidos' }" @click="currentPage('pedidos')" :class="{isCurrentPage: isCurrentPage.pedidos}">Pedidos</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'clientes' }" @click="currentPage('clientes')" :class="{isCurrentPage: isCurrentPage.clientes}">Clientes</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'funcionarios' }" @click="currentPage('funcionarios')" :class="{isCurrentPage: isCurrentPage.funcionarios}">Colaboradores</router-link></li>
               <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('configuracoes')" :class="{isCurrentPage: isCurrentPage.configuracoes}">Configurações</router-link></li>
@@ -116,18 +116,13 @@
   }
 
   .aside-in-normal-flow{
-    position: relative;
-    width: 18vw;
-    height: 100vh;
-    min-width: 240px;
+    min-width: 255px;
   }
   
   aside {
     position: fixed;
     background-color: #6940AA;
-    width: 18vw;
-    height: 100vh;
-    min-width: 240px;
+    height: 100%;
     padding: 20px 50px;
     z-index: 9999;
   }
