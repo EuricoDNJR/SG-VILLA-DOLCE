@@ -90,7 +90,36 @@ def get_all_caixa():
     except DoesNotExist:
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
-    
+
+def get_pedidos_caixa(idCaixa):
+    try:
+        pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+
+        # Verifica se há pedidos
+        if pedidos.exists():
+            # Retorna a lista de pedidos pagos se houver algum
+            return [
+                {
+                    "idPedido": str(pedido.idPedido),
+                    "idCliente": str(pedido.idCliente.idCliente),
+                    "nomeCliente": pedido.idCliente.nome,
+                    "idPagamento": str(pedido.idPagamento.idPagamento),
+                    "valorTotal": str(pedido.idPagamento.valorTotal),
+                    "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+                    "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+                    "tipoPagamento": pedido.idPagamento.tipoPagamento,
+                    "idUsuario": str(pedido.idUsuario.idUsuario),
+                    "nomeUsuario": pedido.idUsuario.nome
+                }
+                for pedido in pedidos if pedido.status == 'Pago'
+            ]
+        else:
+            # Se não houver pedidos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
 def get_all_cargos():
     try:
         # Tenta buscar todos os cargos
