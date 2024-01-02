@@ -97,7 +97,7 @@ def get_pedidos_caixa(idCaixa):
 
         # Verifica se há pedidos
         if pedidos.exists():
-            # Retorna a lista de pedidos pagos se houver algum
+            # Retorna a lista de pedidos pagos ou pendentes se houver algum
             return [
                 {
                     "idPedido": str(pedido.idPedido),
@@ -109,9 +109,10 @@ def get_pedidos_caixa(idCaixa):
                     "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
                     "tipoPagamento": pedido.idPagamento.tipoPagamento,
                     "idUsuario": str(pedido.idUsuario.idUsuario),
-                    "nomeUsuario": pedido.idUsuario.nome
+                    "nomeUsuario": pedido.idUsuario.nome,
+                    "status": pedido.status
                 }
-                for pedido in pedidos if pedido.status == 'Pago'
+                for pedido in pedidos if pedido.status == 'Pago' or pedido.status == 'Pendente'
             ]
         else:
             # Se não houver pedidos, retorna None
