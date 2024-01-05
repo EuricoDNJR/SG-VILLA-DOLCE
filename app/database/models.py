@@ -91,6 +91,7 @@ class Pedido(BaseModel):
     idUsuario = ForeignKeyField(Usuario, backref='pedido')
     idCaixa = ForeignKeyField(Caixa, backref='pedido')
     status = CharField()
+    desconto = BooleanField(default=False)
 
     class Meta:
         table_name = "Pedido"
@@ -100,7 +101,7 @@ class ProdutoPedido(BaseModel):
     idPedido = ForeignKeyField(Pedido, backref='produtos_pedidos')
     idProduto = ForeignKeyField(Produto, backref='produtos_pedidos')
     quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
-
+    desconto = DecimalField(max_digits=10, decimal_places=2, default=0.0)
     class Meta:
         table_name = "ProdutoPedido"
 

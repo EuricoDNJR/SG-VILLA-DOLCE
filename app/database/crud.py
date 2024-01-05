@@ -19,11 +19,11 @@ def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observaco
 def create_pagamento(valorTotal, valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
     return models.Pagamento.create(valorTotal=Decimal(str(valorTotal)), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
 
-def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):
-    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status)
+def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status, desconto):
+    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status, desconto=desconto)
 
-def create_produto_pedido(idPedido, idProduto, quantidade):
-    return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade)
+def create_produto_pedido(idPedido, idProduto, quantidade, desconto=0.0):
+    return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade, desconto=Decimal(str(desconto)))
 
 def create_cargo(nome):
     return models.Cargo.create(nome=nome)
@@ -412,8 +412,13 @@ def update_balance_client(pedido):
             # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
             for produto_pedido in produtos_pedidos:
                 if produto_pedido.idProduto.categoria == 'Açaí':
-                    pedido.idCliente.saldo += produto_pedido.idProduto.valorVenda * produto_pedido.quantidade
-                    print(pedido.idCliente.saldo)
+                    if produto_pedido.desconto > Decimal(0.0):
+                        pedido.idCliente.saldo -= Decimal(150)
+                        pedido.idCliente.saldo += produto_pedido.idProduto.valorVenda * produto_pedido.quantidade - produto_pedido.desconto
+                        if produto_pedido.desconto <= Decimal(15):
+                            pedido.idCliente.saldo += Decimal(15) - produto_pedido.desconto
+                    else:    
+                        pedido.idCliente.saldo += produto_pedido.idProduto.valorVenda * produto_pedido.quantidade
                     pedido.idCliente.save()
             return True
         else:
@@ -685,6 +690,14 @@ def update_pagamento_valorTotal(idPagamento, valorTotal):
 def update_pedido_status(pedido, status):
     try:
         pedido.status = status
+        pedido.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def update_pedido_desconto(pedido, desconto):
+    try:
+        pedido.desconto = desconto
         pedido.save()
         return True
     except DoesNotExist:
