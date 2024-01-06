@@ -24,6 +24,7 @@ class PagamentoPedido(BaseModel):
 class ProdutoPedido(BaseModel):
     idProduto: str 
     quantidade: float
+    desconto: Optional[float] = 0.0
 
 class CreateOrderRequest(BaseModel):
     idCliente: str
@@ -31,6 +32,7 @@ class CreateOrderRequest(BaseModel):
     idCaixa: str
     idProdutos: List[ProdutoPedido]
     status: str
+    desconto: bool
 
 @router.post("/create_order/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
 def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
@@ -39,25 +41,27 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     exemplo de entrada:
 
         {
-            "idCliente": "ea68b806-ff49-4604-b52a-89c0db6da721",
+            "idCliente": "e2c93eac-12e9-4a95-8298-a364e279856c",
             "Pagamento": {
-                "valorTotal": 10.00,
-                "valorRecebimento": 12.00,
-                "valorDevolvido": 2.00,
+                "valorTotal": 20.00,
+                "valorRecebimento": 50.00,
+                "valorDevolvido": 30.00,
                 "tipoPagamento": "Dinheiro"
             },
-            "idCaixa": "852cb8c5-9a79-41a7-8fe2-356f9c2748b0",
+            "idCaixa": "037543ea-5449-451f-88dd-3370af50f7aa",
             "idProdutos": [
                 {
-                "idProduto": "d05ecaa4-96d1-4a10-ae81-223ac683affa",
-                "quantidade": 2
+                "idProduto": "d507c1bf-2bcb-4757-9cb0-fe377a248052",
+                "quantidade": 0.450,
+                "desconto": 15.00
                 },
                 {
-                "idProduto": "51889c6b-4b30-4fa6-969c-eea8bb786ba0",
-                "quantidade": 0.300
+                "idProduto": "6fcf9078-7505-4b45-911a-c448759449c4",
+                "quantidade": 2
                 }
             ],
-            "status": "Pago"
+            "status": "Pago",
+            "desconto": true
         }
     """
     
@@ -81,7 +85,8 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
         idPagamento=pagamento.idPagamento,
         idUsuario=jwt_token,
         idCaixa=data.idCaixa,
-        status=data.status
+        status=data.status,
+        desconto=data.desconto
     )
     if pedido is None:
         return JSONResponse(
@@ -95,7 +100,8 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             crud.create_produto_pedido(
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
-                quantidade=produto.quantidade
+                quantidade=produto.quantidade,
+                desconto=produto.desconto
             )
         logging.info("Products added to order")
     except Exception as e:
@@ -188,6 +194,7 @@ def get_order(idPedido: str):
 class AddInOrderRequest(BaseModel):
     idProdutos: List[ProdutoPedido]
     valorTotal: float
+    desconto: bool
     
 @router.patch("/add_in_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def add_in_order(idPedido: str, data: AddInOrderRequest):
@@ -203,10 +210,12 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
                 },
                 {
                 "idProduto": "51889c6b-4b30-4fa6-969c-eea8bb786ba0",
-                "quantidade": 0.300
+                "quantidade": 0.300,
+                "desconto": 15.00
                 }
             ],
-            valorTotal: 10.00
+            valorTotal: 15.00,
+            desconto: True
         }
     """
     logging.info("Getting order by id")
@@ -242,7 +251,8 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
             crud.create_produto_pedido(
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
-                quantidade=produto.quantidade
+                quantidade=produto.quantidade,
+                desconto=produto.desconto
             )
             if crud.update_quantity_product(produto.idProduto, produto.quantidade):
                 logging.info("Quantity of product {} updated".format(produto.idProduto))
@@ -253,6 +263,11 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
             logging.info("Total value of order updated")
         else:
             logging.info("Total value of order not updated")
+        logging.info("Updating discount of order")
+        if crud.update_pedido_desconto(pedido, data.desconto):
+            logging.info("Discount of order updated")
+        else:
+            logging.info("Discount of order not updated")
         logging.info("New product(s) added to order")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto(s) adicionado(s) ao pedido com sucesso"})
     except Exception as e:
