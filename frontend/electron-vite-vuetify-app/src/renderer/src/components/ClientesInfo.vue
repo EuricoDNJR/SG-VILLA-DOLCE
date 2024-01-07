@@ -1,344 +1,332 @@
 <script setup>
 
-import { ref } from 'vue'
-import { useAuthStore, useClienteStore, useSnackbarStore } from '../utils/store';
+import { ref, reactive, computed, toRaw } from 'vue'
+import { useAuthStore, usePessoaStore, useSnackbarStore } from '../utils/store';
 import { fetchPatch, fetchDelete, isEmptyObject, confirmDialog } from '../utils/common'
-import { useRouter } from 'vue-router';
 
-const authStore = useAuthStore();
-const router = useRouter();
-const clienteStore = useClienteStore();
-const snackbarStore = useSnackbarStore();
-const nome = ref(clienteStore.getNome);
-const email = ref(clienteStore.getEmail);
-const telefone = ref(clienteStore.getTelefone);
-const cpf = ref(clienteStore.getCpf);
-const dataNascimento = ref(clienteStore.getDataNascimento);
-const endereco = ref(clienteStore.getEndereco);
-const saldo = ref(clienteStore.getSaldo);
-const pontos = ref(clienteStore.getPontos);
-const editSaveBtnText = ref('Editar');
-const isEditable = ref(false);
+class EditSaveBtn {
+  constructor(btn) {
+    this._btn = reactive(btn);
+  }
 
-console.log(clienteStore.getIdCliente);
+  get btn() {
+    return this._btn;
+  }
 
-function getClienteInfoChange(){
-    let data = {};
-    
-    if(nome.value != clienteStore.getNome){
-        data.nome = nome.value ;
+  set btn(obj) {
+    for(let key in obj){
+        this._btn[key] = obj[key];
     }
-    if(email.value != clienteStore.getEmail){
-        data.email = email.value;
-    }
-    if(telefone.value != clienteStore.getTelefone){
-        data.telefone = telefone.value ;
-    }
-    if(cpf.value != clienteStore.getCpf){
-        data.cpf = cpf.value ;
-    }
-    if(dataNascimento.value != clienteStore.getDataNascimento){
-        data.dataNascimento = dataNascimento.value;
-    }
-    if(endereco.value != clienteStore.getEndereco){
-        data.endereco = endereco.value;
-    }
+  }
 
-    return data;
+  isEditarBtn() {
+    return this.btn.text === "Editar";
+  }
+
+  isSalvarBtn(){
+    return this.btn.text === "Salvar";
+  }
+
+  setSalvarBtn(){
+    this.btn = {
+        text: "Salvar",
+        color: "green",
+        icon: "mdi-content-save",
+    };
+  }
+
+  setEditarBtn(){
+    this.btn = {
+        text: "Editar",
+        color: "blue",
+        icon: "mdi-pencil",
+    };
+  }
+
+  toogle(){
+    if(this.isEditarBtn()){
+        this.setSalvarBtn();
+    }else{
+        this.setEditarBtn();
+    }
+  }
 }
 
-async function updateClienteInfo(){
-    const data = getClienteInfoChange();
+class PessoaInfoChange {
+  constructor(attrs) {
+    this._attrs = reactive(attrs);
+  }
 
-    if(!isEmptyObject(data)){
+  get attrs() {
+    return toRaw(this._attrs);
+  }
+
+  set attrs(obj) {
+    this._attrs = reactive(obj);
+  }
+
+  setAttr(attr, valor){
+    this._attrs[attr] = valor;
+  }
+
+  reset(){
+    for (const key of Object.keys(this._attrs)) {
+        delete this._attrs[key];
+    }
+  } 
+}
+
+const authStore = useAuthStore();
+const pessoaStore = usePessoaStore();
+const snackbarStore = useSnackbarStore();
+
+const props = defineProps(['pessoa']);
+
+savePersonInStore(props.pessoa);
+
+console.log("Cliente ID: " + pessoaStore.getPessoa.idCliente + "           ClientesInfo.vue");
+
+const idCliente = computed(() => pessoaStore.getPessoa.idCliente);
+const nome = createComputedWithGetSet("nome");
+const telefone = createComputedWithGetSet("telefone");
+const email = createComputedWithGetSet("email");
+const cpf = createComputedWithGetSet("cpf");
+const dataNascimento = createComputedWithGetSet("dataNascimento");
+const endereco = createComputedWithGetSet("endereco");
+const saldo = computed(() => pessoaStore.getPessoa.saldo);
+const pessoaInfoChange = new PessoaInfoChange({});
+
+const editSaveBtn = new EditSaveBtn({
+    text: "Editar",
+    color: "blue",
+    icon: "mdi-pencil",
+});
+const isEditable = ref(false);
+
+function savePersonInStore(pessoa){
+    let isNewPessoa = undefined;
+
+    try{
+      isNewPessoa = pessoaStore.getPessoa.idCliente != pessoa.idCliente;
+    }catch{
+      isNewPessoa = true
+    }
+
+    if(isNewPessoa){
+      pessoaStore.setPessoa(pessoa);
+    }
+}
+
+function createComputedWithGetSet(attr){
+    const varComputed = computed({
+        get() {
+            let value = null;
+
+            value = pessoaInfoChange.attrs[attr];
+
+            if(!value){
+                value = pessoaStore.getPessoa[attr];
+            }
+            
+            return value;
+        },
+        set(newValue) {
+            pessoaInfoChange.setAttr(attr, newValue);
+        }
+    });
+
+    return varComputed;
+}
+
+function ToogleEditableClienteInfo(){
+    if(editSaveBtn.isSalvarBtn()){
+        isEditable.value = false;
+
+        updateClienteInfo();
+
+        pessoaInfoChange.reset();
+    }else{
+        isEditable.value = true;
+    }
+
+    editSaveBtn.toogle();
+}
+
+async function updateClienteInfo(id=idCliente.value){
+    const infoChange = {...pessoaInfoChange.attrs};
+
+    if(!isEmptyObject(infoChange)){
         try{
-            clienteStore.updateClienteInfo(data);
-
-            const url = `http://127.0.0.1:8000/v1/cliente/update_cliente/${clienteStore.getIdCliente}/`;
-            const body = data;
-            const token = authStore.getToken;
+            const url = `http://127.0.0.1:8000/v1/cliente/update_cliente/${id}/`;
+            const body = infoChange;
+            const token = authStore.getToken;   
 
             const response = await fetchPatch(url, body, token);
             
             if(response.status === 200){
-                snackbarStore.snackbar("As informações do cliente foram atualizadas com sucesso", 'green');
+                console.log(infoChange);
+                pessoaStore.update(infoChange);
+                snackbarStore.set("As informações do cliente foram atualizadas com sucesso", "success");
             }else{
-                snackbarStore.snackbar("Falha ao atualizar informações do cliente", 'red');
+                snackbarStore.set("Falha ao atualizar informações do cliente", "error");
             }
         }catch(e){
             console.log(e);
-            snackbarStore.snackbar("Falha ao atualizar informações do cliente", 'red');
+            snackbarStore.set("Falha ao atualizar informações do cliente", "error");
         }
-           
     }
 }
 
-function isEditarbtn(){
-    return editSaveBtnText.value === "Editar"
-}
-
-function setSalvarBtn(){
-    isEditable.value = true;
-    editSaveBtnText.value = "Salvar";
-}
-
-function setEditarBtn(){
-    isEditable.value = false;
-    editSaveBtnText.value = "Editar";
-}   
-
-function ToogleEditableClienteInfo(){
-    if(isEditarbtn()){
-        setSalvarBtn();
-    }else{
-        updateClienteInfo();
-        
-        setEditarBtn();
-    }
-}
-
-async function deleteCliente(){
+async function deleteCliente(id=idCliente.value){
     try{
-        const url = `http://127.0.0.1:8000/v1/cliente/delete_cliente/${clienteStore.getIdCliente}/`;
+        const url = `http://127.0.0.1:8000/v1/cliente/delete_cliente/${id}/`;
         const token = authStore.getToken;
         
         const response = await fetchDelete(url, token);
 
         if(response.status === 200){
-            snackbarStore.snackbar("Cliente deletado com sucesso", 'green');
-            router.push("/menu/clientes/");
+            pessoaStore.delete(id);
+            
+            snackbarStore.set("O cliente foi removido do sistema com sucesso", "success");
         }else{
-            snackbarStore.snackbar("Falha ao deletar cliente", 'red');
+            snackbarStore.set("Falha ao remover cliente do sistema", "warning");
         }
     }catch(e){
         console.log(e);
-        snackbarStore.snackbar("Falha ao deletar cliente", 'red');
+        snackbarStore.set("Falha ao remover cliente do sistema", "warning");
     }
 }
 
 function deleteClienteConfirmation(){
-    confirmDialog("Tem certeza que deseja prosseguir?", deleteCliente);
+    confirmDialog("Tem certeza que deseja remover esse cliente do sistema?", deleteCliente);
+}
+
+function saldoToPontos(saldo){
+    return Math.floor(saldo/15);
 }
 
 </script>
 
 <template>
-   <div class="page-content">
-        <!-- <a href="#"><img src="assets/imgs/back-img.svg" alt=""></a> -->
+    <form @submit.prevent="">
+        <v-row>
+            <v-col>
+                <v-text-field
+                    variant="underlined"
+                    v-model="nome"
+                    label="Nome"
+                    hide-details="auto"
+                    :readonly="!isEditable"
+                ></v-text-field>
+            </v-col>
+            <v-col>
+                <v-text-field
+                    variant="underlined"
+                    v-model="telefone"
+                    label="Número de Telefone"
+                    hide-details="auto"
+                    :readonly="!isEditable"
+                ></v-text-field>
+            </v-col>
+        </v-row>
 
-        <div id="cliente-info">
-            
-            <div class="toolbar">
-                <h1>Cliente</h1>
+        <v-row>
+            <v-col>
+                <v-text-field
+                    variant="underlined"
+                    v-model="email"
+                    label="E-mail"
+                    hide-details="auto"
+                    :readonly="!isEditable"
+                ></v-text-field>
+            </v-col>
+            <v-col>
+                <v-text-field
+                    variant="underlined"
+                    v-model="cpf"
+                    label="CPF"
+                    hide-details="auto"
+                    :readonly="!isEditable"
+                ></v-text-field>
+            </v-col>
+        </v-row>
 
-                <div>
-                    <button class="edit-btn" @click="ToogleEditableClienteInfo" :class="{saveBtn: isEditable}">{{ editSaveBtnText }}</button>
-                    <button class="delete-btn" @click="deleteClienteConfirmation">Apagar</button>
-                </div>
-            </div>
-            
-            <hr>
-
-            <div class="info-field">
-                <label for="name">Nome:</label>
-                <input id="name" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="nome">
-            </div>
-
-            <hr>
-
-            <div class="info-field">    
-                <label for="email">E-mail:</label>
-                <input id="email" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="email">
-            </div>
-
-            <hr>
-
-            <div class="info-field">
-                <label for="phone">Telefone:</label>
-                <input id="phone" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="telefone">
-            </div>
-
-            <hr>
-
-            <div class="info-field">
-                <label for="cpf">CPF:</label>
-                <input id="cpf" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="cpf">
-            </div>
-
-            <hr>
-
-            <div class="info-field">
-                <label for="date_of_birth">Data de Nascimento:</label>
-                <input id="date_of_birth" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="dataNascimento">
-            </div>
-                
-            <hr>
-
-            <div class="info-field">
-                <label for="address">Endereço:</label>
-                <input id="address" :class="{ editableItem: isEditable }" :readonly="!isEditable" v-model="endereco">
-            </div>
-
-            <hr>
-
-            <div class="info-field">
-                <label for="credit">Saldo:</label>
-                <p id="credit">R$ {{ saldo.replace('.', ',') }}</p>
-            </div>
-
-            <hr>
-        </div>
-
-        <div class="card-field">
-            <div class="card">
-                <div class="card-top-area">
-                    <h3 class="card-title">Villa Dolce Açai</h3>
-                    <img src="../assets/clientes-info-imgs/selo-img.png" alt="card stamp">
-                </div>
-                <div class="card-main-area">
-                    <p>Pontos:</p>
-                    <span>{{ pontos }}</span>
-                </div>
-            </div>
-        </div>
+        <v-row>
+            <v-col>
+                <v-text-field
+                    variant="underlined"
+                    v-model="dataNascimento"
+                    label="Data de Nascimento"
+                    hide-details="auto"
+                    :readonly="!isEditable"
+                ></v-text-field>
+            </v-col>
+            <v-col>
+                <v-text-field
+                    variant="underlined"
+                    v-model="endereco"
+                    label="Endereço"
+                    hide-details="auto"
+                    :readonly="!isEditable"
+                ></v-text-field>
+            </v-col>
+        </v-row>
         
-    </div>
+        <v-row class="mb-4"> 
+            <v-col>
+                <v-card variant="tonal" color="green">
+                    <v-card-title>
+                        Saldo
+                    </v-card-title>
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols="auto">
+                                <v-icon >mdi-currency-brl</v-icon>
+                            </v-col>
+                            <v-col>
+                                <h2>{{ saldo.replace('.', ',') }}</h2>
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+            <v-col>
+                <v-card variant="tonal" color="purple">
+                    <v-card-title>
+                        Pontos
+                    </v-card-title>
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols="auto">
+                                <v-icon>mdi-star</v-icon>
+                            </v-col>
+                            <v-col>
+                                <h2>{{ saldoToPontos(Number(saldo)) }}</h2>
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <v-btn
+            class="me-4"
+            :color="editSaveBtn.btn.color"
+            @click="ToogleEditableClienteInfo"
+            :prepend-icon="editSaveBtn.btn.icon"
+        >
+            {{ editSaveBtn.btn.text }}
+        </v-btn>
+
+        <v-btn
+            color="red"
+            @click="deleteClienteConfirmation"
+            prepend-icon="mdi-delete"
+        >
+            Remover
+        </v-btn> 
+    </form>
 </template>
 
 <style scoped>
-    .page-content {
-        display: flex;
-        flex-direction: column;
-        background: #ffffff;  
-    }
-    hr {
-        height: 2px;
-        border-width: 0px;
-        background-color: #EEEEEE;
-    }
-
-    .toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .edit-btn {
-        width: 100px;
-        height: 40px;
-        background: #16c09849;
-        font-size: 18px;
-        border-radius: 5px;
-        border-style: solid;
-        border-color: #119a7a;
-        cursor: pointer;
-        margin-right: 5px;
-        color: #119a7a;
-        font-weight: bold;
-    }
-
-    .delete-btn {
-        width: 100px;
-        height: 40px;
-        background: #df04044d;
-        font-size: 18px;
-        border-radius: 5px;
-        border-style: solid;
-        border-color: #DF0404;
-        cursor: pointer;
-        color: #DF0404;
-        font-weight: bold;
-    }
-
-    .saveBtn {
-        background-color: #267fec49;
-        border-color: #177cbf;
-        color: #177cbf;
-    }
-
-    .info-field {
-        display: flex;
-        margin: 10px 0px 10px 0px;
-    }
-
-    .info-field label {
-        font-weight: bold;
-        font-size: 20px;
-    }
-
-    .info-field input {
-        display: block;
-        font-size: 20px;
-        margin-left: 10px;
-        border: none;
-        flex: 1;
-    }
-
-    .info-field p {
-        font-size: 20px;
-        margin-left: 10px;
-    }
-
-    .editableItem{
-        background-color: rgb(237, 237, 237);
-        border: 1px solid black;
-    }
-
-    .card-field {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 10px 0px 10px 0px;
-    }
-
-    .card {
-        background: linear-gradient(264deg, rgba(65, 2, 165, 0.60) 26.97%, rgba(3, 23, 203, 0.60) 100%);
-        width: 32vw;
-        height: 33vh;
-        padding: 15px;
-        border-radius: 15px;
-        color: #ffffff;
-        font-size: 25px;
-        font-weight: bold;
-        position: relative;
-    }
-
-    .card h3{
-        font-size: 1.25rem;
-    }
-
-    .card img{
-        top: 0px;
-        right: 0px;
-        position: absolute;
-        width: 3vw;
-        height: auto;
-    }
-
-    .card-top-area{
-        position: relative;
-    }
-
-    .card-main-area{
-        position: relative;
-        top: 50%;
-        transform: translateY(-60%);
-        text-align: center;
-    }
-
-    .card p{
-        display: inline-block;
-        position: absolute;
-        font-size: 1.2rem;
-        top: 0px;
-        left: 0px;
-    }
-
-    .card span{
-        display: inline;
-        font-size: 6rem;
-        top: 0px;
-    }
-
 </style>

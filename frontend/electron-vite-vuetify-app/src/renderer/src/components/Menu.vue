@@ -1,31 +1,23 @@
 <script setup>
   import { ref, reactive, computed } from 'vue'
+  import { useRouter } from 'vue-router';
   import { useAuthStore, useSnackbarStore } from '../utils/store';
-  
+
+
+  const router = useRouter();
   const authStore = useAuthStore();
   const snackbarStore = useSnackbarStore();
   const nome = ref(authStore.getNome);
   const cargo = ref(authStore.getCargo);
-  const isCurrentPage = reactive({
-    dashboard: true,
-    caixa: false,
-    pedidos: false,
-    clientes: false,
-    funcionarios: false,
-    configuracoes: false
-  });
+
   const showSnackbar = computed(() => snackbarStore.showSnackbar);
   const messageSnackbar = computed(() => snackbarStore.message);
   const backgroundColor = computed(() => snackbarStore.backgroundColor);
 
-  function currentPage(currentPageName){
-    for (let key in isCurrentPage) {
-      isCurrentPage[key] = key === currentPageName;
-    }
-  }
-
   function resetUserInfo(){
     authStore.reset();
+
+    router.push('/');
   }
 
   function closeSnackbar(){
@@ -39,26 +31,61 @@
     <button @click="closeSnackbar" class="close-btn">FECHAR</button>
   </div>
   <main>
-    <div class="aside-in-normal-flow">
-      <aside>
-          <div class="user-info">
-            <img src="" alt="foto do usuário">
-            <span class="user" id="user">{{ nome }}</span>
-            <span class="position" id="position">{{ cargo }}</span>
+    <v-navigation-drawer
+    color="deep-purple">
+      <v-list-item :title="nome" :subtitle="cargo"></v-list-item>
+
+      <v-divider></v-divider>
+
+      <v-list-item 
+        prepend-icon="mdi-view-dashboard" 
+        link title="Dashboard" 
+        to="/menu/dashboard/">
+      </v-list-item>
+
+      <v-list-item 
+        prepend-icon="mdi-cash-register" 
+        link title="Caixa" 
+        to="/menu/caixa/">
+      </v-list-item>
+
+      <v-list-item 
+        prepend-icon="mdi-receipt" 
+        link title="Pedidos" 
+        to="/menu/pedidos/">
+      </v-list-item>
+
+      <v-list-item 
+        prepend-icon="mdi-account-multiple" 
+        link title="Clientes" 
+        to="/menu/clientes/">
+      </v-list-item>
+
+      <v-list-item 
+        prepend-icon="mdi-account-group" 
+        link title="Colaboradores" 
+        to="/menu/funcionarios/">
+      </v-list-item>
+
+      <v-list-item 
+        prepend-icon="mdi-cog" 
+        link title="Configurações" 
+        to="/menu/dashboard/">
+      </v-list-item>
+
+      <template v-slot:append>
+          <div class="pa-2">
+            <v-btn block
+              color="grey-darken-4" 
+              @click="resetUserInfo"
+              prepend-icon="mdi-logout"
+            >
+              Sair
+            </v-btn>
           </div>
-          <div class="menu">
-            <ul>
-              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('dashboard')" :class="{isCurrentPage: isCurrentPage.dashboard}">Dashboard</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'caixa' }" @click="currentPage('caixa')" :class="{isCurrentPage: isCurrentPage.caixa}">Caixa</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'pedidos' }" @click="currentPage('pedidos')" :class="{isCurrentPage: isCurrentPage.pedidos}">Pedidos</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'clientes' }" @click="currentPage('clientes')" :class="{isCurrentPage: isCurrentPage.clientes}">Clientes</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'funcionarios' }" @click="currentPage('funcionarios')" :class="{isCurrentPage: isCurrentPage.funcionarios}">Colaboradores</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'dashboard' }" @click="currentPage('configuracoes')" :class="{isCurrentPage: isCurrentPage.configuracoes}">Configurações</router-link></li>
-              <li><router-link class="redirect" :to="{ name: 'login' }" @click="resetUserInfo">Sair</router-link></li>
-            </ul>
-          </div>
-      </aside>
-    </div>
+      </template>
+    </v-navigation-drawer>
+
     <div class="router-view-div">
       <router-view class="router-view"/>
     </div>
@@ -111,75 +138,7 @@
   }
 
   .router-view-div{
-    padding: 40px 40px 0px 40px;
+    /* padding: 20px 10px 10px 10px; */
     width: 100%;
   }
-
-  .aside-in-normal-flow{
-    min-width: 255px;
-  }
-  
-  aside {
-    position: fixed;
-    background-color: #6940AA;
-    height: 100%;
-    padding: 20px 50px;
-    z-index: 9999;
-  }
-
-  .user-info {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 40px;
-      font-size: 18px;
-      border-bottom: 1px solid #ffffff87;
-  }
-
-  .user-info img {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 90px;
-      height: 90px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      background-color: gray;
-      object-fit: cover;
-  }
-
-  .user-info .user {
-      font-weight: bold;
-      color: #fff;
-      margin-bottom: 8px;
-      cursor: default;
-  }
-
-  .user-info .position {
-      color: #ffffff87;
-  }
-
-  .menu ul {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 30px;
-      list-style: none;
-  }
-
-  .redirect {
-      text-decoration: none;
-      font-size: 22px;
-      font-weight: bold;
-      color: #ffffff87;
-      transition: color 0.5s;
-  }
-
-  .redirect:hover {
-      color: #ffffff;  
-  }
-
-  .isCurrentPage{
-    color: #ffffff;  
-  }
-
 </style>

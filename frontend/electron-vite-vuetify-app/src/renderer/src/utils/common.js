@@ -84,11 +84,15 @@ export async function getAllRolesArray(token){
 }
 
 export function replaceNullToEmptyString(obj){
-    for (let chave in obj) {
-      if (obj[chave] === null) {
-        obj[chave] = "";
+    const newObj = {...obj};
+
+    for (let chave in newObj) {
+      if (newObj[chave] === null) {
+        newObj[chave] = "";
       }
     }
+
+    return newObj
 }
 
 export function isEmptyObject(obj) {
@@ -102,4 +106,3 @@ export function confirmDialog(msg, callback){
         }
     });
 }
-  

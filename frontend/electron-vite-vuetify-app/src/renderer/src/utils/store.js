@@ -33,77 +33,63 @@ export const useAuthStore = defineStore('userData', {
         this.cargo = null;
       }
     }
-  });
+});
 
-export const useClienteStore = defineStore('cliente', {
-  id: 'cliente',
+export const usePessoaStore = defineStore('pessoa', {
+  id: 'pessoa',
 
   state: () => ({
-      idCliente: null,
-      nome: null,
-      email: null,
-      telefone: null,
-      cpf: null,
-      dataNascimento: null,
-      endereco: null,
-      saldo: null,
-      pontos: null
+      pessoa: null,
+      infoChange: null,
+      idDeleted: null,
+      wasUpdated: false,
+      wasCreated: false,
   }),
   
   getters: {
-      getIdCliente() {
-        return this.idCliente;
-      },
-      getNome() {
-        return this.nome;
-      },
-      getEmail() {
-        return this.email;
-      },
-      getTelefone() {
-        return this.telefone;
-      },
-      getCpf() {
-        return this.cpf;
-          },
-      getDataNascimento() {
-        return this.dataNascimento;
-      },
-      getEndereco() {
-        return this.endereco;
-      },
-      getSaldo() {
-        return this.saldo;
-          },
-      getPontos() {
-        return this.pontos;
-      }
+    getPessoa(){
+      return this.pessoa;
+    },
+    getInfoChange(){
+      return this.infoChange;
+    },
+    getIdDeleted(){
+      return this.idDeleted;
+    },
+    getWasUpdated(){
+      return this.wasUpdated;
+    },
+    getWasCreated(){
+      return this.wasCreated;
+    },
   },
   actions: {
-    saveClienteInfo({idCliente, nome, email, telefone, cpf, dataNascimento, endereco, saldo, pontos}){
-      this.idCliente = idCliente;
-      this.nome = nome;
-      this.email = email;
-      this.telefone = telefone;
-      this.cpf = cpf;
-      this.dataNascimento = dataNascimento.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
-      this.endereco = endereco;
-      this.saldo = saldo;
-      this.pontos = pontos;
+    setPessoa(pessoa){
+      this.pessoa = {};
+
+      for (let attr in pessoa) {
+        if (pessoa[attr] === null) {
+          this.pessoa[attr] = "";
+        }else{
+          this.pessoa[attr] = pessoa[attr];
+        }
+      }
     },
-    updateClienteInfo(infos) {
-      Object.assign(this.$state, infos);
+    setAttrPessoa(attr, value){
+      this.pessoa[attr] = value;
     },
-    reset() {
-      this.idCliente = null;
-      this.nome = null;
-      this. email = null;
-      this.telefone = null;
-      this.cpf = null;
-      this.dataNascimento = null;
-      this.endereco = null;
-      this.saldo = null;
-      this.pontos = null;
+    delete(id){
+      this.idDeleted = id;
+    },
+    update(pessoa){
+      Object.assign(this.pessoa, pessoa);
+      this.infoChange = {...pessoa};
+      this.wasUpdated = !this.wasUpdated;
+    },
+    create(pessoa){
+      this.pessoa = {...pessoa};
+      this.pessoa.saldo = "0.00";
+      this.wasCreated = !this.wasCreated;
     }
   }
 });
@@ -199,27 +185,30 @@ export const useCargosStore = defineStore('cargos', {
 });
 
 export const useSnackbarStore = defineStore('snackbar', {
+  id:'snackbar',
+
   state: () => ({
-    showSnackbar: false,
-    message: '',
-    backgroundColor: '#6940AA',
-    colors: {
-      green: "#16c098",
-      red: "#df0404",
-      purple: '#6940AA',
-    },
+    wasActivated: false,
+    text: "",
+    messageType: 'info',
   }),
-  actions: {
-    snackbar(message, color) {
-      this.showSnackbar = true;
-      this.message = message;
-      this.backgroundColor = this.colors[color];
+  getters: {
+    getWasActivated(){
+      return this.wasActivated;
     },
-    closeSnackbar() {
-      this.showSnackbar = false;
-      this.message = '';
-      this.backgroundColor = this.colors['purple'];
-    }
+    getText(){
+      return this.text;
+    },
+    getMessageType(){
+      return this.messageType;
+    },
+  },
+  actions: {
+    set(text, messageType){
+      this.wasActivated = !this.wasActivated;
+      this.text = text;
+      this.messageType = messageType;
+    },
   }
 });
 

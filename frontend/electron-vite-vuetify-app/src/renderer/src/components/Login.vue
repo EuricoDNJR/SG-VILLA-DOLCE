@@ -8,6 +8,7 @@
   const cellphone = ref('');
   const password = ref('');
   const message = ref('');
+  const messageType = ref('info');
   const loaderIsVisible = ref(false);
   const messageIsVisible = ref(false);
   const passwordFieldType = ref("password");
@@ -42,11 +43,13 @@
 
   function printErrorMessage(msg){
     backgroundColorVariable.value = "#ff3333";
+    messageType.value = "error";
     printMessage(msg);
   }
 
   function printLoginSuccessfulMessage(){
     backgroundColorVariable.value = "#33ff66";
+    messageType.value = "success";
     printMessage("Login efetuado com sucesso", );
   }
 
@@ -97,7 +100,7 @@
 
         router.push('/menu/dashboard');
 
-        console.log(authStore.getToken);
+        console.log("User ID: " + authStore.getToken + "           Login.vue in handleLogin function");
     } 
   }
 
@@ -136,37 +139,62 @@
 
         <div class="input-field">
           <div class="input-centralize">
-            <input :class="{ cellphoneHasText: cellphone }" v-model="cellphone" type="text" maxlength="20" required>
+            <input 
+              :class="{ cellphoneHasText: cellphone }"
+              v-model="cellphone"
+              type="text"
+              maxlength="20"
+              required>
             <label for="cellphone">Telefone</label>
           </div>
 
           <div class="input-centralize">
-            <input :class="{ passwordHasText: password }" v-model="password" :type="passwordFieldType" maxlength="20" required>
+            <input
+              :class="{ passwordHasText: password }"
+              v-model="password"
+              :type="passwordFieldType"
+              maxlength="20" 
+              required
+            >
             <label for="password">Senha</label>
-            <button  @mousedown.prevent v-show="password" id="show-hide-password" @click="togglePasswordVisibility" type="button">{{ showHideBtnText }}</button>
+            
+            <button  
+              @mousedown.prevent
+              v-show="password"
+              id="show-hide-password"
+              @click="togglePasswordVisibility"
+              type="button"
+            >
+              {{ showHideBtnText }}
+            </button>
           </div>
         </div>
+        
+        <v-alert
+          :text="message"
+          :type="messageType"
+          variant="tonal"
+          v-show="messageIsVisible"
+          density="compact"
+        ></v-alert>
 
-        <div class="message-box">
-          <p v-show="loaderIsVisible" id="loader"></p>
-          <p v-show="messageIsVisible" id="message" :style="{ backgroundColor: backgroundColorVariable}">{{ message }}</p>
-        </div>
-
-        <button type="submit">Entrar</button>
+        <v-btn
+          :loading="loaderIsVisible"
+          class="flex-grow-1"
+          height="48"
+          variant="flat"
+          type="submit"
+          color="grey-darken-4"
+          block
+          >
+          Entrar
+        </v-btn>
       </form>
     </div>
   </main>
 </template>
 
 <style scoped>
-  @keyframes spin {
-      0% {
-          transform: rotate(0deg);
-      }
-      100% {
-          transform: rotate(360deg);
-      }
-  }
 
   main {
     background: linear-gradient(to right, #ffffff 40%, #6940AA);
@@ -273,31 +301,9 @@
       padding: 10px 5px;
   }
 
-  #loader {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      border-top: 4px solid #333;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite; /* Aplica a animação */
-  }
-
   button {
-      width: 320px;
-      height: 50px;
-      background: #000;
-      color: #ffffff;
-      font-size: 25px;
+      font-size: 20px;
       border-radius: 10px;
-      border-style: none;
       margin-top: 20px;
-  }
-
-  button:hover{
-      background-color: #111111;
-  }
-
-  button:active{
-      background-color: #1a1a1a;
   }
 </style>

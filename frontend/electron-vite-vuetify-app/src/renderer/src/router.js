@@ -3,7 +3,6 @@ import Login from './components/Login.vue'
 import Menu from './components/Menu.vue'
 import Dashboard from './components/Dashboard.vue'
 import Clientes from './components/Clientes.vue'
-import ClientesInfo from './components/ClientesInfo.vue'
 import CadastrarCliente from './components/CadastrarCliente.vue'
 import Funcionarios from './components/Funcionarios.vue'
 import FuncionariosInfo from './components/FuncionariosInfo.vue'
@@ -34,16 +33,6 @@ const routes = [
         path: 'clientes', 
         name: 'clientes', 
         component: Clientes,
-      },
-      { 
-        path: 'ver-cliente', 
-        name: 'clientesInfo', 
-        component: ClientesInfo,
-      },
-      { 
-        path: 'cadastrar-cliente', 
-        name: 'cadastrarCliente', 
-        component: CadastrarCliente,
       },
       { 
         path: 'funcionarios', 
