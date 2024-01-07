@@ -24,6 +24,7 @@ class PagamentoPedido(BaseModel):
 class ProdutoPedido(BaseModel):
     idProduto: str 
     quantidade: float
+    valorVendaUnd: float
     desconto: Optional[float] = 0.0
 
 class CreateOrderRequest(BaseModel):
@@ -41,23 +42,25 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     exemplo de entrada:
 
         {
-            "idCliente": "e2c93eac-12e9-4a95-8298-a364e279856c",
+            "idCliente": "ba3412d7-fa4b-4f44-a1d7-d3f50ce11956",
             "Pagamento": {
-                "valorTotal": 20.00,
-                "valorRecebimento": 50.00,
-                "valorDevolvido": 30.00,
+                "valorTotal": 10.00,
+                "valorRecebimento": 30.00,
+                "valorDevolvido": 20.00,
                 "tipoPagamento": "Dinheiro"
             },
             "idCaixa": "037543ea-5449-451f-88dd-3370af50f7aa",
             "idProdutos": [
                 {
-                "idProduto": "d507c1bf-2bcb-4757-9cb0-fe377a248052",
+                "idProduto": "4718af40-ee5d-486f-8a8a-d1ffe3604a2a",
                 "quantidade": 0.450,
+                "valorVendaUnd": 15.00,
                 "desconto": 15.00
                 },
                 {
-                "idProduto": "6fcf9078-7505-4b45-911a-c448759449c4",
-                "quantidade": 2
+                "idProduto": "8c9228f3-8d77-47fd-89e3-1ee7bb9b376e",
+                "quantidade": 2,
+                "valorVendaUnd": 5.00
                 }
             ],
             "status": "Pago",
@@ -101,6 +104,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
                 quantidade=produto.quantidade,
+                valorVendaUnd=produto.valorVendaUnd,
                 desconto=produto.desconto
             )
         logging.info("Products added to order")
