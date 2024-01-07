@@ -447,11 +447,13 @@ def update_balance_client(pedido):
                 if produto_pedido.idProduto.categoria == 'Açaí':
                     if produto_pedido.desconto > Decimal(0.0):
                         pedido.idCliente.saldo -= Decimal(150)
-                        pedido.idCliente.saldo += produto_pedido.idProduto.valorVenda * produto_pedido.quantidade - produto_pedido.desconto
-                        if produto_pedido.desconto <= Decimal(15):
+                        if produto_pedido.valorTotal < Decimal(15):
                             pedido.idCliente.saldo += Decimal(15) - produto_pedido.desconto
+                        produto_pedido.valorTotal -= produto_pedido.desconto
+                        produto_pedido.save() 
+                        pedido.idCliente.saldo += produto_pedido.valorTotal
                     else:    
-                        pedido.idCliente.saldo += produto_pedido.idProduto.valorVenda * produto_pedido.quantidade
+                        pedido.idCliente.saldo += produto_pedido.valorTotal
                     pedido.idCliente.save()
             return True
         else:
