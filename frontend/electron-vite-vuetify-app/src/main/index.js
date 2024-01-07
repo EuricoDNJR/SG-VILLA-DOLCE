@@ -21,6 +21,8 @@ function createWindow() {
   })
 
   mainWindow.on('ready-to-show', () => {
+    // mainWindow.setFullScreen(true);
+    mainWindow.maximize(true);
     mainWindow.show()
   })
 
