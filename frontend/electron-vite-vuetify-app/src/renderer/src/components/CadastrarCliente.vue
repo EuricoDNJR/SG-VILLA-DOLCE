@@ -110,7 +110,7 @@ function closeDialog(){
                 variant="flat"
                 icon="mdi-plus"
             >
-                <v-icon> mdi-plus</v-icon> 
+                <v-icon> mdi-account-plus</v-icon> 
                 <v-tooltip 
                     activator="parent"
                     location="bottom">
@@ -123,7 +123,7 @@ function closeDialog(){
             <v-card-title>
                 <span class="text-h5">Cadastrar Cliente</span>
             </v-card-title>
-
+            <v-divider></v-divider>
             <v-card-text>
                 <v-container>
                     <v-row>
@@ -199,6 +199,7 @@ function closeDialog(){
                 <v-btn
                     color="blue-darken-1"
                     variant="flat"
+                    prepend-icon="mdi-account-plus"
                     @click="requestRegisterCliente"
                 >
                     Cadastrar
