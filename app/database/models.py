@@ -65,8 +65,8 @@ class Produto(BaseModel):
     nome = CharField(unique=True)
     descricao = TextField(null=True)
     categoria = CharField()
-    valorCusto = DecimalField()
-    valorVenda = DecimalField()
+    valorCusto = DecimalField(max_digits=10, decimal_places=2)
+    valorVenda = DecimalField(max_digits=10, decimal_places=2)
     unidadeMedida = CharField()
     quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
 
@@ -102,6 +102,8 @@ class ProdutoPedido(BaseModel):
     idProduto = ForeignKeyField(Produto, backref='produtos_pedidos')
     quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
     desconto = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    valorVendaUnd = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    valorTotal = DecimalField(max_digits=10, decimal_places=2, default=0.0)
     class Meta:
         table_name = "ProdutoPedido"
 
