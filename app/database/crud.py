@@ -22,8 +22,8 @@ def create_pagamento(valorTotal, valorRecebimento=0.0, valorDevolvido=0.0, tipoP
 def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status, desconto):
     return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status, desconto=desconto)
 
-def create_produto_pedido(idPedido, idProduto, quantidade, desconto=0.0):
-    return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade, desconto=Decimal(str(desconto)))
+def create_produto_pedido(idPedido, idProduto, quantidade, valorVendaUnd, desconto=0.0):
+    return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade, valorVendaUnd=valorVendaUnd, valorTotal = valorVendaUnd * quantidade, desconto=Decimal(str(desconto)))
 
 def create_cargo(nome):
     return models.Cargo.create(nome=nome)
@@ -250,6 +250,7 @@ def get_pedido_by_id(idPedido):
             "nomeUsuario": pedido.idUsuario.nome,
             "idCaixa": str(pedido.idCaixa.idCaixa),
             "status": pedido.status,
+            "desconto": pedido.desconto,
             "idProdutos": get_all_produtos_pedidos_by_id(idPedido)
         }
     except DoesNotExist:
@@ -401,7 +402,8 @@ def get_all_pedidos():
                 "idUsuario": str(pedido.idUsuario.idUsuario),
                 "nomeUsuario": pedido.idUsuario.nome,
                 "idCaixa": str(pedido.idCaixa.idCaixa),
-                "status": pedido.status
+                "status": pedido.status,
+                "desconto": pedido.desconto
             }
             for pedido in pedidos
         ]
@@ -422,7 +424,8 @@ def get_all_produtos_pedidos_by_id(idPedido):
                     "idProdutoPedido": str(produto_pedido.idProdutoPedido),
                     "idProduto": str(produto_pedido.idProduto.idProduto),
                     "nome": produto_pedido.idProduto.nome,
-                    "quantidade": str(produto_pedido.quantidade)
+                    "quantidade": str(produto_pedido.quantidade),
+                    "desconto": str(produto_pedido.desconto)
                 }
                 for produto_pedido in produtos_pedidos
             ]
