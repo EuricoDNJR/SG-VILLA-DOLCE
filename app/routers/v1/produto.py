@@ -36,6 +36,17 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
             "valorVenda": 4.99,
             "unidadeMedida": "UND"
         }
+        
+    exemplo de entrada 2:
+
+        {
+            "nome": "AÇAÍ BÚFALO (3,3Kg)",
+            "descricao": "AÇAÍ BÚFALO (3,3Kg). 9366.",
+            "categoria": "Açaí",
+            "valorCusto": 71.46,
+            "valorVenda": 40.00,
+            "unidadeMedida": "KG"
+        }
     """
     try:
         
