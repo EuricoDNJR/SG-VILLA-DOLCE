@@ -777,6 +777,24 @@ def update_pedido_desconto(pedido, desconto):
     except DoesNotExist:
         return None
 
+def update_tipo_pagamento(uuid, nome=None):
+    try:
+        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+        if tipo_pagamento is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if nome is not None:
+            tipo_pagamento.nome = nome
+
+        tipo_pagamento.save()
+
+        return {
+            "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
+            "nome": tipo_pagamento.nome
+        }
+
+    except DoesNotExist:
+        return None
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
