@@ -40,18 +40,18 @@ def get_PaymentType(idTipoPagamento: str):
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar o tipo_pagamento"})
     
-# @router.get("/get_all_payment_types", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-# def get_all_payment_types():
-#     try:
-#         logging.info("Getting all PaymentTypes")
-#         tipo_pagamentos = crud.get_all_tipo_pagamentos()
-#         if tipo_pagamentos is None:
-#             return Response(status_code=status.HTTP_204_NO_CONTENT)
-#         logging.info("PaymentTypes found")
-#         return JSONResponse(status_code=status.HTTP_200_OK, content=tipo_pagamentos)
-#     except Exception as e:
-#         logging.error(e)
-#         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar os tipo_pagamentos"})
+@router.get("/get_all_payment_types", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_payment_types():
+    try:
+        logging.info("Getting all PaymentTypes")
+        tipo_pagamentos = crud.get_all_tipo_pagamentos()
+        if tipo_pagamentos is None:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("PaymentTypes found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=tipo_pagamentos)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar os tipo_pagamentos"})
 
 # class UpdatePaymentTypeRequest(BaseModel):
 #     nome: Optional[str] = None    
