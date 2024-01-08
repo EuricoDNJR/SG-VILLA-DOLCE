@@ -54,7 +54,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
                 {
                 "idProduto": "4718af40-ee5d-486f-8a8a-d1ffe3604a2a",
                 "quantidade": 0.450,
-                "valorVendaUnd": 15.00,
+                "valorVendaUnd": 40.00,
                 "desconto": 15.00
                 },
                 {
