@@ -25,7 +25,7 @@ def create_payment_type(data: CreatePaymentTypeRequest):
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(tipo_pagamento.idTipoPagamento), "Nome": tipo_pagamento.nome})
     except Exception as e:
         logging.error(e)
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao criar o tipo_pagamento"})
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao criar o Tipo de Pagamento"})
 
 @router.get("/get_payment_type/{idTipoPagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_PaymentType(idTipoPagamento: str):
@@ -38,7 +38,7 @@ def get_PaymentType(idTipoPagamento: str):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"uuid": str(tipo_pagamento.idTipoPagamento), "Nome": tipo_pagamento.nome})
     except Exception as e:
         logging.error(e)
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar o tipo_pagamento"})
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar o Tipo de Pagamento"})
     
 @router.get("/get_all_payment_types", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_all_payment_types():
@@ -51,35 +51,35 @@ def get_all_payment_types():
         return JSONResponse(status_code=status.HTTP_200_OK, content=tipo_pagamentos)
     except Exception as e:
         logging.error(e)
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar os tipo_pagamentos"})
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar os Tipos de Pagamento"})
 
 class UpdatePaymentTypeRequest(BaseModel):
     nome: Optional[str] = None    
-@router.patch("/update_PaymentType/{idTipoPagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def update_PaymentType(idTipoPagamento: str, data: UpdatePaymentTypeRequest):
+@router.patch("/update_payment_type/{idTipoPagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def update_payment_type(idTipoPagamento: str, data: UpdatePaymentTypeRequest):
     try:
-        logging.info("Updating PaymentType")
+        logging.info("Updating Payment Type")
         update_tipo_pagamento = crud.update_tipo_pagamento(idTipoPagamento, data.nome)
         if update_tipo_pagamento:
-            logging.info("PaymentType updated")
-            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Tipo de pagamento atualizado com sucesso"})
+            logging.info("Payment Type updated")
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Tipo de Pagamento atualizado com sucesso"})
         else:
-            logging.info("PaymentType not updated")
+            logging.info("Payment Type not updated")
             return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         logging.error(e)
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o tipo_pagamento"})
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o Tipo de Pagamento"})
     
-# @router.delete("/delete_PaymentType/{idtipo_pagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-# def delete_PaymentType(idtipo_pagamento: str):
-#     try:
-#         delete_tipo_pagamento = crud.delete_tipo_pagamento(idtipo_pagamento)
-#         if delete_tipo_pagamento:
-#             logging.info("PaymentType deleted")
-#             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "tipo_pagamento deletado com sucesso"})
-#         else:
-#             logging.info("PaymentType not deleted")
-#             return Response(status_code=status.HTTP_204_NO_CONTENT)
-#     except Exception as e:
-#         logging.error(e)
-#         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao deletar o tipo_pagamento"})
+@router.delete("/delete_payment_type/{idTipoPagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def delete_payment_type(idTipoPagamento: str):
+    try:
+        delete_tipo_pagamento = crud.delete_payment_type(idTipoPagamento)
+        if delete_tipo_pagamento:
+            logging.info("Payment Type deleted")
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Tipo de Pagamento deletado com sucesso"})
+        else:
+            logging.info("Payment Type not deleted")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao deletar o Tipo de Pagamento"})
