@@ -53,22 +53,22 @@ def get_all_payment_types():
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao buscar os tipo_pagamentos"})
 
-# class UpdatePaymentTypeRequest(BaseModel):
-#     nome: Optional[str] = None    
-# @router.patch("/update_PaymentType/{idtipo_pagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-# def update_PaymentType(idtipo_pagamento: str, data: UpdatePaymentTypeRequest):
-#     try:
-#         logging.info("Updating PaymentType")
-#         update_tipo_pagamento = crud.update_tipo_pagamento(idtipo_pagamento, data.nome)
-#         if update_tipo_pagamento:
-#             logging.info("PaymentType updated")
-#             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "tipo_pagamento atualizado com sucesso"})
-#         else:
-#             logging.info("PaymentType not updated")
-#             return Response(status_code=status.HTTP_204_NO_CONTENT)
-#     except Exception as e:
-#         logging.error(e)
-#         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o tipo_pagamento"})
+class UpdatePaymentTypeRequest(BaseModel):
+    nome: Optional[str] = None    
+@router.patch("/update_PaymentType/{idTipoPagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def update_PaymentType(idTipoPagamento: str, data: UpdatePaymentTypeRequest):
+    try:
+        logging.info("Updating PaymentType")
+        update_tipo_pagamento = crud.update_tipo_pagamento(idTipoPagamento, data.nome)
+        if update_tipo_pagamento:
+            logging.info("PaymentType updated")
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Tipo de pagamento atualizado com sucesso"})
+        else:
+            logging.info("PaymentType not updated")
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o tipo_pagamento"})
     
 # @router.delete("/delete_PaymentType/{idtipo_pagamento}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 # def delete_PaymentType(idtipo_pagamento: str):
