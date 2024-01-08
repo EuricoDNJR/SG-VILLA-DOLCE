@@ -29,7 +29,7 @@ def create_cargo(nome):
     return models.Cargo.create(nome=nome)
 
 def create_tipo_pagamento(nome):
-    return models.tipoPagamento.create(nome=nome)
+    return models.TipoPagamento.create(nome=nome)
     
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
     return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes)
