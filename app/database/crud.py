@@ -274,6 +274,14 @@ def get_cargo_by_id(uuid):
     except DoesNotExist:
         return None
 
+def get_tipo_pagamento_by_id(uuid):
+    try:
+        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+
+        return tipo_pagamento
+    except DoesNotExist:
+        return None
+    
 def get_all_users():
     try:
         # Tenta buscar todos os usuários
