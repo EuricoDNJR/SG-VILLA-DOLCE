@@ -891,3 +891,11 @@ def update_stock_product(uuid, quantidade):
         return True
     except DoesNotExist:
         return None
+
+def delete_payment_type(uuid):
+    try:
+        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+        tipo_pagamento.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
