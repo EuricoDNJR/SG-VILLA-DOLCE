@@ -423,6 +423,27 @@ def get_all_pedidos():
         # Se não houver pedidos, retorna None
         return None
 
+def get_all_tipo_pagamentos():
+    try:
+        tipo_pagamentos = models.TipoPagamento.select()
+
+        # Verifica se há tipo_pagamentos
+        if tipo_pagamentos.exists():
+            # Retorna a lista de tipo_pagamentos se houver algum
+            return [
+                {
+                    "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
+                    "nome": tipo_pagamento.nome
+                }
+                for tipo_pagamento in tipo_pagamentos
+            ]
+        else:
+            # Se não houver tipo_pagamentos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
 def get_all_produtos_pedidos_by_id(idPedido):
     try:
         produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
