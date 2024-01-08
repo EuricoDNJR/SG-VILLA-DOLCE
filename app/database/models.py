@@ -113,3 +113,10 @@ class Cargo(BaseModel):
 
     class Meta:
         table_name = "Cargo"
+
+class TipoPagamento(BaseModel):
+    idTipoPagamento = UUIDField(primary_key=True, default=uuid.uuid4)
+    nome = CharField(unique=True)
+
+    class Meta:
+        table_name = "TipoPagamento"

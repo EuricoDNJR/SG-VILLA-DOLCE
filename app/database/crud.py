@@ -27,6 +27,9 @@ def create_produto_pedido(idPedido, idProduto, quantidade, valorVendaUnd, descon
 
 def create_cargo(nome):
     return models.Cargo.create(nome=nome)
+
+def create_tipo_pagamento(nome):
+    return models.TipoPagamento.create(nome=nome)
     
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
     return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes)
@@ -271,6 +274,14 @@ def get_cargo_by_id(uuid):
     except DoesNotExist:
         return None
 
+def get_tipo_pagamento_by_id(uuid):
+    try:
+        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+
+        return tipo_pagamento
+    except DoesNotExist:
+        return None
+    
 def get_all_users():
     try:
         # Tenta buscar todos os usuários
@@ -410,6 +421,27 @@ def get_all_pedidos():
     else:
         print("Não há pedidos")
         # Se não houver pedidos, retorna None
+        return None
+
+def get_all_tipo_pagamentos():
+    try:
+        tipo_pagamentos = models.TipoPagamento.select()
+
+        # Verifica se há tipo_pagamentos
+        if tipo_pagamentos.exists():
+            # Retorna a lista de tipo_pagamentos se houver algum
+            return [
+                {
+                    "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
+                    "nome": tipo_pagamento.nome
+                }
+                for tipo_pagamento in tipo_pagamentos
+            ]
+        else:
+            # Se não houver tipo_pagamentos, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
 def get_all_produtos_pedidos_by_id(idPedido):
@@ -745,6 +777,24 @@ def update_pedido_desconto(pedido, desconto):
     except DoesNotExist:
         return None
 
+def update_tipo_pagamento(uuid, nome=None):
+    try:
+        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+        if tipo_pagamento is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if nome is not None:
+            tipo_pagamento.nome = nome
+
+        tipo_pagamento.save()
+
+        return {
+            "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
+            "nome": tipo_pagamento.nome
+        }
+
+    except DoesNotExist:
+        return None
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
@@ -838,6 +888,14 @@ def update_stock_product(uuid, quantidade):
         produto = models.Produto.get(models.Produto.idProduto == uuid)
         produto.quantidade += Decimal(str(quantidade))
         produto.save()
+        return True
+    except DoesNotExist:
+        return None
+
+def delete_payment_type(uuid):
+    try:
+        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+        tipo_pagamento.delete_instance()
         return True
     except DoesNotExist:
         return None
