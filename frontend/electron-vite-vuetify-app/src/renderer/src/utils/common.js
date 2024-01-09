@@ -106,3 +106,19 @@ export function confirmDialog(msg, callback){
         }
     });
 }
+
+export function exist(value){
+    return value !== undefined && value !== null;
+}
+
+export function getId(tipoPessoa, pessoa){
+    let id = undefined;
+
+    if(tipoPessoa === "Clientes"){
+      id = pessoa.idCliente;
+    }else if(tipoPessoa === "Colaboradores"){
+      id = pessoa.idUsuario;
+    }
+
+    return id;
+  }
