@@ -65,8 +65,8 @@ class Produto(BaseModel):
     nome = CharField(unique=True)
     descricao = TextField(null=True)
     categoria = CharField()
-    valorCusto = DecimalField()
-    valorVenda = DecimalField()
+    valorCusto = DecimalField(max_digits=10, decimal_places=2)
+    valorVenda = DecimalField(max_digits=10, decimal_places=2)
     unidadeMedida = CharField()
     quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
 
@@ -91,6 +91,7 @@ class Pedido(BaseModel):
     idUsuario = ForeignKeyField(Usuario, backref='pedido')
     idCaixa = ForeignKeyField(Caixa, backref='pedido')
     status = CharField()
+    desconto = BooleanField(default=False)
 
     class Meta:
         table_name = "Pedido"
@@ -100,7 +101,9 @@ class ProdutoPedido(BaseModel):
     idPedido = ForeignKeyField(Pedido, backref='produtos_pedidos')
     idProduto = ForeignKeyField(Produto, backref='produtos_pedidos')
     quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
-
+    desconto = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    valorVendaUnd = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    valorTotal = DecimalField(max_digits=10, decimal_places=2, default=0.0)
     class Meta:
         table_name = "ProdutoPedido"
 
@@ -110,3 +113,10 @@ class Cargo(BaseModel):
 
     class Meta:
         table_name = "Cargo"
+
+class TipoPagamento(BaseModel):
+    idTipoPagamento = UUIDField(primary_key=True, default=uuid.uuid4)
+    nome = CharField(unique=True)
+
+    class Meta:
+        table_name = "TipoPagamento"

@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database.dbmain import db
-from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo
-from .routers.v1 import cliente, usuario, produto, estoque, caixa, pedido, cargo
+from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo, TipoPagamento
+from .routers.v1 import cliente, usuario, produto, estoque, caixa, pedido, cargo, tipo_pagamento
 from contextlib import asynccontextmanager
 
 import logging
@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     logging.info("Connecting Database")
     db.connect()
     logging.info("Creating Tables")
-    db.create_tables([Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo], safe=True)
+    db.create_tables([Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo, TipoPagamento], safe=True)
     logging.info("Tables Created")
     
     yield
@@ -42,6 +42,7 @@ app.include_router(estoque.router, prefix="/v1/estoque", tags=["Estoque"])
 app.include_router(caixa.router, prefix="/v1/caixa", tags=["Caixa"])
 app.include_router(pedido.router, prefix="/v1/pedido", tags=["Pedido"])
 app.include_router(cargo.router, prefix="/v1/cargo", tags=["Cargo"])
+app.include_router(tipo_pagamento.router, prefix="/v1/tipo_pagamento", tags=["Tipo Pagamento"])
 
 @app.get("/")
 def read_root():
