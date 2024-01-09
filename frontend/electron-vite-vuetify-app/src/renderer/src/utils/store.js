@@ -39,6 +39,7 @@ export const usePessoaStore = defineStore('pessoa', {
   id: 'pessoa',
 
   state: () => ({
+      tipoPessoa: null,
       pessoa: null,
       oldPessoa: null,
       infoChange: null,
@@ -48,6 +49,9 @@ export const usePessoaStore = defineStore('pessoa', {
   }),
   
   getters: {
+    idPessoa(){
+      return this.getId(this.pessoa);
+    },
     getPessoa(){
       return this.pessoa;
     },
@@ -68,6 +72,9 @@ export const usePessoaStore = defineStore('pessoa', {
     },
   },
   actions: {
+    setTipoPessoa(tipoPessoa){
+      this.tipoPessoa = tipoPessoa;
+    },
     setPessoa(pessoa){
       this.oldPessoa = {...this.pessoa};
       this.pessoa = {};
@@ -95,7 +102,19 @@ export const usePessoaStore = defineStore('pessoa', {
       this.pessoa = {...pessoa};
       this.pessoa.saldo = "0.00";
       this.wasCreated = !this.wasCreated;
-    }
+    },
+    getId(pessoa){
+      const tipoPessoa = this.tipoPessoa.toLowerCase();
+      let id = undefined;
+
+      if(tipoPessoa === "clientes"){
+        id = pessoa.idCliente;
+      }else if(tipoPessoa === "colaboradores"){
+        id = pessoa.idUsuario;
+      }
+  
+      return id;
+    },
   }
 });
 

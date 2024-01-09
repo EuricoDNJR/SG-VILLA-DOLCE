@@ -2,10 +2,10 @@ import {createRouter, createWebHashHistory} from 'vue-router';
 import Login from '../pages/Login.vue'
 import Menu from '../pages/Menu.vue'
 import Dashboard from '../pages/Dashboard.vue'
+import Estoque from '../pages/Estoque.vue'
 import Clientes from '../pages/Clientes.vue'
 import Colaboradores from '../pages/Colaboradores.vue'
 import Pedidos from '../pages/Pedidos.vue'
-
 
 
 const routes = [
@@ -23,6 +23,11 @@ const routes = [
         path: 'dashboard', 
         name: 'dashboard', 
         component: Dashboard,
+      },
+      { 
+        path: 'estoque', 
+        name: 'estoque', 
+        component: Estoque,
       },
       { 
         path: 'clientes', 

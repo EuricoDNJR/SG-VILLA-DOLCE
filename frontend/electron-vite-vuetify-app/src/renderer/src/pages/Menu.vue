@@ -55,6 +55,12 @@
         </v-list-item>
 
         <v-list-item 
+          prepend-icon="mdi-package-variant-closed" 
+          link title="Estoque" 
+          to="/menu/estoque/">
+        </v-list-item>
+
+        <v-list-item 
           prepend-icon="mdi-account-multiple" 
           link title="Clientes" 
           to="/menu/clientes/">
@@ -93,46 +99,6 @@
 </template>
 
 <style scoped>
-  @keyframes slideDown {
-    from {
-      transform: translate(-50%, -100%);
-    }
-    to {
-      transform: translate(-50%, 10px);
-    }
-  }
-  .snackbar{
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-width: 45vw;
-    padding: 10px;
-    border-radius: 5px;
-    left: 50%;
-    gap: 45px;
-    color: white;
-    animation: slideDown 0.3s ease forwards;
-    text-align: center;
-    font-weight: bold;
-  }
-
-  .close-btn{
-    background-color: transparent;
-    border: none;
-    font-weight: bold;
-    padding: 10px;
-    color: rgb(28, 28, 28);
-  }
-
-  .close-btn:hover{
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .close-btn:active{
-    background-color: rgba(255, 255, 255, 0.15);
-  }
-
   main {
       display: flex;
   }

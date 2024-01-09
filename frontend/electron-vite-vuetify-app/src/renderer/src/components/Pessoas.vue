@@ -1,7 +1,7 @@
 <script setup>
-  import { ref, reactive, computed, watch, toRaw } from 'vue'
+  import { ref, computed, watch, toRaw } from 'vue'
   import { useAuthStore, usePessoaStore, useSnackbarStore } from '../utils/store';
-  import { fetchGet, getId } from '../utils/common';
+  import { fetchGet } from '../utils/common';
   import Snackbar from '../components/Snackbar.vue';
   import PessoaInfo from '../components/PessoaInfo.vue';
   import CadastrarPessoa from '../components/CadastrarPessoa.vue';
@@ -27,11 +27,6 @@
   const pessoaIdDeleted = computed(() => pessoaStore.getIdDeleted);
   const pessoaWasCreated = computed(() => pessoaStore.getWasCreated);
   const pessoaInfoIndex = ref(-1);
-
-  
-  const getIdPessoa = (pessoa) => {
-    return getId(props.tipoPessoa, pessoa);
-  }
 
   const updateQuantidadeDePessoas = (qtd) => {
     quantidadeDePessoas.value = qtd;
@@ -77,7 +72,7 @@
   });
   
   watch(pessoaWasUpdated, async (newValue, oldValue) => {
-    const pessoaUpdate = pessoas.value.find((pessoa) => getIdPessoa(pessoa) == getIdPessoa(pessoaStore.getPessoa));
+    const pessoaUpdate = pessoas.value.find((pessoa) => pessoaStore.getId(pessoa) == pessoaStore.idPessoa);
     const index = pessoas.value.indexOf(pessoaUpdate);
     
     for(let attr in pessoaStore.getInfoChange){
@@ -86,7 +81,7 @@
   });
   
   watch(pessoaIdDeleted, async (newId, oldId) => {
-    pessoas.value = pessoas.value.filter((pessoa) => getIdPessoa(pessoa) !== newId);
+    pessoas.value = pessoas.value.filter((pessoa) => pessoaStore.getId(pessoa) !== newId);
 
     closePessoaInfo();
   });

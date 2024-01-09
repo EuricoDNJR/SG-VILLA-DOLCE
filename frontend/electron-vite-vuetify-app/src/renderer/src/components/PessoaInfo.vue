@@ -2,7 +2,7 @@
 
 import { ref, reactive, computed, toRaw, watch } from 'vue'
 import { useAuthStore, usePessoaStore, useSnackbarStore, useCargosStore } from '../utils/store';
-import { fetchPatch, fetchDelete, isEmptyObject, confirmDialog, exist, getId } from '../utils/common'
+import { fetchPatch, fetchDelete, isEmptyObject, confirmDialog, exist } from '../utils/common'
 
 
 class EditSaveBtn {
@@ -87,9 +87,10 @@ const props = defineProps(['pessoa',
                         'rotaUpdatePessoa',
                         'rotaDeletePessoa']);
 
-savePersonInStore(props.pessoa);
+pessoaStore.setTipoPessoa(props.tipoPessoa);
+savePessoaInStore({...props.pessoa});
 
-const idPessoa = createIdComputed();
+const idPessoa = computed(() => pessoaStore.idPessoa);
 const atributosGerais = ref(getAtributosGerais());
 const atributosEspecificos = ref(getAtributosEspecificos());
 const pessoaInfoChange = new PessoaInfoChange({});
@@ -101,22 +102,6 @@ const editSaveBtn = new EditSaveBtn({
 });
 const isEditable = ref(false);
 
-
-function getIdPessoa(pessoa){
-    return getId(props.tipoPessoa, pessoa);
-}
-
-function createIdComputed(){
-    let id = undefined;
-
-    if(props.tipoPessoa === "Clientes"){
-        id = computed(() => pessoaStore.getPessoa.idCliente);
-    }else if(props.tipoPessoa === "Colaboradores"){
-        id = computed(() => pessoaStore.getPessoa.idUsuario);
-    }
-
-    return id;
-}
 
 function getAtributosGerais(){
     const atributosGerais = [];
@@ -207,11 +192,11 @@ function getAtributosEspecificos(){
     return atributosEspecificos;
 }
 
-function savePersonInStore(pessoa){
+function savePessoaInStore(pessoa){
     let isNewPessoa = undefined;
 
     try{
-      isNewPessoa = getIdPessoa(pessoaStore.getPessoa) != getIdPessoa(pessoa);
+      isNewPessoa = pessoaStore.idPessoa != pessoaStore.getId(pessoa);
     }catch{
       isNewPessoa = true
     }
