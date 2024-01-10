@@ -1,14 +1,14 @@
 <script setup>
 
     import { ref, computed } from 'vue';
-    import { fetchPost, fetchPatch } from '../utils/common';
+    import { fetchGet, fetchPost, fetchPatch, confirmDialog } from '../utils/common';
     import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
 
     const authStore = useAuthStore();
     const snackbarStore = useSnackbarStore();
     const caixaStore = useCaixaStore();
-    const somenteDinheiro = ref('0.00');
-    const saldoTotal = ref('0.00');
+    const somenteDinheiro = ref(0);
+    const saldoTotal = ref(0);
     
     const caixaStatus = computed(() => caixaStore.getStatus);
     const saldoInicial = ref(caixaStore.getSaldoInicial);
@@ -16,6 +16,9 @@
     const caixaAction = computed(() => caixaStore.getAction);
     const caixaIsOpen = computed(() => caixaStatus.value === 'aberto');
     const dataEHoraAbertura = computed(() => caixaStore.getDataAbertura + " " + caixaStore.getHoraAbertura);
+    let pedidos = undefined;
+    const loading = ref(true);
+    
 
     function createCaixaInfo(){
         const caixaInfo = {
@@ -73,6 +76,7 @@
         requestOpenCaixa(caixaInfo).then((responseJson) => {
             if(responseJson){
                 caixaStore.saveOpenCaixa(responseJson);
+                console.log(caixaStore.getId);
             }
         })
     }
@@ -92,15 +96,60 @@
 
     function toggleCaixaStatus(){
         if(caixaIsOpen.value){
-            if(window.confirm('Fechar o caixa')){
-                closeCaixa();
-            }
+            confirmDialog("Deseja fechar o caixa?", closeCaixa);
         }else{
-            if(window.confirm('Abrir o caixa')){
-                openCaixa();
-            }
+            confirmDialog("Deseja abrir o caixa?", openCaixa);
         }
     }
+    
+    async function requestAllPedidos(){
+        let responseJson = null;
+        
+        try{
+            const url = "http://127.0.0.1:8000/v1/pedido/get_all_orders/";
+            const token = authStore.getToken;
+            
+            const response = await fetchGet(url, token);
+
+            if(response.status === 200){
+                responseJson = await response.json();
+            }else{
+                snackbarStore.snackbar("Falha ao carregar pedidos", 'red');
+            }
+        }catch(e){
+            console.log(e);
+            snackbarStore.snackbar("Falha ao carregar pedidos", 'red');
+        }
+
+        return responseJson;
+    }
+
+    function updateSaldoFinal(){
+        saldoTotal.value = saldoInicial.value;
+        somenteDinheiro.value = saldoInicial.value; 
+
+        pedidos.forEach((element) => {
+            saldoTotal.value += Number(element.valorTotal);
+                
+            if(element.tipoPagamento === "Dinheiro"){
+                somenteDinheiro.value += Number(element.valorTotal);
+            }
+        });
+    }
+
+    async function pedidosFechadosCaixa(idCaixa){
+        if(caixaIsOpen.value){
+            const allPedidos = await requestAllPedidos();
+            console.log(allPedidos);
+            pedidos = allPedidos.filter((pedido) => pedido.idCaixa === caixaStore.getId && pedido.status === "Pago");
+
+            updateSaldoFinal();
+            
+            loading.value = false;
+        }
+    }
+
+    pedidosFechadosCaixa(caixaStore.getId);
 
 </script>
 
@@ -131,28 +180,26 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Data/Hora</th>
-                                <th>Descrição</th>
+                                <!-- <th>Data/Hora</th>
+                                <th>Descrição</th> -->
                                 <th>Entrada</th>
                                 <th>Saída</th>
                                 <th>Pagamento</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>05/12/2023 15:03</td>
-                                <td>Saldo inicial</td>
-                                <td>R$ 100,00</td>
-                                <td>R$ 000,00</td>
-                                <td>Dinheiro</td>
+                        <tbody v-show="!loading">
+                            <tr v-for="(pedido, index) in pedidos" :key="index">
+                                <td>{{ pedido.valorRecebimento }}</td>
+                                <td>{{ pedido.valorDevolvido }}</td>
+                                <td>{{ pedido.tipoPagamento }}</td>
                             </tr>
                         </tbody>   
                     </table>
                 </div>
                 
                 <div class="balance-box">
-                    <p><b>Somente dinheiro:</b> R$ {{ somenteDinheiro.replace('.', ',') }}</p>
-                    <p><b>Saldo final:</b> R$ {{ saldoTotal }}</p>
+                    <p><b>Somente dinheiro:</b> R$ {{ somenteDinheiro.toFixed(2).replace('.', ',') }}</p>
+                    <p><b>Saldo final:</b> R$ {{ saldoTotal.toFixed(2).replace('.', ',') }}</p>
                 </div>
             </div>
         </section>

@@ -1,20 +1,23 @@
 <script setup>
-  import { ref, reactive, onMounted } from 'vue'
+  import { ref, computed } from 'vue'
   import { useRouter } from 'vue-router';
-  import { useAuthStore, useFuncionarioStore, useSnackbarStore } from '../utils/store';
+  import { useAuthStore, useFuncionarioStore, useSnackbarStore, useCaixaStore } from '../utils/store';
   import { fetchGet, replaceNullToEmptyString } from '../utils/common';
+
 
   const router = useRouter();
   const authStore = useAuthStore();
   const funcionarioStore = useFuncionarioStore();
   const snackbarStore = useSnackbarStore();
+  const caixaStore = useCaixaStore();
   let funcionarios = [];
   let funcionariosFiltered = [];
   const loading = ref(true);
   const searchText = ref('');
+  const caixaIsOpen = computed(() => caixaStore.getStatus === 'aberto');
 
-  const searchFuncionario = () => {
-    // Recarregando a tabela para atualizar os clientes
+  const searchPedidos = () => {
+    // Recarregando a tabela para atualizar 
     loading.value = true;
 
     funcionariosFiltered = funcionarios.filter((funcionario) => funcionario.nome.toLowerCase().includes(searchText.value.toLowerCase()));
@@ -22,25 +25,25 @@
     loading.value = false;
   }
 
-  const redirectToCadastrarFuncionario = () => {
-    router.push("/menu/cadastrar-funcionario/");
+  const redirectToCriarPedido = () => {
+    router.push("/menu/criar-pedido/");
   }
 
-  const redirectToFuncionarioInfo = () => {
+  const redirectToPedidoInfo = () => {
     router.push("/menu/ver-funcionario/");
   }
 
-  const handleColaboradorInfoAndRedirect = (funcionario) => {
+  const handlePedidoInfoAndRedirect = (funcionario) => {
     replaceNullToEmptyString(funcionario);
 
     funcionarioStore.saveFuncionarioInfo({...funcionario});
 
-    redirectToFuncionarioInfo();
+    redirectToPedidoInfo();
   }
 
-  const requestAllFuncionarios = async () =>{
+  const requestAllPedidos = async () =>{
     try{
-      const url = "http://127.0.0.1:8000/v1/usuario/get_all_users/";
+      const url = "http://127.0.0.1:8000/v1/pedido/get_all_orders/";
       const token = authStore.getToken;
       
       const response = await fetchGet(url, token);
@@ -48,41 +51,39 @@
       if(response.status === 200){
         funcionarios = await response.json();
 
-        // ORDEM ALFABÉTICA POR NOME
-        funcionarios = funcionarios.sort((funcionarioA, funcionarioB) => funcionarioA.nome.localeCompare(funcionarioB.nome));
         funcionariosFiltered = [...funcionarios];
       }else{
-        snackbarStore.snackbar("Falha ao carregar colaboradores", 'red');
+        snackbarStore.snackbar("Falha ao carregar pedidos", 'red');
       }
     }catch(e){
       console.log(e);
-      snackbarStore.snackbar("Falha ao carregar colaboradores", 'red');
+      snackbarStore.snackbar("Falha ao carregar pedidos", 'red');
     }
    
     loading.value = false;
   }
 
-  requestAllFuncionarios();
+  requestAllPedidos();
   
 </script>
 
 <template>
-  <div class="page-content">
+  <div v-if="caixaIsOpen" class="page-content">
 
     <section class="main-content">
       <div class="toolbar">
 
-        <h1>Colaboradores</h1>
+        <h1>Pedidos em aberto</h1>
 
         <div>
           <div class="search-container">
             <form action="#" method="get">
-              <input type="text" class="search-box" @input="searchFuncionario" v-model="searchText" name="search" placeholder="Buscar">
+              <input type="text" class="search-box" @input="searchPedidos" v-model="searchText" name="search" placeholder="Buscar">
               <img class=search-btn-img src="../assets/search-imgs/magnifying-glass-solid.svg" alt="search icone">
             </form>
           </div>
 
-          <button class="register-btn" @click="redirectToCadastrarFuncionario">Cadastrar colaborador</button>
+          <button class="register-btn" @click="redirectToCriarPedido">Criar pedido</button>
         </div>
       </div>
 
@@ -90,19 +91,17 @@
         <table>
           <thead>
             <tr>
-              <th>Nome</th>
-              <th>Telefone</th>
-              <th>Email</th>
+              <th>Cliente</th>
+              <th>Valor Total</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(funcionario, index) in funcionariosFiltered" :key="index">
-              <td>{{ funcionario.nome }}</td>
-              <td>{{ funcionario.telefone }}</td>
-              <td>{{ funcionario.email }}</td>
+              <td>{{ funcionario.nomeCliente }}</td>
+              <td>{{ funcionario.valorTotal }}</td>
               <td>             
-                <button class="view-profile-btn" @click="handleColaboradorInfoAndRedirect(funcionario)">Ver</button>          
+                <button class="view-profile-btn" @click="handlePedidoInfoAndRedirect(funcionario)">Ver</button>          
               </td>
             </tr>
           </tbody>
@@ -113,6 +112,9 @@
     </section>
 
   </div>
+  <div v-else class="close-caixa">
+        <h1>CAIXA FECHADO</h1>
+    </div>
 </template>
 
 <style scoped>
@@ -120,6 +122,20 @@
     display: flex;
     flex-direction: column;
     background: #ffffff;  
+  }
+
+  .close-caixa{
+    display: flex;
+    justify-content: center;
+  }
+
+  .close-caixa h1{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #d51818;
+    font-weight: bold;
+    font-size: 5em;
   }
 
   .toolbar {
@@ -169,7 +185,7 @@
   } */
 
   .register-btn {
-      width: 225px;
+      width: 140px;
       height: 40px;
       margin-left: 20px;
       background: #000;

@@ -9,6 +9,8 @@ import Funcionarios from './components/Funcionarios.vue'
 import FuncionariosInfo from './components/FuncionariosInfo.vue'
 import CadastrarFuncionario from './components/CadastrarFuncionario.vue'
 import Caixa from './components/Caixa.vue'
+import Pedidos from './components/Pedidos.vue'
+import CriarPedido from './components/CriarPedido.vue'
 
 
 
@@ -62,6 +64,16 @@ const routes = [
         path: 'caixa', 
         name: 'caixa', 
         component: Caixa,
+      },
+      {
+        path: 'pedidos',
+        name: 'pedidos',
+        component: Pedidos,
+      },
+      { 
+        path: 'criar-pedido', 
+        name: 'criarPedido', 
+        component: CriarPedido,
       },
     ]
   },

@@ -68,7 +68,7 @@ def open_caixa(data: CaixaRequest, jwt_token: str = Header()):
         logging.info("Open box")
     
         #retorno com nome do usuario
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"uuid": str(caixa.idCaixa), "SaldoInicial": caixa.saldoInicial, "DataAbertura": caixa.dataAbertura, "HoraAbertura": caixa.horaAbertura, "Observacoes": caixa.observacoes, "NomeFuncionario": user['nome']})
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"idCaixa": str(caixa.idCaixa), "SaldoInicial": caixa.saldoInicial, "DataAbertura": caixa.dataAbertura, "HoraAbertura": caixa.horaAbertura, "Observacoes": caixa.observacoes, "NomeFuncionario": user['nome']})
         
         #return JSONResponse(status_code=status.HTTP_200_OK, content={"uuid": caixa.uuid, "SaldoInicial": caixa.saldoInicial, "DataAbertura": caixa.dataAbertura, "Observacoes": caixa.observacoes})
     except Exception as e:
