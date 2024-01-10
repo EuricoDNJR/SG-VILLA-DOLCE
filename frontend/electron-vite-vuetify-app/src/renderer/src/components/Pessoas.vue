@@ -136,7 +136,7 @@
     </v-toolbar>
     
     <v-expansion-panels  
-        class="pa-4 background-grey-lighten-5" 
+        class="pa-4" 
         color="grey-lighten-5"
         v-model="pessoaInfoIndex"
       >
