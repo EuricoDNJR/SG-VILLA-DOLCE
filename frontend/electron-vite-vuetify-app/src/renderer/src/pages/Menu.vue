@@ -22,6 +22,7 @@
   <main>
     <v-navigation-drawer
       color="deep-purple"
+      permanent
     >
       <v-list>
         <v-list-item :title="nome" :subtitle="cargo"></v-list-item>
