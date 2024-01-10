@@ -3,262 +3,196 @@
   import { useRouter } from 'vue-router';
   import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
   import { fetchGet, replaceNullToEmptyString } from '../utils/common';
+  import Snackbar from '../components/Snackbar.vue';
 
+  defineOptions({
+    inheritAttrs: false
+  });
 
-  const router = useRouter();
+  // const router = useRouter();
   const authStore = useAuthStore();
-  const funcionarioStore = useFuncionarioStore();
   const snackbarStore = useSnackbarStore();
   const caixaStore = useCaixaStore();
-  let funcionarios = [];
-  let funcionariosFiltered = [];
-  const loading = ref(true);
-  const searchText = ref('');
+  // let funcionarios = [];
+  // let funcionariosFiltered = [];
+  // const loading = ref(true);
+  // const searchText = ref('');
   const caixaIsOpen = computed(() => caixaStore.getStatus === 'aberto');
+  const pedidosEmAberto = ref([
+        { id: 1, nome: 'Pedido 1', data: '01/01/2024', detalhes: 'Detalhes do pedido 1' },
+        { id: 2, nome: 'Pedido 2', data: '02/01/2024', detalhes: 'Detalhes do pedido 2' },
+        { id: 3, nome: 'Pedido 3', data: '03/01/2024', detalhes: 'Detalhes do pedido 3' },
+        // Adicione mais pedidos conforme necessário
+      ]);
 
-  const searchPedidos = () => {
-    // Recarregando a tabela para atualizar 
-    loading.value = true;
+  // const searchPedidos = () => {
+  //   // Recarregando a tabela para atualizar 
+  //   loading.value = true;
 
-    funcionariosFiltered = funcionarios.filter((funcionario) => funcionario.nome.toLowerCase().includes(searchText.value.toLowerCase()));
+  //   funcionariosFiltered = funcionarios.filter((funcionario) => funcionario.nome.toLowerCase().includes(searchText.value.toLowerCase()));
    
-    loading.value = false;
-  }
+  //   loading.value = false;
+  // }
 
-  const redirectToCriarPedido = () => {
-    router.push("/menu/criar-pedido/");
-  }
+  // const redirectToCriarPedido = () => {
+  //   router.push("/menu/criar-pedido/");
+  // }
 
-  const redirectToPedidoInfo = () => {
-    router.push("/menu/ver-funcionario/");
-  }
+  // const redirectToPedidoInfo = () => {
+  //   router.push("/menu/ver-funcionario/");
+  // }
 
-  const handlePedidoInfoAndRedirect = (funcionario) => {
-    replaceNullToEmptyString(funcionario);
+  // const handlePedidoInfoAndRedirect = (funcionario) => {
+  //   replaceNullToEmptyString(funcionario);
 
-    funcionarioStore.saveFuncionarioInfo({...funcionario});
+  //   funcionarioStore.saveFuncionarioInfo({...funcionario});
 
-    redirectToPedidoInfo();
-  }
+  //   redirectToPedidoInfo();
+  // }
 
-  const requestAllPedidos = async () =>{
-    try{
-      const url = "http://127.0.0.1:8000/v1/pedido/get_all_orders/";
-      const token = authStore.getToken;
+  // const requestAllPedidos = async () =>{
+  //   try{
+  //     const url = "http://127.0.0.1:8000/v1/pedido/get_all_orders/";
+  //     const token = authStore.getToken;
       
-      const response = await fetchGet(url, token);
+  //     const response = await fetchGet(url, token);
 
-      if(response.status === 200){
-        funcionarios = await response.json();
+  //     if(response.status === 200){
+  //       funcionarios = await response.json();
 
-        funcionariosFiltered = [...funcionarios];
-      }else{
-        snackbarStore.snackbar("Falha ao carregar pedidos", 'red');
-      }
-    }catch(e){
-      console.log(e);
-      snackbarStore.snackbar("Falha ao carregar pedidos", 'red');
-    }
+  //       funcionariosFiltered = [...funcionarios];
+  //       console.log(funcionariosFiltered);
+  //     }else{
+  //       snackbarStore.set("Falha ao carregar pedidos", "warning");
+  //     }
+  //   }catch(e){
+  //     console.log(e);
+  //     snackbarStore.set("Falha ao carregar pedidos", "warning");
+  //   }
    
-    loading.value = false;
-  }
+  //   loading.value = false;
+  // }
 
-  requestAllPedidos();
+  // requestAllPedidos();
   
 </script>
 
 <template>
+  <Snackbar/>
+
+ 
+  
   <div v-if="caixaIsOpen" class="page-content">
+    <v-toolbar color="grey-lighten-4" class="pa-4">
+      <v-row align="center">
+        <v-col>
+          <v-toolbar-title class="text-uppercase">
+            <span class="font-weight-bold">Pedidos em Aberto</span>
+          </v-toolbar-title>
+        </v-col>
+      </v-row>
+    </v-toolbar>
+    
+    <v-container>
+      <v-row justify="center">
+        <v-col
+          v-for="pedido in pedidosEmAberto"
+          :key="pedido.id"
+          cols="12"
+          sm="6"
+          md="4"
+        >
+          <v-card
+            class="mb-4 border-start-card"
+            :title="pedido.nome"
+            :subtitle="pedido.data"
+            border="start"
+          >
+            <template v-slot:prepend>
+              <v-avatar color="blue-darken-2">
+                <v-icon icon="mdi-label"></v-icon>
+              </v-avatar>
+            </template>  
 
-    <section class="main-content">
-      <div class="toolbar">
+            <template v-slot:append>
+              <v-chip color="green">
+              <h3>R$ 120,32</h3>
+            </v-chip>
+            </template> 
+            
+            <v-card-text>
+              <v-timeline density="compact" align="start">
+                
+                <v-timeline-item
+                  dot-color="blue-darken-2"
+                  size="x-small"
+                >
+                  {{ pedido.detalhes }}
+                </v-timeline-item>
+              </v-timeline>
 
-        <h1>Pedidos em aberto</h1>
+              <v-timeline density="compact" align="start">
+                
+                <v-timeline-item
+                  dot-color="blue-darken-2"
+                  size="x-small"
+                >
+                  {{ pedido.detalhes }}
+                </v-timeline-item>
+              </v-timeline>
 
-        <div>
-          <div class="search-container">
-            <form action="#" method="get">
-              <input type="text" class="search-box" @input="searchPedidos" v-model="searchText" name="search" placeholder="Buscar">
-              <img class=search-btn-img src="../assets/search-imgs/magnifying-glass-solid.svg" alt="search icone">
-            </form>
-          </div>
-
-          <button class="register-btn" @click="redirectToCriarPedido">Criar pedido</button>
-        </div>
-      </div>
-
-      <div v-if="!loading">
-        <table>
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Valor Total</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(funcionario, index) in funcionariosFiltered" :key="index">
-              <td>{{ funcionario.nomeCliente }}</td>
-              <td>{{ funcionario.valorTotal }}</td>
-              <td>             
-                <button class="view-profile-btn" @click="handlePedidoInfoAndRedirect(funcionario)">Ver</button>          
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class=loader-container v-else></div>
-      
-    </section>
-
+              <v-timeline density="compact" align="start">
+                
+                <v-timeline-item
+                  dot-color="grey-darken-3"
+                  size="x-small"
+                >
+                  <v-icon>mdi-dots-horizontal</v-icon>
+                </v-timeline-item>
+              </v-timeline>
+              <!-- <v-timeline density="compact" align="start">
+                pedido.detalhes 
+                <v-timeline-item
+                  v-for="message in messages"
+                  :key="message.time"
+                  :dot-color="message.color"
+                  size="x-small"
+                >
+                  <div class="mb-4">
+                    <div class="font-weight-normal">
+                      <strong>{{ message.from }}</strong> @{{ message.time }}
+                    </div>
+                    <div>{{ message.message }}</div>
+                  </div>
+                </v-timeline-item>
+              </v-timeline> -->
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
   <div v-else class="close-caixa">
-        <h1>CAIXA FECHADO</h1>
-    </div>
+    <v-container fluid fill-height>
+        <v-row align="center" justify="center">
+          <v-col cols="12" md="6">
+            <v-card
+              class="text-center"
+              color="red-darken-2"
+              dark
+            >
+              <v-card-text class="display-2">
+                <h2>Caixa Fechado</h2>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+  </div>
 </template>
 
 <style scoped>
-  .page-content {
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;  
-  }
-
-  .close-caixa{
-    display: flex;
-    justify-content: center;
-  }
-
-  .close-caixa h1{
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #d51818;
-    font-weight: bold;
-    font-size: 5em;
-  }
-
-  .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-  }
-
-  .toolbar h1 {
-      font-size: 2rem;
-  }
-
-  .toolbar > div {
-      display: flex;
-  }
-
-  .search-container form {
-      width: 300px;
-      height: 40px;
-      padding: 4px;
-      border: solid;
-      border-width: 2px;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #F9FBFF;
-  }
-
-  .search-box {
-      width: 250px;
-      height: 27px;
-      font-size: 20px;
-      background-color: transparent;
-      border: none;
-      outline: none;
-  }
-
-  .search-btn-img {
-      width: 20px;
-      height: 20px;
-  }
-
-  /* .search-btn:hover{
-    background-color: rgb(231, 231, 231);
-  } */
-
-  .register-btn {
-      width: 140px;
-      height: 40px;
-      margin-left: 20px;
-      background: #000;
-      font-size: 20px;
-      border-radius: 5px;
-      border-style: none;
-      cursor: pointer;
-      color: #ffffff;
-  }
-
-  .register-btn:hover{
-      background-color: #111111;
-  }
-
-  .register-btn:active{
-      background-color: #1a1a1a;
-  }
-  /* 
-  hr {
-      height: 2px;
-      border-width: 0px;
-      background-color: #EEEEEE;
-  } */
-
-  .clients-list {
-      height: 80vh;
-      overflow-x: auto;
-  }
-
-  table {
-      border-collapse: collapse;
-      width: 100%;
-      color: #333;
-      font-size: 15px;
-      text-align: left;
-  }
-
-  thead {
-      top: 0;
-      position: sticky;
-      background-color: #ffffff;
-  }
-
-  th {
-      padding: 12px 12px 12px 0px;
-      color: #7d7f88;
-      font-weight: bold;
-  }
-
-  td {
-      padding: 12px 12px 12px 0px;
-      border-top: 1px solid;
-      border-bottom: 1px solid;
-      border-color: #B5B7C0;
-      font-size: 18px;
-  }
-
-
-  tr td:last-child {
-      text-align: right;
-  }
-
-  .view-profile-btn {
-      width: 90px;
-      height: 30px;
-      background: #6940aa7e;
-      font-size: 18px;
-      border-radius: 5px;
-      border-style: solid;
-      border-color: #6940AA;
-      cursor: pointer;
-      font-weight: bold;
-      color: hsl(263, 45%, 46%);
-  }
-
+.border-start-card {
+  border-left: 4px solid #1976D2; /* Cor e largura da borda */
+}
 </style>

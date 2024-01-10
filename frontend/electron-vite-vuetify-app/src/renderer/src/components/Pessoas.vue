@@ -21,17 +21,12 @@
   const snackbarStore = useSnackbarStore();
   let pessoas = ref([]);
   let pessoasFiltered = ref([]);
-  const quantidadeDePessoas = ref(0);
   const searchText = ref('');
   const pessoaWasUpdated = computed(() => pessoaStore.getWasUpdated);
-  const pessoaIdDeleted = computed(() => pessoaStore.getIdDeleted);
+  const pessoaWasDeleted = computed(() => pessoaStore.getWasDeleted);
   const pessoaWasCreated = computed(() => pessoaStore.getWasCreated);
   const pessoaInfoIndex = ref(-1);
 
-  const updateQuantidadeDePessoas = (qtd) => {
-    quantidadeDePessoas.value = qtd;
-  }
-  
   const updatePessoasFiltered = (array) => {
     pessoasFiltered.value = array;
   }
@@ -67,10 +62,6 @@
     updatePessoasFiltered(pessoasOrdemAlfabetica);
   });
   
-  watch(pessoasFiltered, async (newPessoasFiltered, oldPessoasFiltered) => {
-    updateQuantidadeDePessoas(pessoasFiltered.value.length);
-  });
-  
   watch(pessoaWasUpdated, async (newValue, oldValue) => {
     const pessoaUpdate = pessoas.value.find((pessoa) => pessoaStore.getId(pessoa) == pessoaStore.idPessoa);
     const index = pessoas.value.indexOf(pessoaUpdate);
@@ -80,8 +71,8 @@
     }
   });
   
-  watch(pessoaIdDeleted, async (newId, oldId) => {
-    pessoas.value = pessoas.value.filter((pessoa) => pessoaStore.getId(pessoa) !== newId);
+  watch(pessoaWasDeleted, async (newId, oldId) => {
+    pessoas.value = pessoas.value.filter((pessoa) => pessoaStore.getId(pessoa) !== pessoaStore.idPessoa);
 
     closePessoaInfo();
   });
@@ -108,12 +99,12 @@
 <template>
     <Snackbar/>
     
-    <v-toolbar color="grey-lighten-5" class="pa-4">
+    <v-toolbar color="grey-lighten-4" class="pa-4">
       <v-row align="center">
         <v-col>
           <v-toolbar-title class="text-uppercase">
             <span class="font-weight-bold">{{ props.tipoPessoa }}</span>
-            <span> ({{ quantidadeDePessoas }})</span>
+            <span> ({{ pessoasFiltered.length }})</span>
           </v-toolbar-title>
         </v-col>
         <v-col>
@@ -137,7 +128,7 @@
     
     <v-expansion-panels  
         class="pa-4" 
-        color="grey-lighten-5"
+        color="grey-lighten-4"
         v-model="pessoaInfoIndex"
       >
         <v-expansion-panel 

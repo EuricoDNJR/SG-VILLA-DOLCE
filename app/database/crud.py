@@ -84,7 +84,7 @@ def get_all_caixa():
                     "SaldoFinal": str(caixa.saldoFinal)                    
                 }
 
-                for caixa in caixas if caixa.aberto == False
+                for caixa in caixas #if caixa.aberto == False
                
             ]
         else:

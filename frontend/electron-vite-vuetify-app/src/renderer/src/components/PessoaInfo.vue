@@ -269,15 +269,18 @@ async function deletePessoa(id=idPessoa.value, rota=props.rotaDeletePessoa){
     try{
         const url = rota + `${id}/`;
         const token = authStore.getToken;
-        
-        const response = await fetchDelete(url, token);
+        if(id !== authStore.getToken){
+            const response = await fetchDelete(url, token);
 
-        if(response.status === 200){
-            pessoaStore.delete(id);
-            
-            snackbarStore.set(`${pessoaStore.getPessoa.nome} foi removido do sistema com sucesso`, "success");
+            if(response.status === 200){
+                pessoaStore.delete(id);
+                
+                snackbarStore.set(`${pessoaStore.getPessoa.nome} foi removido do sistema com sucesso`, "success");
+            }else{
+                snackbarStore.set(`Falha ao remover ${pessoaStore.getPessoa.nome} do sistema`, "warning");
+            }
         }else{
-            snackbarStore.set(`Falha ao remover ${pessoaStore.getPessoa.nome} do sistema`, "warning");
+            snackbarStore.set("A ação de se remover do sistema não é permitida para usuários neste momento", "warning");
         }
     }catch(e){
         console.log(e);

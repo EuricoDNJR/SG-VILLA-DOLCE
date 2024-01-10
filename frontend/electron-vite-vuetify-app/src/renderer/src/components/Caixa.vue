@@ -11,14 +11,13 @@
     // const somenteDinheiro = ref(0);
     // const saldoTotal = ref(0);
     
-    const isOpen = ref(false);
     const isVisible = ref(false);
     const loading = ref(false);
     
-    // const caixaStatus = computed(() => caixaStore.getStatus);
+    const caixaStatus = computed(() => caixaStore.getStatus);
     const saldoInicial = ref(0);
     // const caixaAction = computed(() => caixaStore.getAction);
-    // const caixaIsOpen = computed(() => caixaStatus.value === 'aberto');
+    const caixaIsOpen = computed(() => caixaStore.getStatus === 'aberto');
     // const dataEHoraAbertura = computed(() => caixaStore.getDataAbertura + " " + caixaStore.getHoraAbertura);
     // let pedidos = undefined;
 
@@ -63,12 +62,11 @@
         const caixaInfo = createCaixaInfo();
 
         const responseJson = await requestOpenCaixa(caixaInfo);
-
+        console.log(responseJson);
         caixaStore.saveOpenCaixa(responseJson);
 
         console.log("Caixa ID: " + caixaStore.getId + "         Caixa.vue in openCaixa function");
 
-        isOpen.value = true;
         isVisible.value = false;
     }
     
@@ -113,10 +111,39 @@
         
         // resetCaixaInfo(resettedCaixa);
 
-        isOpen.value = false;
         isVisible.value = false;
     }
     
+    async function requestAllCaixas(){
+        let responseJson = null;
+        
+        try{
+            const url = "http://127.0.0.1:8000/v1/caixa/get_all_caixa/";
+            const token = authStore.getToken;
+            
+            const response = await fetchGet(url, token);
+
+            if(response.status === 200){
+                responseJson = await response.json();
+            }else{
+                snackbarStore.set("Falha ao carregar caixas", 'warning');
+            }
+        }catch(e){
+            console.log(e);
+            snackbarStore.set("Falha ao carregar caixas", 'warning');
+        }
+
+        return responseJson;
+    }
+
+    async function getCaixaAberto(){
+        const caixas = await requestAllCaixas();
+        const caixa = caixas.find((caixa) => caixa.aberto);
+        console.log(caixas.filter((caixa) => caixa.aberto));
+        if(caixa){
+            caixaStore.saveOpenCaixa(caixa);
+        }
+    }
     // async function requestAllPedidos(){
     //     let responseJson = null;
         
@@ -169,13 +196,14 @@
     }
 
     // pedidosFechadosCaixa(caixaStore.getId);
+    getCaixaAberto();
 
 </script>
 
 <template>
     <Snackbar/>
     
-    <v-list-item v-if="!isOpen"
+    <v-list-item v-if="!caixaIsOpen"
         title="Abrir Caixa"
         append-icon="mdi-lock-open-variant"
         @click="setVisible"

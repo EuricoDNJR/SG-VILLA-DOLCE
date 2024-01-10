@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 
-export const useAuthStore = defineStore('userData', {
+export const useAuthStore = defineStore('auth', {
     id: 'auth',
     state: () => ({
         token: null,
@@ -43,7 +43,7 @@ export const usePessoaStore = defineStore('pessoa', {
       pessoa: null,
       oldPessoa: null,
       infoChange: null,
-      idDeleted: null,
+      wasDeleted: false,
       wasUpdated: false,
       wasCreated: false,
   }),
@@ -61,8 +61,8 @@ export const usePessoaStore = defineStore('pessoa', {
     getInfoChange(){
       return this.infoChange;
     },
-    getIdDeleted(){
-      return this.idDeleted;
+    getWasDeleted(){
+      return this.wasDeleted;
     },
     getWasUpdated(){
       return this.wasUpdated;
@@ -91,16 +91,18 @@ export const usePessoaStore = defineStore('pessoa', {
       this.pessoa[attr] = value;
     },
     delete(id){
-      this.idDeleted = id;
+      this.wasDeleted = !this.wasDeleted;
     },
     update(pessoa){
-      Object.assign(this.pessoa, pessoa);
       this.infoChange = {...pessoa};
+      Object.assign(this.pessoa, pessoa);
       this.wasUpdated = !this.wasUpdated;
     },
     create(pessoa){
       this.pessoa = {...pessoa};
-      this.pessoa.saldo = "0.00";
+      if(this.tipoPessoa === "Clientes"){
+        this.pessoa.saldo = "0.00";
+      }
       this.wasCreated = !this.wasCreated;
     },
     getId(pessoa){
@@ -216,8 +218,8 @@ export const useCaixaStore = defineStore('caixa', {
     },
   },
   actions: {
-    saveOpenCaixa({uuid, SaldoInicial, Observacoes, DataAbertura, HoraAbertura}) {
-      this.id = uuid;
+    saveOpenCaixa({idCaixa, SaldoInicial, Observacoes, DataAbertura, HoraAbertura}) {
+      this.id = idCaixa;
       this.saldoInicial = SaldoInicial;
       this.dataAbertura = DataAbertura;
       this.horaAbertura = HoraAbertura;

@@ -12,8 +12,9 @@
   const snackbarStore = useSnackbarStore();
 
   const searchText = ref('');
-  let produtos = ref([]);
-  let produtosSemIds = ref([]);
+  const produtos = ref([]);
+  const produtosSemIds = ref([]);
+  const clientes = ref([]);
 
   async function requestAllStockRegistres(){ //(url=props.urlGetAllPessoas)
     try{
@@ -24,11 +25,33 @@
 
       if(response.status === 200){
         produtos.value = await response.json();
-        produtosSemIds.value = produtos.value;
+        produtosSemIds.value = [...toRaw(produtos.value)];
         produtosSemIds.value.forEach((item) => {
           delete  item.idProduto;
           delete  item.idEstoque;
         } )
+        console.log(produtos.value);
+      }else{
+        snackbarStore.set(`Falha ao carregar`, 'warning');
+      }
+    }catch(e){
+      console.log(e);
+      snackbarStore.set(`Falha ao carregar`, 'warning');
+    }
+  }
+  
+  async function requestAllClientes(){ //(url=props.urlGetAllPessoas)
+    try{
+      const url = "http://127.0.0.1:8000/v1/cliente/get_all_clients/"
+      const token = authStore.getToken;
+      
+      const response = await fetchGet(url, token);
+
+      if(response.status === 200){
+        clientes.value = await response.json();
+        clientes.value.forEach((cliente) => {
+          cliente.autocomplete = `${cliente.nome}  (Telefone: ${cliente.telefone})`;
+        });
       }else{
         snackbarStore.set(`Falha ao carregar`, 'warning');
       }
@@ -39,7 +62,6 @@
   }
 
   function getColorData(data){
-    console.log(data);
     const dataInicial = new Date();
     const dataFinal = new Date(data);
      // Data atual
@@ -51,7 +73,6 @@
     const umDiaEmMilissegundos = 1000 * 60 * 60 * 24; // 1 dia = 24 horas * 60 minutos * 60 segundos * 1000 milissegundos
     const diferencaEmDias = Math.floor(diferencaEmMilissegundos / umDiaEmMilissegundos);
     let color = undefined;
-    console.log(diferencaEmDias);
 
     if(diferencaEmDias < 0){
       color = "black";
@@ -79,61 +100,66 @@
   }
 
   requestAllStockRegistres();
+  requestAllClientes();
 </script>
 
 <template>
     <Snackbar/>
-
+  
     <v-app-bar  color="deep-purple" :elevation="2" density="compact">
-        <v-btn
-            @click=""
-            prepend-icon="mdi-plus-circle"
-            variant="text"
-        >
-          Inserir
-        </v-btn>
-        <v-btn
-          @click=""
-          prepend-icon="mdi-minus-circle"
-          variant="text"
-        >
-          Retirar
-        </v-btn>
-        
-        <v-btn 
-          @click=""
-          prepend-icon="mdi-package-variant-closed-plus"
-          variant="text"
-        >
-          Adicionar Produto
-        </v-btn>
-
-        <v-btn 
-          @click=""
-          prepend-icon="mdi-delete"
-          variant="text"
-        >
-          Remover Produto
-        </v-btn>
-
-        <v-btn 
-          @click=""
-          prepend-icon="mdi-pencil"
-          variant="text"
-        >
-          Editar Produto
-        </v-btn>
-
-      <template v-slot:append>
-        <!-- <v-btn icon="mdi-heart"></v-btn> -->
-
-        <!-- <v-btn icon="mdi-magnify"></v-btn>
-
-        <v-btn icon="mdi-dots-vertical"></v-btn> -->
+      <template v-slot:prepend>
+        <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
+        <v-icon>mdi-menu-right</v-icon>
       </template>
+
+      <!-- <v-app-bar-title>Estoque</v-app-bar-title> -->
+
+      <!-- <v-spacer></v-spacer> -->
+      <v-btn
+          @click=""
+          prepend-icon="mdi-plus-circle"
+          stacked
+      >
+        Inserir
+      </v-btn>
+      <v-btn
+        @click=""
+        prepend-icon="mdi-minus-circle"
+        stacked
+        
+      >
+        Retirar
+      </v-btn>
+      
+      <v-btn 
+        @click=""
+        prepend-icon="mdi-package-variant-closed-plus"
+        variant="text"
+        stacked
+      >
+        Adicionar Produto
+      </v-btn>
+
+      <v-btn 
+        @click=""
+        prepend-icon="mdi-delete"
+        variant="text"
+        stacked
+      >
+        Remover Produto
+      </v-btn>
+
+      <v-btn 
+        @click=""
+        prepend-icon="mdi-pencil"
+        variant="text"
+        stacked
+      >
+        Editar Produto
+      </v-btn>
     </v-app-bar>
 
-    <v-toolbar color="grey-lighten-5" class="pa-4">
+    <v-toolbar color="grey-lighten-4" class="pa-4">
       <v-row align="center">
         <v-col>
           <v-text-field
@@ -145,12 +171,22 @@
             @input=""
           ></v-text-field>
         </v-col>
+
+        <v-col>
+          <v-autocomplete
+            label="Autocomplete"
+            :items="clientes"
+            
+            item-title="autocomplete"
+            item-value="nome"
+          ></v-autocomplete>
+        </v-col>
       </v-row>
     </v-toolbar>
 
     <div
       class="pa-4" 
-      color="grey-lighten-5"
+      color="grey-lighten-4"
     >
       <v-data-table-virtual
         :items="produtosSemIds"
