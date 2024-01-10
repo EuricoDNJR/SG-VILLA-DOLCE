@@ -11,6 +11,7 @@ body {
     margin: 0;
     padding: 0;
 }
+
 main {
     display: flex;
 }
@@ -67,7 +68,7 @@ aside {
     font-size: 30px;
     font-weight: bold;
     color: #ffffff87;
-    
+
 }
 
 .menu a:hover {
@@ -96,10 +97,11 @@ aside {
 }
 
 .toolbar h1 {
-    font-size: 2rem;
+    font-size: 1.6rem;
+    margin: 0;
 }
 
-.toolbar > div {
+.toolbar>div {
     display: flex;
 }
 
@@ -193,13 +195,16 @@ hr {
     font-size: 18px;
 }
 
-.clients-list th:first-child, td:first-child {
+.clients-list th:first-child,
+.clients-list td:first-child {
     width: 80%;
 }
 
-.clients-list th:nth-child(2), .clients-list td:nth-child(2),
-.clients-list th:nth-child(3), .clients-list td:nth-child(3) {
-  text-align: center;
+.clients-list th:nth-child(2),
+.clients-list td:nth-child(2),
+.clients-list th:nth-child(3),
+.clients-list td:nth-child(3) {
+    text-align: center;
 }
 
 .add-container {
@@ -237,3 +242,323 @@ hr {
     cursor: pointer
 }
 
+/* client section */
+.client-func {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-func h1 {
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+.client-info hr {
+    height: 1px;
+    border-width: 0px;
+    background-color: #B5B7C0;
+}
+
+.info-field {
+    display: flex;
+    margin: 10px 0px 10px 0px;
+}
+
+.info-field label {
+    font-weight: bold;
+    color: #B5B7C0;
+}
+
+.info-field p {
+    font-size: 18px;
+    margin: 0px 10px;
+}
+
+/* modal-select styles */
+
+dialog {
+    width: 50%;
+    height: 90%;
+    padding: 30px 40px;
+    border-radius: 10px;
+}
+
+#modal-select-client::backdrop {
+    /*background: linear-gradient(135deg, rgba(181,154,230,0.5046393557422969) 50%, rgba(105,64,170,1) 100%);*/
+    background: rgba(0 0 0 / .4);
+}
+
+.toolbar-modal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0px;
+}
+
+.toolbar-modal h1 {
+    margin: 0;
+}
+
+.search-container-modal form {
+    width: 250px;
+    height: 34px;
+    padding: 4px;
+    border: solid;
+    border-width: 2px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    background-color: #f9f7fd;
+}
+
+.search-box-modal {
+    width: 200px;
+    height: 24px;
+    font-size: 18px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+#select-client-btn {
+    width: 100px;
+    height: 32px;
+    background: #6940aa;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #6940aa;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+#register-client-btn {
+    width: 100px;
+    height: 32px;
+    background: #000;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #000;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.clients-list-modal {
+    height: 85%;
+    overflow-x: auto;
+}
+
+.clients-list-modal table {
+    border-collapse: collapse;
+    width: 100%;
+    color: #333;
+    font-size: 15px;
+    text-align: left;
+}
+
+.clients-list-modal thead {
+    top: 0;
+    position: sticky;
+    background-color: #ffffff;
+}
+
+.clients-list-modal th {
+    padding: 11px 0px;
+    color: #B5B7C0;
+    font-weight: bold;
+}
+
+.clients-list-modal td {
+    padding: 11px 0px;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-color: #B5B7C0;
+    font-size: 18px;
+}
+
+.clients-list-modal td:last-child {
+    text-align: right;
+}
+
+.select-client-modal-btn {
+    width: 100px;
+    height: 30px;
+    background: #6940aa7e;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #6940AA;
+    color: #6940AA;
+    cursor: pointer;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 10px 0px;
+}
+
+#close-modal-select-client-btn {
+    width: 90px;
+    height: 39px;
+    background: #000;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #000;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+#more-clients-modal-btn {
+    width: 90px;
+    height: 39px;
+    background: #6940aa;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #6940aa;
+    color: #ffffff;
+    cursor: pointer;
+
+}
+
+
+/* modal-register style */
+
+#modal-register-client {
+    width: 35%;
+    height: 68%;
+    padding: 30px 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #d1c2f0 50%, #9873d9 100%);
+}
+
+#modal-register-client::backdrop {
+    background: rgba(0 0 0 / .4);
+}
+
+#register-client-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+#register-client-form h1 {
+    font-size: 35px;
+}
+
+.input-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-field label {
+    margin-bottom: 5px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.input-field input {
+    width: 320px;
+    height: 50px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border-color: #000;
+    border-style: solid;
+    outline: none;
+    padding: 5px;
+    font-size: 20px;
+}
+
+.form-buttons {
+    width: 100%;
+}
+
+#close-modal-register-client-btn {
+    width: 95px;
+    height: 39px;
+    background: #000;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #000;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+#register-client-form-btn {
+    width: 95px;
+    height: 39px;
+    background: #000;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 1.5px;
+    border-color: #EEEEEE;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+/* section forma de pagamento*/
+.payment-option-container {
+    height: 32%;
+}
+.payment-option-container h1 {
+    font-size: 1.6rem;
+}
+
+#payment-option-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 75%;
+}
+
+.payment-option-inputs {
+    display: flex;
+    font-size: 20px;
+}
+
+.payment-option-inputs div {
+    margin-right: 15px;
+    display: flex;
+}
+
+.payment-option-inputs input[type="radio"] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border: 1px solid #000;
+    border-radius: 50%;
+    margin: 0 5px 0 0;
+}
+
+.payment-option-inputs input[type="radio"]:checked {
+    background: radial-gradient(#000 50%, #fff 55%);
+    border: 2px solid #000;
+}
+
+
+#payment-option-form span {
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+#finish-order-btn {
+    width: 150px;
+    height: 32px;
+    background: #16c09849;
+    font-size: 18px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #119a7a;
+    color: #119a7a;
+    cursor: pointer;
+}
