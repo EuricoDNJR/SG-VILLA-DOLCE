@@ -525,7 +525,7 @@ def update_balance_client(pedido):
         if produtos_pedidos.exists():
             # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
             for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria == 'Açaí':
+                if produto_pedido.idProduto.categoria.nome == 'Açaí':
                     if produto_pedido.desconto > Decimal(0.0):
                         pedido.idCliente.saldo -= Decimal(150)
                         if produto_pedido.valorTotal < Decimal(15):
@@ -552,7 +552,7 @@ def update_balance_client_cancel(pedido):
         if produtos_pedidos.exists():
             # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
             for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria == 'Açaí':
+                if produto_pedido.idProduto.categoria.nome == 'Açaí':
                     if produto_pedido.desconto > Decimal(0.0):
                         pedido.idCliente.saldo += Decimal(150)
                         produto_pedido.valorTotal += produto_pedido.desconto
