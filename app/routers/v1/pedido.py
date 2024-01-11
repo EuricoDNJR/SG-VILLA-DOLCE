@@ -256,6 +256,7 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
                 quantidade=produto.quantidade,
+                valorVendaUnd=produto.valorVendaUnd,
                 desconto=produto.desconto
             )
             if crud.update_quantity_product(produto.idProduto, produto.quantidade):
