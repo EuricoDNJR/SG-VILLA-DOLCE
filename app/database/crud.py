@@ -125,6 +125,21 @@ def get_pedidos_caixa(idCaixa):
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
+def get_first_caixa_open():
+    try:
+        caixa = models.Caixa.select().where(models.Caixa.aberto == True).get()
+        return {"idCaixa": str(caixa.idCaixa),
+                "saldoInicial": str(caixa.saldoInicial),
+                "dataAbertura": str(caixa.dataAbertura),
+                "dataFechamento": str(caixa.dataFechamento),
+                "aberto": caixa.aberto,
+                "observacoes": caixa.observacoes,
+                "somenteDinheiro": str(caixa.somenteDinheiro),            
+                "SaldoFinal": str(caixa.saldoFinal)                    
+                }
+    except DoesNotExist:
+        return None
+
 def get_all_cargos():
     try:
         # Tenta buscar todos os cargos
