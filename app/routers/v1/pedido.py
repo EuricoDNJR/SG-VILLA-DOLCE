@@ -210,16 +210,18 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
             "idProdutos": [
                 {
                 "idProduto": "d05ecaa4-96d1-4a10-ae81-223ac683affa",
+                "valorVendaUnd": 4.99,
                 "quantidade": 2
                 },
                 {
                 "idProduto": "51889c6b-4b30-4fa6-969c-eea8bb786ba0",
                 "quantidade": 0.300,
+                "valorVendaUnd": 40.00,
                 "desconto": 15.00
                 }
             ],
             valorTotal: 15.00,
-            desconto: True
+            desconto: true
         }
     """
     logging.info("Getting order by id")
