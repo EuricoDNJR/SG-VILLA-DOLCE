@@ -76,7 +76,7 @@
         <v-list-item 
           prepend-icon="mdi-cog" 
           link title="Configurações" 
-          to="/menu/dashboard/">
+          to="/menu/configuracoes/">
         </v-list-item>
       </v-list>
 
