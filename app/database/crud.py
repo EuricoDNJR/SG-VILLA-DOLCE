@@ -506,7 +506,9 @@ def get_all_produtos_pedidos_by_id(idPedido):
                     "idProduto": str(produto_pedido.idProduto.idProduto),
                     "nome": produto_pedido.idProduto.nome,
                     "quantidade": str(produto_pedido.quantidade),
-                    "desconto": str(produto_pedido.desconto)
+                    "desconto": str(produto_pedido.desconto),
+                    "valorVendaUnd": str(produto_pedido.valorVendaUnd),
+                    "valorTotal": str(produto_pedido.valorTotal)
                 }
                 for produto_pedido in produtos_pedidos
             ]
