@@ -56,6 +56,8 @@ class Caixa(BaseModel):
     aberto = BooleanField(default=True)
     somenteDinheiro = DecimalField(max_digits=10, decimal_places=2, default=0.0)
     saldoFinal = DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    idUsuarioAbertura = ForeignKeyField(Usuario, backref='caixa_abertura')
+    idUsuarioFechamento = ForeignKeyField(Usuario, backref='caixa_fechamento', null=True)
 
     class Meta:
             table_name = "Caixa"

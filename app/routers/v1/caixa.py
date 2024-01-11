@@ -57,7 +57,8 @@ def open_caixa(data: CaixaRequest, jwt_token: str = Header()):
             saldoInicial = data.saldoInicial,
             dataAbertura = dataAbertura,
             observacoes = data.observacoes,
-            horaAbertura = horaAbertura
+            horaAbertura = horaAbertura,
+            idUsuarioAbertura = jwt_token
         )
 
         if caixa is None:
@@ -96,14 +97,14 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
         agora = datetime.now()
         dataFechamento = agora.strftime("%Y-%m-%d %H:%M:%S")
 
-
-        caixa = crud.close_caixa(uuid = idCaixa, dataFechamento=dataFechamento)
-
+        logging.info("Closing caixa")
+        caixa = crud.close_caixa(uuid = idCaixa, dataFechamento=dataFechamento, idUsuarioFechamento = jwt_token)
         if caixa is False:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"message": "Erro ao fechar o caixa"}
             )
+        logging.info("Closed caixa")
         logging.info("Updated saldo")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Caixa fechado com sucesso"})
     
@@ -312,4 +313,33 @@ def get_pedidos_caixa(idCaixa: str, jwt_token: str = Header()):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar pedidos " + str(e)}
+        )
+
+@router.get("/get_first_caixa_open/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_first_caixa_open(jwt_token: str = Header()):
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+
+            if user["cargo"] != "Admin":
+                logging.error("No permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
+        logging.info("recording cash start:" + jwt_token)
+
+        caixa = crud.get_first_caixa_open()
+        
+        if caixa is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao pesquisar caixa"}
+            )
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content=caixa)
+        
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar caixa " + str(e)}
         )
