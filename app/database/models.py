@@ -62,11 +62,19 @@ class Caixa(BaseModel):
     class Meta:
             table_name = "Caixa"
 
+class Categoria(BaseModel):
+    idCategoria = UUIDField(primary_key=True, default=uuid.uuid4)
+    nome = CharField(unique=True)
+    unidadeMedida = CharField()
+
+    class Meta:
+        table_name = "Categoria"
+
 class Produto(BaseModel):
     idProduto = UUIDField(primary_key=True, default=uuid.uuid4)
     nome = CharField(unique=True)
     descricao = TextField(null=True)
-    categoria = CharField()
+    categoria = ForeignKeyField(Categoria, backref='produto')
     valorCusto = DecimalField(max_digits=10, decimal_places=2)
     valorVenda = DecimalField(max_digits=10, decimal_places=2)
     unidadeMedida = CharField()
