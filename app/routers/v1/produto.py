@@ -18,9 +18,7 @@ class CreateProductRequest(BaseModel):
     nome: str
     descricao: Optional[str]
     categoria: str
-    valorCusto: float
     valorVenda: float
-    unidadeMedida: str
 
 @router.post("/create_product/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
 def create_product(data:CreateProductRequest, jwt_token: str = Header()):
@@ -31,10 +29,8 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
         {
             "nome": "Refrigerante Fys",
             "descricao": "latinha 300ml",
-            "categoria": "Refrigerante",
-            "valorCusto": 40.50,
-            "valorVenda": 4.99,
-            "unidadeMedida": "UND"
+            "categoria": "59a4b512-a866-49d5-8103-3bebc632b892",
+            "valorVenda": 4.99
         }
         
     exemplo de entrada 2:
@@ -42,10 +38,8 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
         {
             "nome": "AÇAÍ BÚFALO (3,3Kg)",
             "descricao": "AÇAÍ BÚFALO (3,3Kg). 9366.",
-            "categoria": "Açaí",
-            "valorCusto": 71.46,
-            "valorVenda": 40.00,
-            "unidadeMedida": "KG"
+            "categoria": "c209b2e1-54b3-4b46-9ddb-3359436ee1af",
+            "valorVenda": 40.00
         }
     """
     try:
@@ -62,9 +56,7 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
             data.nome,
             data.descricao,
             data.categoria,
-            data.valorCusto,
-            data.valorVenda,
-            data.unidadeMedida
+            data.valorVenda
         )
         if produto is None:
             return JSONResponse(
@@ -119,10 +111,9 @@ def get_product(uuid: str):
             "uuid": str(produto.idProduto), 
             "Nome": produto.nome, 
             "Descrição": produto.descricao if produto.descricao is not None else None, 
-            "Categoria": produto.categoria, 
-            "Valor de Custo": str(produto.valorCusto), 
+            "Categoria": produto.categoria.nome,
             "Valor de Venda": str(produto.valorVenda), 
-            "Unidade de Medida": produto.unidadeMedida,
+            "Unidade de Medida": produto.categoria.unidadeMedida,
             "Quantidade em Estoque": str(produto.quantidade)})
     except Exception as e:
         logging.error(e)
@@ -135,7 +126,6 @@ class UpdateProductRequest(BaseModel):
     nome: Optional[str]
     descricao: Optional[str]
     categoria: Optional[str]
-    valorCusto: Optional[float]
     valorVenda: Optional[float]
     unidadeMedida: Optional[str]
    
@@ -149,7 +139,6 @@ def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Heade
             "nome": "Acai",
             "descricao": "Acai da Amazonia",
             "categoria": "Sorvete",
-            "valorCusto": 90.00,
             "valorVenda": 30.00,
             "unidadeMedida": "KG"
         }
@@ -167,7 +156,6 @@ def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Heade
             nome=data.nome,
             descricao=data.descricao,
             categoria=data.categoria,
-            valorCusto=data.valorCusto,
             valorVenda=data.valorVenda,
             unidadeMedida=data.unidadeMedida
         )
