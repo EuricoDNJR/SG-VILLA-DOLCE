@@ -31,10 +31,10 @@ def create_cargo(nome):
 def create_tipo_pagamento(nome):
     return models.TipoPagamento.create(nome=nome)
     
-def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura):
-    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes)
+def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura, idUsuarioAbertura, idUsuarioFechamento=None):
+    return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, idUsuarioAbertura=idUsuarioAbertura, idUsuarioFechamento=idUsuarioFechamento)
 
-def close_caixa(uuid, dataFechamento):
+def close_caixa(uuid, dataFechamento, idUsuarioFechamento):
     try:
 
         caixa = models.Caixa.get(models.Caixa.idCaixa == uuid)
@@ -44,6 +44,7 @@ def close_caixa(uuid, dataFechamento):
         if caixa.aberto == True:
             caixa.dataFechamento = dataFechamento
             caixa.aberto = False
+            caixa.idUsuarioFechamento = idUsuarioFechamento
         caixa.save()
 
         return True
