@@ -75,9 +75,7 @@ class Produto(BaseModel):
     nome = CharField(unique=True)
     descricao = TextField(null=True)
     categoria = ForeignKeyField(Categoria, backref='produto')
-    valorCusto = DecimalField(max_digits=10, decimal_places=2)
     valorVenda = DecimalField(max_digits=10, decimal_places=2)
-    unidadeMedida = CharField()
     quantidade = DecimalField(max_digits=10, decimal_places=3, default=0.0)
 
     class Meta:
