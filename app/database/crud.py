@@ -13,8 +13,8 @@ def create_usuario(email, senha, nome, dataNascimento, cpf, endereco, telefone, 
 def create_categoria(nome, unidadeMedida):
     return models.Categoria.create(nome=nome, unidadeMedida=unidadeMedida)
 
-def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMedida):
-    return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorCusto=valorCusto, valorVenda=valorVenda, unidadeMedida=unidadeMedida)
+def create_produto(nome, descricao, categoria, valorVenda):
+    return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorVenda=valorVenda)
 
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
@@ -401,10 +401,9 @@ def get_all_produtos():
                     "idProduto": str(produto.idProduto),
                     "nome": produto.nome,
                     "descricao": produto.descricao if produto.descricao is not None else None,
-                    "categoria": produto.categoria,
-                    "valorCusto": str(produto.valorCusto),
+                    "categoria": produto.categoria.nome,
                     "valorVenda": str(produto.valorVenda),
-                    "unidadeMedida": produto.unidadeMedida,
+                    "unidadeMedida": produto.categoria.unidadeMedida,
                     "quantidade": str(produto.quantidade)
                 }
                 for produto in produtos
@@ -698,13 +697,13 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
         if descricao is not None:
             produto.descricao = descricao
         if categoria is not None:
-            produto.categoria = categoria
-        if valorCusto is not None:
-            produto.valorCusto = valorCusto
+            produto.categoria.nome = categoria
+            produto.categoria.save()
         if valorVenda is not None:
             produto.valorVenda = valorVenda
         if unidadeMedida is not None:
-            produto.unidadeMedida = unidadeMedida
+            produto.categoria.unidadeMedida = unidadeMedida
+            produto.categoria.save()
 
         produto.save()
 
@@ -712,10 +711,9 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
             "idProduto": str(produto.idProduto),
             "nome": produto.nome,
             "descricao": produto.descricao if produto.descricao is not None else None,
-            "categoria": produto.categoria,
-            "valorCusto": str(produto.valorCusto),
+            "categoria": produto.categoria.nome,
             "valorVenda": str(produto.valorVenda),
-            "unidadeMedida": produto.unidadeMedida,
+            "unidadeMedida": produto.categoria.unidadeMedida,
             "quantidade": str(produto.quantidade)
         }
 
