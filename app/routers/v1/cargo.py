@@ -18,6 +18,14 @@ class CreateRoleRequest(BaseModel):
 
 @router.post("/create_role", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
 def create_role(data: CreateRoleRequest):
+    """
+    Criação de cargo.
+    exemplo de entrada:
+
+        {
+            "nome": "Admin"
+        }
+    """
     try:
         logging.info("Creating role")
         cargo = crud.create_cargo(data.nome)

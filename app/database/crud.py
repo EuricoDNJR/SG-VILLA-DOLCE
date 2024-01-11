@@ -10,8 +10,11 @@ def create_cliente(email, nome, dataNascimento, cpf, endereco, telefone, saldo):
 def create_usuario(email, senha, nome, dataNascimento, cpf, endereco, telefone, cargo):
     return models.Usuario.create(email=email, senha=senha, nome=nome, dataNascimento=dataNascimento, cpf=cpf, endereco=endereco, telefone=telefone, cargo=cargo)
 
-def create_produto(nome, descricao, categoria, valorCusto, valorVenda, unidadeMedida):
-    return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorCusto=valorCusto, valorVenda=valorVenda, unidadeMedida=unidadeMedida)
+def create_categoria(nome, unidadeMedida):
+    return models.Categoria.create(nome=nome, unidadeMedida=unidadeMedida)
+
+def create_produto(nome, descricao, categoria, valorVenda):
+    return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorVenda=valorVenda)
 
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
@@ -290,6 +293,14 @@ def get_cargo_by_id(uuid):
     except DoesNotExist:
         return None
 
+def get_categoria_by_id(uuid):
+    try:
+        categoria = models.Categoria.get(models.Categoria.idCategoria == uuid)
+
+        return categoria
+    except DoesNotExist:
+        return None
+
 def get_tipo_pagamento_by_id(uuid):
     try:
         tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
@@ -354,6 +365,29 @@ def get_all_clientes():
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
+def get_all_categorias():
+    try:
+        # Tenta buscar todos os categorias
+        categorias = models.Categoria.select()
+
+        # Verifica se há categorias
+        if categorias.exists():
+            # Retorna a lista de categorias se houver algum
+            return [
+                {
+                    "idCategoria": str(categoria.idCategoria),
+                    "nome": categoria.nome,
+                    "unidadeMedida": categoria.unidadeMedida
+                }
+                for categoria in categorias
+            ]
+        else:
+            # Se não houver categorias, retorna None
+            return None
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
 def get_all_produtos():
     try:
         # Tenta buscar todos os produtos
@@ -367,10 +401,9 @@ def get_all_produtos():
                     "idProduto": str(produto.idProduto),
                     "nome": produto.nome,
                     "descricao": produto.descricao if produto.descricao is not None else None,
-                    "categoria": produto.categoria,
-                    "valorCusto": str(produto.valorCusto),
+                    "categoria": produto.categoria.nome,
                     "valorVenda": str(produto.valorVenda),
-                    "unidadeMedida": produto.unidadeMedida,
+                    "unidadeMedida": produto.categoria.unidadeMedida,
                     "quantidade": str(produto.quantidade)
                 }
                 for produto in produtos
@@ -473,7 +506,9 @@ def get_all_produtos_pedidos_by_id(idPedido):
                     "idProduto": str(produto_pedido.idProduto.idProduto),
                     "nome": produto_pedido.idProduto.nome,
                     "quantidade": str(produto_pedido.quantidade),
-                    "desconto": str(produto_pedido.desconto)
+                    "desconto": str(produto_pedido.desconto),
+                    "valorVendaUnd": str(produto_pedido.valorVendaUnd),
+                    "valorTotal": str(produto_pedido.valorTotal)
                 }
                 for produto_pedido in produtos_pedidos
             ]
@@ -492,7 +527,7 @@ def update_balance_client(pedido):
         if produtos_pedidos.exists():
             # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
             for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria == 'Açaí':
+                if produto_pedido.idProduto.categoria.nome == 'Açaí':
                     if produto_pedido.desconto > Decimal(0.0):
                         pedido.idCliente.saldo -= Decimal(150)
                         if produto_pedido.valorTotal < Decimal(15):
@@ -519,7 +554,7 @@ def update_balance_client_cancel(pedido):
         if produtos_pedidos.exists():
             # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
             for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria == 'Açaí':
+                if produto_pedido.idProduto.categoria.nome == 'Açaí':
                     if produto_pedido.desconto > Decimal(0.0):
                         pedido.idCliente.saldo += Decimal(150)
                         produto_pedido.valorTotal += produto_pedido.desconto
@@ -630,6 +665,28 @@ def update_novo_saldoInicial(uuid, novoSaldo = None):
     
     except DoesNotExist:
         return None
+
+def update_categoria(uuid, nome=None, unidadeMedida=None):
+    try:
+        categoria = models.Categoria.get(models.Categoria.idCategoria == uuid)
+        if categoria is None:
+            return None
+        # Atualiza os atributos fornecidos
+        if nome is not None:
+            categoria.nome = nome
+        if unidadeMedida is not None:
+            categoria.unidadeMedida = unidadeMedida
+
+        categoria.save()
+
+        return {
+            "idCategoria": str(categoria.idCategoria),
+            "nome": categoria.nome,
+            "unidadeMedida": categoria.unidadeMedida
+        }
+
+    except DoesNotExist:
+        return None
     
 def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=None, valorVenda=None, unidadeMedida=None):
     try:
@@ -642,13 +699,13 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
         if descricao is not None:
             produto.descricao = descricao
         if categoria is not None:
-            produto.categoria = categoria
-        if valorCusto is not None:
-            produto.valorCusto = valorCusto
+            produto.categoria.nome = categoria
+            produto.categoria.save()
         if valorVenda is not None:
             produto.valorVenda = valorVenda
         if unidadeMedida is not None:
-            produto.unidadeMedida = unidadeMedida
+            produto.categoria.unidadeMedida = unidadeMedida
+            produto.categoria.save()
 
         produto.save()
 
@@ -656,10 +713,9 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
             "idProduto": str(produto.idProduto),
             "nome": produto.nome,
             "descricao": produto.descricao if produto.descricao is not None else None,
-            "categoria": produto.categoria,
-            "valorCusto": str(produto.valorCusto),
+            "categoria": produto.categoria.nome,
             "valorVenda": str(produto.valorVenda),
-            "unidadeMedida": produto.unidadeMedida,
+            "unidadeMedida": produto.categoria.unidadeMedida,
             "quantidade": str(produto.quantidade)
         }
 
@@ -823,6 +879,14 @@ def delete_user(uuid):
     try:
         usuario = models.Usuario.get(models.Usuario.idUsuario == uuid)
         usuario.delete_instance()
+        return True
+    except DoesNotExist:
+        return None
+
+def delete_categoria(uuid):
+    try:
+        categoria = models.Categoria.get(models.Categoria.idCategoria == uuid)
+        categoria.delete_instance()
         return True
     except DoesNotExist:
         return None
