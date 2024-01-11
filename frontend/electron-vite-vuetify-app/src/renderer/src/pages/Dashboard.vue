@@ -19,15 +19,16 @@
 
   function pie(){
     const data = {
-      labels: ['Red', 'Orange', 'Yellow', 'Green', 'Blue'],
+      labels: ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'],
       datasets: [{
-        data: [10, 20, 30, 25, 15], // Substitua esses valores pelos seus próprios dados
+        data: [20, 20, 15, 25, 15, 30], // Substitua esses valores pelos seus próprios dados
         backgroundColor: [
-          'rgba(255, 99, 132, 0.7)',
+          'rgba(25, 118, 210, 0.7)',
+          'rgba(139, 195, 74, 0.7)',
+          'rgba(255, 193, 7, 0.7)',
+          'rgba(248, 121, 121, 0.7)',
+          'rgba(103, 58, 183, 0.7)',
           'rgba(255, 165, 0, 0.7)',
-          'rgba(255, 255, 0, 0.7)',
-          'rgba(0, 128, 0, 0.7)',
-          'rgba(0, 0, 255, 0.7)'
         ],
       }]
   };
@@ -41,7 +42,7 @@
         },
         title: {
           display: true,
-          text: 'Simple Pie Chart'
+          text: 'Categorias mais vendidas'
         },
         customCanvasBackgroundColor: {
           color: 'white',
@@ -70,13 +71,16 @@
         labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio'],
         datasets: [
           {
-            label: 'Vendas Mensais',
-            data: [50, 80, 60, 100, 75],
-            borderColor: 'purple',
-            backgroundColor: 'rgba(0, 0, 0, 0)', // Preenchimento de fundo
+            
+            label: 'Vendas Semestrais',
+            data: [20, 65, 60, 100, 75],
+            lineTension: 0.2,
+            borderColor: '#1976D2',
+            backgroundColor: 'rgba(25, 118, 210, 0.3)', // Preenchimento de fundo
             borderWidth: 2,
-            pointRadius: 5,
-            pointBackgroundColor: 'purple',
+            pointRadius: 4,
+            pointBackgroundColor: '#1976D2',
+            fill: true,
           },
         ],
       },
@@ -87,6 +91,9 @@
           x: {
             type: 'category',
             labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio'],
+            grid: {
+              display: false
+            }
           },
           y: {
             beginAtZero: true,
@@ -95,7 +102,11 @@
         plugins: {
           legend: {
             display: true,
-            position: 'bottom',
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Vendas'
           },
           customCanvasBackgroundColor: {
             color: 'white',
@@ -158,7 +169,7 @@
               </template> -->
 
               
-              <v-card>
+              <v-card v-for="(j, i) in [1, 2, 3, 4, 5]" :key="i">
                 <v-card-item>
                   <template v-slot:prepend>
                     <v-icon icon="mdi-account" color="primary"></v-icon>
@@ -205,7 +216,7 @@
               </template> -->
 
               
-              <v-card>
+              <v-card v-for="(j, i) in [1, 2, 3, 4, 5]" :key="i">
                 <v-card-item>
                   <template v-slot:prepend>
                     <v-icon icon="mdi-tag" color="primary"></v-icon>
