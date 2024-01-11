@@ -19,6 +19,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
+    "chart.js": "^4.4.1",
     "pinia": "^2.1.7",
     "vue-router": "^4.2.5",
     "vuetify": "^3.4.9"
