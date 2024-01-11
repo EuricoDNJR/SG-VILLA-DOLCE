@@ -19,6 +19,22 @@ class CreateCategoryRequest(BaseModel):
 
 @router.post("/create_category", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
 def create_category(data: CreateCategoryRequest):
+    """
+    Criação de categoria.
+    exemplo de entrada:
+
+        {
+            "nome": "Açaí",
+            "unidadeMedida": "KG"
+        }
+        
+    exemplo de entrada 2:
+
+        {
+            "nome": "Refrigerante",
+            "unidadeMedida": "UND"
+        }
+    """
     try:
         logging.info("Creating category")
         categoria = crud.create_categoria(data.nome, data.unidadeMedida)
