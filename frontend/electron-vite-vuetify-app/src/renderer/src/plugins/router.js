@@ -6,6 +6,7 @@ import Estoque from '../pages/Estoque.vue'
 import Clientes from '../pages/Clientes.vue'
 import Colaboradores from '../pages/Colaboradores.vue'
 import Pedidos from '../pages/Pedidos.vue'
+import Configuracoes from '../pages/Configuracoes.vue'
 
 
 const routes = [
@@ -43,6 +44,11 @@ const routes = [
         path: 'pedidos',
         name: 'pedidos',
         component: Pedidos,
+      },
+      {
+        path: 'configuracoes',
+        name: 'configuracoes',
+        component: Configuracoes,
       },
     ]
   },
