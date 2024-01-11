@@ -220,8 +220,8 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
                 "desconto": 15.00
                 }
             ],
-            valorTotal: 15.00,
-            desconto: true
+            "valorTotal": 15.00,
+            "desconto": true
         }
     """
     logging.info("Getting order by id")
