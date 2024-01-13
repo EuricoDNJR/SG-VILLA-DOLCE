@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database.dbmain import db
 from .database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo, TipoPagamento, Categoria
+from .database.initial_data import create_initial_values
 from .routers.v1 import cliente, usuario, produto, estoque, caixa, pedido, cargo, tipo_pagamento, categoria
 from contextlib import asynccontextmanager
 
@@ -17,7 +18,10 @@ async def lifespan(app: FastAPI):
     logging.info("Creating Tables")
     db.create_tables([Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo, TipoPagamento, Categoria], safe=True)
     logging.info("Tables Created")
-    
+    logging.info("Creating Initial Values")
+    create_initial_values()
+    logging.info("Initial Values Created")
+    logging.info("Database Connected")
     yield
 
     logging.info("Shutdown")
