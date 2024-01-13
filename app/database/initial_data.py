@@ -16,9 +16,9 @@ def create_initial_values():
         create_cargo('Admin')
 
     try:
-        models.Cargo.get(models.Cargo.nome == 'Funcionario')
+        models.Cargo.get(models.Cargo.nome == 'Colaborador')
     except DoesNotExist:
-        create_cargo('Funcionario')
+        create_cargo('Colaborador')
 
     # Verifica se os tipos de pagamento já existem
     try:
