@@ -78,9 +78,7 @@
 </script>
 
 <template>
-  <Snackbar/>
-
- 
+  <Snackbar/>       
   
   <div v-if="caixaIsOpen" class="page-content">
     <v-toolbar color="grey-lighten-4" class="pa-4">

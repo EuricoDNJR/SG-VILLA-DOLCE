@@ -240,6 +240,29 @@ export const useCaixaStore = defineStore('caixa', {
   }
 });
 
+export const useFormStore = defineStore('form', {
+  id: 'form',
+
+  state: () => ({
+      obj: null,
+      from: "",
+  }),
+  
+  getters: {
+    getObj(){
+      return this.obj;
+    },
+    getFrom(){
+      return this.from;
+    },
+  },
+  actions: {
+    send(from, obj){
+      this.obj = obj;
+      this.from = from;
+    },
+  }
+});
 // export const useFuncionarioStore = defineStore('pedido', {
 //   id: 'pedido',
 

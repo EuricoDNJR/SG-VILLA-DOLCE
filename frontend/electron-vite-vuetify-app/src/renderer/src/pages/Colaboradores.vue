@@ -16,6 +16,7 @@
       rotaUpdatePessoa="http://127.0.0.1:8000/v1/usuario/update_user/"
       rotaDeletePessoa="http://127.0.0.1:8000/v1/usuario/delete_user/"
       urlRegisterPessoa="http://127.0.0.1:8000/v1/usuario/create_user/"
+      tooltipText="Colaborador"
     />
 </template>
 

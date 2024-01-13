@@ -7,6 +7,7 @@ import Clientes from '../pages/Clientes.vue'
 import Colaboradores from '../pages/Colaboradores.vue'
 import Pedidos from '../pages/Pedidos.vue'
 import Configuracoes from '../pages/Configuracoes.vue'
+import Produtos from '../pages/Produtos.vue'
 
 
 const routes = [
@@ -49,6 +50,11 @@ const routes = [
         path: 'configuracoes',
         name: 'configuracoes',
         component: Configuracoes,
+      },
+      {
+        path: 'produtos',
+        name: 'produtos',
+        component: Produtos,
       },
     ]
   },

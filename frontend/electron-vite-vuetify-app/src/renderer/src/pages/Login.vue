@@ -125,6 +125,7 @@
         setMostrarBtn();
       }
   }
+  
 </script>
 
 <template>

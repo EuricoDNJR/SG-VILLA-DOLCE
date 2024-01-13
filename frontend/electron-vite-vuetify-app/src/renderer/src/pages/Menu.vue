@@ -62,6 +62,12 @@
         </v-list-item>
 
         <v-list-item 
+          prepend-icon="mdi-package-variant" 
+          link title="Produtos" 
+          to="/menu/produtos/">
+        </v-list-item>
+
+        <v-list-item 
           prepend-icon="mdi-account-multiple" 
           link title="Clientes" 
           to="/menu/clientes/">
@@ -72,7 +78,7 @@
           link title="Colaboradores" 
           to="/menu/colaboradores/">
         </v-list-item>
-
+        
         <v-list-item 
           prepend-icon="mdi-cog" 
           link title="Configurações" 
@@ -80,17 +86,17 @@
         </v-list-item>
       </v-list>
 
-        <template v-slot:append>
-            <div class="pa-2">
-              <v-btn block
-                color="grey-darken-4" 
-                @click="resetUserInfo"
-                prepend-icon="mdi-logout"
-              >
-                Sair
-              </v-btn>
-            </div>
-        </template>
+      <template v-slot:append>
+          <div class="pa-2">
+            <v-btn block
+              color="grey-darken-4" 
+              @click="resetUserInfo"
+              prepend-icon="mdi-logout"
+            >
+              Sair
+            </v-btn>
+          </div>
+      </template>
     </v-navigation-drawer>
 
     <div class="router-view-div">

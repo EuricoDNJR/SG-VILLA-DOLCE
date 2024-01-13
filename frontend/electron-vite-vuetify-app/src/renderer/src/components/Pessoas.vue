@@ -14,7 +14,8 @@
                           'urlGetAllPessoas', 
                           'rotaUpdatePessoa',
                           'rotaDeletePessoa',
-                          'urlRegisterPessoa']);
+                          'urlRegisterPessoa',
+                          'tooltipText']);
 
   const authStore = useAuthStore();
   const pessoaStore = usePessoaStore();
@@ -121,6 +122,7 @@
           <CadastrarPessoa
             :tipoPessoa="props.tipoPessoa"
             :urlRegisterPessoa="props.urlRegisterPessoa"
+            :tooltipText="props.tooltipText"
           />
         </v-col>
       </v-row>

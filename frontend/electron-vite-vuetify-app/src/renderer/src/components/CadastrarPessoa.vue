@@ -7,7 +7,8 @@ import { isValidColaborador, createColaborador, createAtributosColaborador } fro
 
 
 const props = defineProps(['tipoPessoa',
-                        'urlRegisterPessoa']);
+                        'urlRegisterPessoa',
+                        'tooltipText']);
 
 const authStore = useAuthStore();
 const pessoaStore = usePessoaStore();
@@ -25,20 +26,6 @@ const atributos = ref(createAtributos[props.tipoPessoa]());
 
 const loading = ref(false);
 
-const tooltipText = getTooltipText();
-
-
-function getTooltipText(){
-    let tooltipText = undefined;
-
-    if(props.tipoPessoa === "Clientes"){
-        tooltipText = "Cliente";
-    }else if(props.tipoPessoa === "Colaboradores"){
-        tooltipText = "Colaborador";
-    }
-
-    return tooltipText
-}
 
 function emptyStringToNull(string){
     let newValue = null;
@@ -126,14 +113,14 @@ function closeDialog(){
                 <v-tooltip 
                     activator="parent"
                     location="bottom">
-                Cadastrar {{ tooltipText }}
+                Cadastrar {{ props.tooltipText }}
                 </v-tooltip>
             </v-btn>
         </template>
 
         <v-card>
             <v-card-title>
-                <span class="text-h5">Cadastrar {{ tooltipText }}</span>
+                <span class="text-h5">Cadastrar {{ props.tooltipText }}</span>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text>

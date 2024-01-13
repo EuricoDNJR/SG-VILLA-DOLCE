@@ -157,12 +157,13 @@ function getAtributosEspecificos(){
 
     if(props.tipoPessoa === "Clientes"){
         const saldo = computed(() => pessoaStore.getPessoa.saldo);
+        const pontos = computed(() => Math.floor(pessoaStore.getPessoa.saldo/15));
 
         atributosEspecificos.push({
             color: "green",
             icon: "mdi-currency-brl",
             title: "Saldo",
-            value: saldo.value.replace('.', ','),
+            value: saldo,
             isEditable: false,
             isSelect: false,
         });
@@ -171,7 +172,7 @@ function getAtributosEspecificos(){
             color: "purple",
             icon: "mdi-star",
             title: "Pontos",
-            value: saldoToPontos(Number(saldo.value)),
+            value: pontos,
             isEditable: false,
             isSelect: false,
         });
@@ -290,10 +291,6 @@ async function deletePessoa(id=idPessoa.value, rota=props.rotaDeletePessoa){
 
 function deletePessoaConfirmation(){
     confirmDialog(`Tem certeza que deseja remover ${pessoaStore.getPessoa.nome} do sistema?`, deletePessoa);
-}
-
-function saldoToPontos(saldo){
-    return Math.floor(saldo/15);
 }
 
 watch(idPessoa, (newId, oldId) => {

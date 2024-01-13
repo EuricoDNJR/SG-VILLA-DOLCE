@@ -9,13 +9,13 @@ function searchByTitle(atributos, title){
 }
 
 export function isValidColaborador(atributos, pessoa){
-    const nomeError = searchByTitle(atributos, "nome", false).error;
-    const senhaError = searchByTitle(atributos, "senha", false).error;
-    const telefoneError = searchByTitle(atributos, "telefone", false).error;
-    const emailError = searchByTitle(atributos, "email", false).error;
+    const nomeError = searchByTitle(atributos, "nome").error;
+    const senhaError = searchByTitle(atributos, "senha").error;
+    const telefoneError = searchByTitle(atributos, "telefone").error;
+    const emailError = searchByTitle(atributos, "email").error;
     const cpfError = searchByTitle(atributos, "cpf", false).error;
-    const dataNascimentoError = searchByTitle(atributos, "data de nascimento", false).error;
-    const enderecoError = searchByTitle(atributos, "endereço", false).error;
+    const dataNascimentoError = searchByTitle(atributos, "data de nascimento").error;
+    const enderecoError = searchByTitle(atributos, "endereço").error;
 
     nomeError.value = (pessoa.nome.length <= 0);
     senhaError.value = (pessoa.senha.length <= 0);
