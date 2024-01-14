@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     status,
-    Response,
     Header,
     Depends
 )
@@ -50,7 +49,7 @@ def get_category(idCategoria: str):
         logging.info("Getting category")
         categoria = crud.get_categoria_by_id(idCategoria)
         if categoria is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Categoria não encontrada"})
         logging.info("Category found")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"uuid": str(categoria.idCategoria), "Nome": categoria.nome, "Unidade de Medida": categoria.unidadeMedida})
     except Exception as e:
@@ -63,7 +62,7 @@ def get_all_categories():
         logging.info("Getting all categories")
         categorias = crud.get_all_categorias()
         if categorias is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhuma categoria encontrada"})
         logging.info("Categories found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=categorias)
     except Exception as e:
@@ -80,7 +79,7 @@ def update_category(idCategoria: str, data: UpdateCategoryRequest):
         logging.info("Updating category")
         categoria = crud.update_categoria(idCategoria, data.nome, data.unidadeMedida)
         if categoria is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Categoria não encontrada ou não atualizada"})
         logging.info("Category updated")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Categoria atualizada com sucesso"})
     except Exception as e:
@@ -93,7 +92,7 @@ def delete_category(idCategoria: str):
         logging.info("Deleting category")
         categoria = crud.delete_categoria(idCategoria)
         if categoria is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Categoria não encontrada ou não deletada"})
         logging.info("Category deleted")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Categoria deletada com sucesso"})
     except Exception as e:
