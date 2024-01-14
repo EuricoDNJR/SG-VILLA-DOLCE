@@ -62,7 +62,7 @@
         const caixaInfo = createCaixaInfo();
 
         const responseJson = await requestOpenCaixa(caixaInfo);
-        console.log(responseJson);
+
         caixaStore.saveOpenCaixa(responseJson);
 
         console.log("Caixa ID: " + caixaStore.getId + "         Caixa.vue in openCaixa function");
@@ -139,7 +139,7 @@
     async function getCaixaAberto(){
         const caixas = await requestAllCaixas();
         const caixa = caixas.find((caixa) => caixa.aberto);
-        console.log(caixas.filter((caixa) => caixa.aberto));
+
         if(caixa){
             caixaStore.saveOpenCaixa(caixa);
         }

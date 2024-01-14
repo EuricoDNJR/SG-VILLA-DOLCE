@@ -4,6 +4,10 @@
   import { useAuthStore, useCargosStore } from '../utils/store';
   import { getAllRolesArray, fetchPost } from '../utils/common'
   
+  defineOptions({
+    inheritAttrs: false
+  });
+
   const router = useRouter();
   const cellphone = ref('');
   const password = ref('');
@@ -125,6 +129,7 @@
         setMostrarBtn();
       }
   }
+  
 </script>
 
 <template>

@@ -9,8 +9,8 @@ function searchByTitle(atributos, title){
 
 export function isValidCliente(atributos, pessoa){
 
-    const nomeError = searchByTitle(atributos, "nome", false).error;
-    const telefoneError = searchByTitle(atributos, "telefone", false).error;
+    const nomeError = searchByTitle(atributos, "nome").error;
+    const telefoneError = searchByTitle(atributos, "telefone").error;
 
     nomeError.value = (pessoa.nome.length <= 0);
     telefoneError.value = (pessoa.telefone.length <= 0);

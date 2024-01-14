@@ -1,3 +1,19 @@
+import { ref } from 'vue'
+import { useAuthStore, useSnackbarStore } from '../utils/store';
+
+
+export function getAuthToken(){
+    const authStore = useAuthStore();
+    
+    return authStore.getToken;
+}
+
+export function setMessageSnackbar(msg, messageType){
+    const snackbarStore = useSnackbarStore();
+    
+    snackbarStore.set(msg, messageType);
+}
+
 function createFetchOptions(methodName, contentType, token=undefined, body=undefined){
     const options = {
         method: methodName,
@@ -109,4 +125,70 @@ export function confirmDialog(msg, callback){
 
 export function exist(value){
     return (value !== undefined) && (value !== null);
+}
+
+export function emptyStringToNull(string){
+    let newValue = null;
+
+    if(string.length > 0){
+        newValue = string;
+    }
+
+    return newValue;
+}
+
+export function getObjByKeys(obj, keys){
+    keys.forEach((key, i) => {
+        obj = obj[key];
+    });
+    
+    return obj;
+}
+
+export function createCelula(key, title=key, type="text", required=false){
+    return {"key": key, "title": title, "type": type, "required": required}
+}
+
+export function createFormFields(configs, fixies=[]){
+    const fieldsArray = [];
+    const fieldsObj = {};
+
+    configs.forEach((linhaForm, i) => {
+        fieldsArray.push([]);
+        
+        linhaForm.forEach((celulaForm) => {
+            const obj = {
+                key: celulaForm.key,
+                title: celulaForm.title,
+                obj: ref(''),
+                type: celulaForm.type,
+                error: ref(false),
+                required: celulaForm.required,
+            };
+
+            fieldsObj[celulaForm.title] = obj;
+            fieldsArray[i].push(obj);
+        });
+    });
+    fixies.forEach((linhaFix, i) => {
+        const keysStr = linhaFix[0];
+        const newValue = linhaFix[1];
+
+        const keys = keysStr.split('.');
+        const key = keys.pop();
+
+        const obj = getObjByKeys(fieldsObj, keys);
+
+        obj[key] = newValue;
+    });
+
+    return [fieldsObj, fieldsArray];
+}
+
+export function getFormatedDate(date){
+    if(date){
+        return date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
+    }
+    
+    return null;
 }

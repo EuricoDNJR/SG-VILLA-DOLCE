@@ -3,6 +3,10 @@
   import { onMounted } from 'vue';
   import { Chart, registerables } from 'chart.js';
 
+  defineOptions({
+    inheritAttrs: false
+  });
+
   Chart.register(...registerables);
 
   const plugin = {
@@ -36,18 +40,23 @@
     // Opções do gráfico
     const options = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: 'top',
         },
         title: {
           display: true,
-          text: 'Categorias mais vendidas'
+          text: 'Categorias mais vendidas',
+          font: {
+            size: 18
+          },
         },
         customCanvasBackgroundColor: {
           color: 'white',
         },
       },
+      devicePixelRatio: 4,
     };
 
     // Criar o gráfico
@@ -106,14 +115,19 @@
           },
           title: {
             display: true,
-            text: 'Vendas'
+            text: 'Vendas',
+            font: {
+              size: 18
+            },
           },
           customCanvasBackgroundColor: {
             color: 'white',
           }
         },
+        devicePixelRatio: 4,
       },
       plugins: [plugin],
+      
     });
   });
 
@@ -132,24 +146,16 @@
       class="elevation-2 rounded"></canvas>
   </div>
 
-  <v-container
+  <div
     class="pa-4" 
     color="grey-lighten-4"
   >
     <v-row>
       <v-col>
-        <canvas  
-          id="myPieChart"
-          width="50"
-          height="50"
-          class="elevation-2 rounded"></canvas>
-      </v-col>
-
-      <v-col>
         <v-card
           class="elevation-2 rounded"
-          title="Clientes que mais compraram"
         >
+          <v-card-title><strong>Clientes que mais compraram</strong></v-card-title>
           <v-list>
             <v-list-item
               color="primary"
@@ -195,8 +201,9 @@
       <v-col>
         <v-card
           class="elevation-2 rounded"
-          title="Produtos mais vendidos"
         >
+          <v-card-title><strong>Produtos mais vendidos</strong> </v-card-title>
+        
           <v-list>
             <v-list-item
               color="primary"
@@ -239,7 +246,20 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+  </div>
+
+  <div
+    class="pa-4" 
+    color="grey-lighten-4"
+    style="height: 450px;"
+  >
+    <canvas  
+      id="myPieChart"
+      width="50"
+      height="50"
+      class="elevation-2 rounded"></canvas>
+  </div>
+  
 </template>
 
 <style scoped>

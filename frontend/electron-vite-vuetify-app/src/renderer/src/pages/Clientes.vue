@@ -16,6 +16,7 @@
       rotaUpdatePessoa="http://127.0.0.1:8000/v1/cliente/update_cliente/"
       rotaDeletePessoa="http://127.0.0.1:8000/v1/cliente/delete_cliente/"
       urlRegisterPessoa="http://127.0.0.1:8000/v1/cliente/create_client/"
+      tooltipText="Cliente"
     />
 </template>
 
