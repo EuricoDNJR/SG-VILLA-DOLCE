@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     status,
-    Response,
     Header,
     Depends
 )
@@ -137,7 +136,7 @@ def get_user(telefone: str, jwt_token: str = Header()):
         user = crud.get_usuario(telefone=telefone)
         if user is None:
             logging.error("User not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Usuário não encontrado"})
         logging.info("User found")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"idUsuario": str(user.idUsuario),
                                                                       "email": user.email, 
@@ -166,7 +165,7 @@ def get_all_users(jwt_token: str = Header()):
         users = crud.get_all_users()
         if users is None:
             logging.error("Users not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum usuário encontrado"})
         logging.info("Users found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=users)
     except Exception as e:
@@ -226,7 +225,7 @@ def update_user(idUsuario: str,
         )
         if update_user is None:
             logging.error("User not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Usuário não encontrado ou não atualizado"})
         logging.info("User updated")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Usuário atualizado com sucesso"})
     except Exception as e:
@@ -248,7 +247,7 @@ def delete_user(idUsuario: str, jwt_token: str = Header()):
         delete_user = crud.delete_user(idUsuario)
         if delete_user is None:
             logging.error("User not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Usuário não encontrado ou não deletado"})
         logging.info("User deleted")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Usuário deletado com sucesso"})
     except Exception as e:

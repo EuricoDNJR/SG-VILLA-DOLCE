@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     status,
-    Response,
     Header,
     Depends
 )
@@ -70,7 +69,7 @@ def get_client(telefone: str):
         cliente = crud.get_cliente(telefone=telefone)
         if cliente is None:
             logging.error("Client not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado"})
         else:
             logging.info("Client found")
             return JSONResponse(status_code=status.HTTP_200_OK, content=cliente)
@@ -91,7 +90,7 @@ def get_all_clients():
         if clientes is not None:
             return JSONResponse(status_code=status.HTTP_200_OK, content=clientes)
         else:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum cliente encontrado"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(
@@ -143,7 +142,7 @@ def update_cliente(
             return JSONResponse(status_code=status.HTTP_200_OK, content=update_cliente)
         else:
             logging.error("Client not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado ou não atualizado"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(
@@ -160,7 +159,7 @@ def delete_cliente(idCliente: str):
             return JSONResponse(status_code=status.HTTP_200_OK, content={'message': 'Cliente deletado com sucesso'})
         else:
             logging.error("Client not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado ou não deletado"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(
@@ -177,7 +176,7 @@ def get_client_discounts(idCliente: str):
             return JSONResponse(status_code=status.HTTP_200_OK, content=discounts)
         else:
             logging.error("Discounts not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Descontos não encontrados"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(

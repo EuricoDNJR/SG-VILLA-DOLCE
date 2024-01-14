@@ -7,8 +7,6 @@ from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     status,
-    Response,
-    Header,
     Depends
 )
 
@@ -33,7 +31,7 @@ def get_PaymentType(idTipoPagamento: str):
         logging.info("Getting PaymentType")
         tipo_pagamento = crud.get_tipo_pagamento_by_id(idTipoPagamento)
         if tipo_pagamento is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Tipo de Pagamento não encontrado"})
         logging.info("PaymentType found")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"uuid": str(tipo_pagamento.idTipoPagamento), "Nome": tipo_pagamento.nome})
     except Exception as e:
@@ -46,7 +44,7 @@ def get_all_payment_types():
         logging.info("Getting all PaymentTypes")
         tipo_pagamentos = crud.get_all_tipo_pagamentos()
         if tipo_pagamentos is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum Tipo de Pagamento encontrado"})
         logging.info("PaymentTypes found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=tipo_pagamentos)
     except Exception as e:
@@ -65,7 +63,7 @@ def update_payment_type(idTipoPagamento: str, data: UpdatePaymentTypeRequest):
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Tipo de Pagamento atualizado com sucesso"})
         else:
             logging.info("Payment Type not updated")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Tipo de Pagamento não encontrado ou não atualizado"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o Tipo de Pagamento"})
@@ -79,7 +77,7 @@ def delete_payment_type(idTipoPagamento: str):
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Tipo de Pagamento deletado com sucesso"})
         else:
             logging.info("Payment Type not deleted")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Tipo de Pagamento não encontrado ou não deletado"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao deletar o Tipo de Pagamento"})
