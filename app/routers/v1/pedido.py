@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     status,
-    Response,
     Header,
     Depends
 )
@@ -165,7 +164,7 @@ def get_all_orders():
         logging.info("Getting all orders")
         pedidos = crud.get_all_pedidos()
         if pedidos is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum pedido encontrado"})
         logging.info("Orders found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
     except Exception as e:
@@ -185,7 +184,7 @@ def get_order(idPedido: str):
         pedido = crud.get_pedido_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
         logging.info("Order found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=pedido)
     except Exception as e:
@@ -229,7 +228,7 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
         pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
@@ -306,7 +305,7 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
         pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
@@ -390,7 +389,7 @@ def cancel_order(idPedido: str):
         pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
@@ -489,7 +488,7 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         pedido = crud.get_pedido_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
