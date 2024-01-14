@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     status,
-    Response,
     Header,
     Depends
 )
@@ -41,7 +40,7 @@ def get_role(idCargo: str):
         logging.info("Getting role")
         cargo = crud.get_cargo_by_id(idCargo)
         if cargo is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cargo não encontrado"})
         logging.info("Role found")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"uuid": str(cargo.idCargo), "Nome": cargo.nome})
     except Exception as e:
@@ -54,7 +53,7 @@ def get_all_roles():
         logging.info("Getting all roles")
         cargos = crud.get_all_cargos()
         if cargos is None:
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum cargo encontrado"})
         logging.info("Roles found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=cargos)
     except Exception as e:
@@ -73,7 +72,7 @@ def update_role(idCargo: str, data: UpdateRoleRequest):
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Cargo atualizado com sucesso"})
         else:
             logging.info("Role not updated")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cargo não existe ou não foi atualizado"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao atualizar o cargo"})
@@ -87,7 +86,7 @@ def delete_role(idCargo: str):
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Cargo deletado com sucesso"})
         else:
             logging.info("Role not deleted")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cargo não existe ou não foi deletado"})
     except Exception as e:
         logging.error(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Erro ao deletar o cargo"})
