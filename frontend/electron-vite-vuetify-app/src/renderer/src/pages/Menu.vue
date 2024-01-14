@@ -4,6 +4,9 @@
   import { useAuthStore } from '../utils/store';
   import Caixa from '../components/Caixa.vue';
 
+  defineOptions({
+    inheritAttrs: false
+  });
 
   const router = useRouter();
   const authStore = useAuthStore();

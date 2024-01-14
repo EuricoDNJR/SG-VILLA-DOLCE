@@ -8,7 +8,7 @@
     const formStore = useFormStore();
     const recieve = computed(() => formStore.getObj); 
     let categorias = undefined;
-    const loading = ref(true)
+    const loading = ref(true);
 
     async function requestAllCategories(){
       try{
@@ -19,8 +19,6 @@
 
         if(response.status === 200){
           categorias = await response.json();
-
-          loading.value = false;
         }else{
           setMessageSnackbar("Falha ao carregar categorias", "warning");
         }
@@ -28,6 +26,8 @@
         console.log(e);
         setMessageSnackbar("Falha ao carregar categorias", "warning");
       }
+
+      loading.value = false;
     }
 
     function reload(callback){

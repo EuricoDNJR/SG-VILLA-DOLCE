@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, computed, watch } from 'vue'
+  import { ref, computed, watch, onMounted } from 'vue'
   import { fetchGet, fetchDelete, confirmDialog } from '../utils/common';
   import { useAuthStore, useFormStore, useSnackbarStore } from '../utils/store';
   import Snackbar from '../components/Snackbar.vue';
@@ -38,7 +38,7 @@
 
       if(response.status === 200){
         produtos.value = await response.json();
-        console.log(produtos);
+
         produtos.value.forEach((produto) => {
           produtosObj[produto.idProduto] = produto;
         })
@@ -74,16 +74,17 @@
   
   function deleteConfirmation(produto){
     confirmDialog(`Tem certeza que deseja remover ${produto.nome} do sistema?`, () => requestDelete(produto));
-}
-
+  }
 
   function getColorQuantidade(quantidade){
     let color = undefined;
     
-    if(quantidade <= 0){
-      color = "black";
-    }else{
+    if(quantidade > 0){
       color = "green";
+    }else if(quantidade < 0){
+      color = "red";
+    }else{
+      color = "black";
     }
 
     return color;
@@ -92,7 +93,7 @@
   watch(recieve, async (newRecieve, oldRecieve) => {
     if(formStore.getFrom == "Adicionar Produto"){
       const produto = {
-        idProduto: formStore.getObj.idProduto,
+        idProduto: formStore.getObj.uuid,
         nome: formStore.getObj.nome,
         descricao: formStore.getObj.descricao,
         categoria: formStore.getObj.categoria,
@@ -105,8 +106,10 @@
       produtosObj[produto.idProduto] = produto;
     }
   });
+  onMounted(() => {
+    requestAllProducts();
+  });
 
-  requestAllProducts();
 </script>
 
 <template>
@@ -165,14 +168,14 @@
         </template>
 
         <template v-slot:item.acoes="{ item }">
-          <v-btn
+          <!-- <v-btn
             size="small"
             class="d-print-inline"
             color="primary"
             variant="text"
             @click="console.log(item);"
             icon="mdi-pencil"
-          ></v-btn>
+          ></v-btn> -->
 
           <v-btn
             size="small"

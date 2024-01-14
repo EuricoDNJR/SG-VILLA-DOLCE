@@ -3,6 +3,10 @@
   import { onMounted } from 'vue';
   import { Chart, registerables } from 'chart.js';
 
+  defineOptions({
+    inheritAttrs: false
+  });
+
   Chart.register(...registerables);
 
   const plugin = {

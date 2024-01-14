@@ -66,7 +66,7 @@ async function requestPost(url=props.url){
     loading.value = true;
 
     const body = get();
-    console.log(formFields.value);
+
     if(body){
         try{
             const token = authStore.getToken;
