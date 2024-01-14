@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse
 from fastapi import (
     APIRouter,
     status,
-    Response,
     Header,
     Depends
 )
@@ -105,7 +104,7 @@ def get_product(uuid: str):
         produto = crud.get_product_by_id(uuid=uuid)
         if produto is None:
             logging.error("Product not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Produto não encontrado"})
         logging.info("Product found")
         return JSONResponse(status_code=status.HTTP_200_OK, content={
             "uuid": str(produto.idProduto), 
@@ -189,7 +188,7 @@ def delete_product(uuid: str, jwt_token: str = Header()):
         produto = crud.delete_product(uuid)
         if produto is None:
             logging.error("Product not found")
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Produto não encontrado"})
         logging.info("Product deleted")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto deletado com sucesso"})
     except Exception as e:
