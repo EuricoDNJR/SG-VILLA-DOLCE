@@ -8,7 +8,6 @@ from datetime import datetime
 from fastapi import (
     APIRouter,
     status,
-    Response,
     Header,
     Depends
 )
