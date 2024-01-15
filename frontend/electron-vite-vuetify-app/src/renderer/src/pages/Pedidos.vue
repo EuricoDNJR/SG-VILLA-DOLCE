@@ -4,6 +4,9 @@
   import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
   import { fetchGet, replaceNullToEmptyString } from '../utils/common';
   import Snackbar from '../components/Snackbar.vue';
+  import CriarPedido from '../components/CriarPedido.vue';
+  import PedidosEmAberto from '../components/PedidosEmAberto.vue';
+
 
   defineOptions({
     inheritAttrs: false
@@ -13,10 +16,11 @@
   const authStore = useAuthStore();
   const snackbarStore = useSnackbarStore();
   const caixaStore = useCaixaStore();
+  const isCriarPedido = ref(false);
   // let funcionarios = [];
   // let funcionariosFiltered = [];
   // const loading = ref(true);
-  // const searchText = ref('');
+
   const caixaIsOpen = computed(() => caixaStore.getStatus === 'aberto');
   const pedidosEmAberto = ref([
         { id: 1, nome: 'Pedido 1', data: '01/01/2024', detalhes: 'Detalhes do pedido 1' },
@@ -25,6 +29,13 @@
         // Adicione mais pedidos conforme necessário
       ]);
 
+  function toPedidosEmAberto(){
+    isCriarPedido.value = false;
+  }
+  
+  function toCriarPedido(){
+    isCriarPedido.value = true;
+  }
   // const searchPedidos = () => {
   //   // Recarregando a tabela para atualizar 
   //   loading.value = true;
@@ -81,94 +92,39 @@
   <Snackbar/>       
   
   <div v-if="caixaIsOpen" class="page-content">
-    <v-toolbar color="grey-lighten-4" class="pa-4">
-      <v-row align="center">
-        <v-col>
-          <v-toolbar-title class="text-uppercase">
-            <span class="font-weight-bold">Pedidos em Aberto</span>
-          </v-toolbar-title>
-        </v-col>
-      </v-row>
-    </v-toolbar>
-    
-    <v-container>
-      <v-row justify="center">
-        <v-col
-          v-for="pedido in pedidosEmAberto"
-          :key="pedido.id"
-          cols="12"
-          sm="6"
-          md="4"
+    <v-app-bar  color="deep-purple" :elevation="2" density="compact">
+        <v-app-bar-title>Pedidos</v-app-bar-title>
+
+        <template v-slot:prepend>
+          <v-icon>mdi-menu-right</v-icon>
+        </template>
+
+        <v-btn
+            variant="text"
+            prepend-icon="mdi-view-list"
+            stacked
+            @click="toPedidosEmAberto"
         >
-          <v-card
-            class="mb-4 border-start-card"
-            :title="pedido.nome"
-            :subtitle="pedido.data"
-            border="start"
-          >
-            <template v-slot:prepend>
-              <v-avatar color="blue-darken-2">
-                <v-icon icon="mdi-label"></v-icon>
-              </v-avatar>
-            </template>  
+            Pedidos em Aberto
+        </v-btn>
 
-            <template v-slot:append>
-              <v-chip color="green">
-              <h3>R$ 120,32</h3>
-            </v-chip>
-            </template> 
-            
-            <v-card-text>
-              <v-timeline density="compact" align="start">
-                
-                <v-timeline-item
-                  dot-color="blue-darken-2"
-                  size="x-small"
-                >
-                  {{ pedido.detalhes }}
-                </v-timeline-item>
-              </v-timeline>
+        <v-btn
+            variant="text"
+            prepend-icon="mdi-receipt-text-plus"
+            stacked
+            @click="toCriarPedido"
+        >
+            Criar Pedido
+        </v-btn>
+    </v-app-bar>
 
-              <v-timeline density="compact" align="start">
-                
-                <v-timeline-item
-                  dot-color="blue-darken-2"
-                  size="x-small"
-                >
-                  {{ pedido.detalhes }}
-                </v-timeline-item>
-              </v-timeline>
+    <div v-if="isCriarPedido">
+      <CriarPedido/>
+    </div>
 
-              <v-timeline density="compact" align="start">
-                
-                <v-timeline-item
-                  dot-color="grey-darken-3"
-                  size="x-small"
-                >
-                  <v-icon>mdi-dots-horizontal</v-icon>
-                </v-timeline-item>
-              </v-timeline>
-              <!-- <v-timeline density="compact" align="start">
-                pedido.detalhes 
-                <v-timeline-item
-                  v-for="message in messages"
-                  :key="message.time"
-                  :dot-color="message.color"
-                  size="x-small"
-                >
-                  <div class="mb-4">
-                    <div class="font-weight-normal">
-                      <strong>{{ message.from }}</strong> @{{ message.time }}
-                    </div>
-                    <div>{{ message.message }}</div>
-                  </div>
-                </v-timeline-item>
-              </v-timeline> -->
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+    <div v-else>
+      <PedidosEmAberto/>
+    </div>
   </div>
   <div v-else class="close-caixa">
     <v-container fluid fill-height>

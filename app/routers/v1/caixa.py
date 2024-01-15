@@ -40,18 +40,12 @@ def open_caixa(data: CaixaRequest, jwt_token: str = Header()):
         if jwt_token != "test":
             user = crud.get_usuario_by_id(jwt_token)
 
-            if user["cargo"] != "Admin":
-                logging.error("No permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
         logging.info("recording cash start:" + jwt_token)
         
         agora = datetime.now()
         dataAbertura = agora.strftime("%Y-%m-%d")
         horaAbertura = agora.strftime("%H:%M:%S")
         
-
-        
-       
         caixa = crud.open_caixa(
             saldoInicial = data.saldoInicial,
             dataAbertura = dataAbertura,
@@ -88,13 +82,17 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
         if jwt_token != "test":
             user = crud.get_usuario_by_id(jwt_token)
 
-            if user["cargo"] != "Admin":
-                logging.error("No permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
         logging.info("recording cash start:" + jwt_token)
 
         agora = datetime.now()
         dataFechamento = agora.strftime("%Y-%m-%d %H:%M:%S")
+
+        pedidos = crud.get_pedidos_caixa(idCaixa = idCaixa)
+        if pedidos is not None:
+            return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"message": "O caixa só pode ser fechado quando não houver pedidos em aberto"}
+                )  
 
         logging.info("Closing caixa")
         caixa = crud.close_caixa(uuid = idCaixa, dataFechamento=dataFechamento, idUsuarioFechamento = jwt_token)
@@ -105,8 +103,8 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
             )
         logging.info("Closed caixa")
         logging.info("Updated saldo")
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Caixa fechado com sucesso"})
-    
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Caixa fechado com sucesso"})  
     except Exception as e:
         logging.error(e)
         return JSONResponse(
