@@ -43,7 +43,7 @@ def create_initial_values():
 
     # Verifica se o cliente 'Visitante' já existe
     try:
-        models.Cliente.get(models.Cliente.nome == 'Visitante')
+        models.Cliente.get(models.Cliente.telefone == '00000000000')
     except DoesNotExist:
         create_cliente(
             email='',

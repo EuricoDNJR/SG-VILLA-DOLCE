@@ -580,6 +580,8 @@ def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=No
             return None
         # Atualiza os atributos fornecidos
         if telefone is not None:
+            if cliente.telefone == '00000000000':
+                return False
             cliente.telefone = telefone
         if email is not None:
             cliente.email = email
