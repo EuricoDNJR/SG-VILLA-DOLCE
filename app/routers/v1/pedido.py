@@ -329,6 +329,21 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
             content={"message":"Erro ao verificar status do pedido: " + str(e)}
         )
     try:
+        logging.info("Checking if the values ​​match")
+        if Decimal((Decimal(data.valorRecebimento) - Decimal(data.valorDevolvido)).__format__('.2f')) != pedido.idPagamento.valorTotal:
+            logging.info("Values don't match")
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "O valor recebido menos o troco não é igual ao valor total do pedido"}
+            )
+        logging.info("Values match")
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message":"Erro ao verificar se o valor recebido menos o troco é igual ao valor total do pedido: " + str(e)}
+        )
+    try:
         logging.info("Updating payment of order")
         if crud.update_pagamento(idPagamento=pedido.idPagamento, valorRecebimento=data.valorRecebimento, valorDevolvido=data.valorDevolvido, tipoPagamento=data.tipoPagamento):
             logging.info("Payment of order updated")
