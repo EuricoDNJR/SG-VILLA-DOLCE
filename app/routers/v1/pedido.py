@@ -141,11 +141,14 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
                 content={"message": "Erro ao atualizar saldo do caixa"}
             )
         try:
-            logging.info("Updating balance of client")
-            if crud.update_balance_client(pedido):
-                logging.info("Balance of client updated")
+            if crud.verifier_client_promotion(pedido):
+                logging.info("Updating balance of client")
+                if crud.update_balance_client(pedido):
+                    logging.info("Balance of client updated")
+                else:
+                    logging.info("Balance of client not updated")
             else:
-                logging.info("Balance of client not updated")
+                logging.info("Visitante identificado, não será atualizado o saldo!")
         except Exception as e:
             logging.error(e)
             return JSONResponse(
@@ -368,11 +371,14 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
             content={"message": str(e)}
         )
     try:
-        logging.info("Updating balance of client")
-        if crud.update_balance_client(pedido):
-            logging.info("Balance of client updated")
+        if crud.verifier_client_promotion(pedido):
+            logging.info("Updating balance of client")
+            if crud.update_balance_client(pedido):
+                logging.info("Balance of client updated")
+            else:
+                logging.info("Balance of client not updated")
         else:
-            logging.info("Balance of client not updated")
+            logging.info("Visitante identificado, não será atualizado o saldo!")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
@@ -453,11 +459,14 @@ def cancel_order(idPedido: str):
                 content={"message": str(e)}
             )
         try:
-            logging.info("Updating balance of client")
-            if crud.update_balance_client_cancel(pedido):
-                logging.info("Balance of client updated")
+            if crud.verifier_client_promotion(pedido):
+                logging.info("Updating balance of client")
+                if crud.update_balance_client_cancel(pedido):
+                    logging.info("Balance of client updated")
+                else:
+                    logging.info("Balance of client not updated")
             else:
-                logging.info("Balance of client not updated")
+                logging.info("Visitante identificado, não será atualizado o saldo!")
         except Exception as e:
             logging.error(e)
             return JSONResponse(
