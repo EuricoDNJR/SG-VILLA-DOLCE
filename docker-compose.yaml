@@ -6,9 +6,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=guest
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_ROOT_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_ROOT_PASSWORD=root
       - POSTGRES_DB=villa_dolce_db
     volumes:
       - ./db:/var/lib/postgresql/data

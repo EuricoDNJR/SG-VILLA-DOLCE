@@ -2,7 +2,7 @@ import os
 import logging
 import dotenv
 from fastapi import Header, HTTPException, status
-from .database.crud import get_usuario_by_id
+from database.crud import get_usuario_by_id
 
 dotenv.load_dotenv()
 
