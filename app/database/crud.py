@@ -981,3 +981,9 @@ def delete_payment_type(uuid):
         return True
     except DoesNotExist:
         return None
+    
+def verifier_client_promotion(pedido):
+    if pedido.idCliente.nome != 'Visitante':
+        return True
+    else:
+        return False
