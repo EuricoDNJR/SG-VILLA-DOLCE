@@ -1,8 +1,8 @@
 import logging
 from typing import Optional
 from pydantic import BaseModel
-from ...database import crud
-from ...dependencies import get_token_header
+from database import crud
+from dependencies import get_token_header
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from fastapi import (
