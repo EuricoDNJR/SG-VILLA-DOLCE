@@ -117,6 +117,7 @@ export function isEmptyObject(obj) {
 
 export function confirmDialog(msg, callback){
     window.ipcRenderer.confirmDialog(msg).then((isYes) => {
+        console.log(isYes);
         if(isYes){
             callback();
         }
@@ -191,4 +192,16 @@ export function getFormatedDate(date){
     }
     
     return null;
+}
+
+export function getColorQuantidade(quantidade){
+  let color = "black";
+  
+  if(quantidade > 0){
+    color = "green";
+  }else if(quantidade < 0){
+    color = "red";
+  }
+
+  return color;
 }

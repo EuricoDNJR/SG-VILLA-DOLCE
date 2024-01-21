@@ -5,7 +5,7 @@
 </script>
 
 <template>
-   <!-- <v-dialog
+   <v-dialog
       v-model="dialog"
       fullscreen
       :scrim="false"
@@ -74,5 +74,5 @@
           </v-list-item>
         </v-list>
       </v-card> 
-    </v-dialog>-->
+    </v-dialog>
 </template>

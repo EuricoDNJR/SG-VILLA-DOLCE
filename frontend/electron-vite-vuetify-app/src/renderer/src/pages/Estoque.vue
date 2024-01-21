@@ -25,7 +25,6 @@
     { title: 'Ações', key: 'acoes'},
   ];
   const entradas = ref([]);
-  const clientes = ref([]);
  
   async function requestAllStockRegistres(){
     try{
@@ -45,27 +44,6 @@
     }
   }
   
-  // async function requestAllClientes(){
-  //   try{
-  //     const url = "http://127.0.0.1:8000/v1/cliente/get_all_clients/"
-  //     const token = authStore.getToken;
-      
-  //     const response = await fetchGet(url, token);
-
-  //     if(response.status === 200){
-  //       clientes.value = await response.json();
-  //       clientes.value.forEach((cliente) => {
-  //         cliente.autocomplete = `${cliente.nome}  (Telefone: ${cliente.telefone})`;
-  //       });
-  //     }else{
-  //       snackbarStore.set(`Falha ao carregar`, 'warning');
-  //     }
-  //   }catch(e){
-  //     console.log(e);
-  //     snackbarStore.set(`Falha ao carregar`, 'warning');
-  //   }
-  // }
-
   async function requestDelete(estoque){
     try{
         const url = "http://127.0.0.1:8000/v1/estoque/delete_stock_registre/" + `${estoque.idEstoque}/`;

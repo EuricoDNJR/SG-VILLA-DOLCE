@@ -89,6 +89,10 @@ async function requestRegisterPessoa(url=props.urlRegisterPessoa){
     loading.value = false;
 }
 
+function openDialog(){
+    dialogIsVisible.value = true;
+}
+
 function closeDialog(){
     dialogIsVisible.value = false;
     atributos.value = createAtributos[props.tipoPessoa]();
@@ -97,28 +101,26 @@ function closeDialog(){
 </script>
 
 <template>
+    <v-btn
+        v-bind="props"
+        color="blue"
+        variant="flat"
+        icon="mdi-plus"
+        @click="openDialog"
+    >
+        <v-icon> mdi-account-plus</v-icon> 
+        <v-tooltip 
+            activator="parent"
+            location="bottom">
+        Cadastrar {{ props.tooltipText }}
+        </v-tooltip>
+    </v-btn>
     <v-dialog 
         v-model="dialogIsVisible"
         persistent
         width="1024"
     >
-        <template v-slot:activator="{ props }">
-            <v-btn
-                v-bind="props"
-                color="blue"
-                variant="flat"
-                icon="mdi-plus"
-            >
-                <v-icon> mdi-account-plus</v-icon> 
-                <v-tooltip 
-                    activator="parent"
-                    location="bottom">
-                Cadastrar {{ props.tooltipText }}
-                </v-tooltip>
-            </v-btn>
-        </template>
-
-        <v-card>
+       <v-card>
             <v-card-title>
                 <span class="text-h5">Cadastrar {{ props.tooltipText }}</span>
             </v-card-title>

@@ -8,9 +8,7 @@
     const authStore = useAuthStore();
     const snackbarStore = useSnackbarStore();
     const caixaStore = useCaixaStore();
-    // const somenteDinheiro = ref(0);
-    // const saldoTotal = ref(0);
-    
+
     const isVisible = ref(false);
     const loading = ref(false);
     
@@ -86,7 +84,8 @@
                 responseJson = await response.json();
                 snackbarStore.set("Caixa fechado com sucesso", 'success');
             }else{
-                snackbarStore.set("Falha ao fechar caixa", 'warning');
+                const messageError = await response.json();
+                snackbarStore.set(messageError.message, 'warning');
             }
         }catch(e){
             console.log(e);
@@ -107,43 +106,33 @@
     async function closeCaixa(){
         const responseJson = await requestCloseCaixa();
 
-        const resettedCaixa = caixaStore.resetCaixa();
-        
-        // resetCaixaInfo(resettedCaixa);
-
-        isVisible.value = false;
+        if(responseJson){
+            const resettedCaixa = caixaStore.resetCaixa();
+            
+            // resetCaixaInfo(resettedCaixa);
+    
+            isVisible.value = false;
+        }
     }
     
-    async function requestAllCaixas(){
-        let responseJson = null;
-        
+    async function requestCaixaIsOpen(){
         try{
-            const url = "http://127.0.0.1:8000/v1/caixa/get_all_caixa/";
+            const url = "http://127.0.0.1:8000/v1/caixa/get_first_caixa_open/";
             const token = authStore.getToken;
             
             const response = await fetchGet(url, token);
 
             if(response.status === 200){
-                responseJson = await response.json();
-            }else{
-                snackbarStore.set("Falha ao carregar caixas", 'warning');
+                const caixa = await response.json();
+
+                caixaStore.saveOpenCaixa(caixa);
             }
         }catch(e){
             console.log(e);
             snackbarStore.set("Falha ao carregar caixas", 'warning');
         }
-
-        return responseJson;
     }
 
-    async function getCaixaAberto(){
-        const caixas = await requestAllCaixas();
-        const caixa = caixas.find((caixa) => caixa.aberto);
-
-        if(caixa){
-            caixaStore.saveOpenCaixa(caixa);
-        }
-    }
     // async function requestAllPedidos(){
     //     let responseJson = null;
         
@@ -195,9 +184,7 @@
         isVisible.value = true;
     }
 
-    // pedidosFechadosCaixa(caixaStore.getId);
-    getCaixaAberto();
-
+    requestCaixaIsOpen();
 </script>
 
 <template>
