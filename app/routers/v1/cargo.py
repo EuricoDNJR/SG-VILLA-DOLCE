@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from dependencies import get_token_header
 from database import crud
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -53,7 +53,7 @@ def get_all_roles():
         logging.info("Getting all roles")
         cargos = crud.get_all_cargos()
         if cargos is None:
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum cargo encontrado"})
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Roles found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=cargos)
     except Exception as e:

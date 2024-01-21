@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from dependencies import get_token_header
 from database import crud
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -82,10 +82,7 @@ def get_all_products():
         logging.info("Getting all products")
         produtos = crud.get_all_produtos()
         if produtos is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao buscar produtos"}
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Products found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=produtos)
     except Exception as e:

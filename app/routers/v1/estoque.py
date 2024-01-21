@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from dependencies import get_token_header
 from database import crud
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -86,10 +86,7 @@ def get_all_stock_registres():
         logging.info("Getting all stock registres")
         estoques = crud.get_all_estoques()
         if estoques is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao buscar registros de estoque"}
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Stock registres found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=estoques)
     except Exception as e:
@@ -108,10 +105,7 @@ def get_all_stock_registres_by_id(idProduto: str):
         logging.info("Getting all stock registres")
         estoques = crud.get_all_estoques_by_product(idProduto)
         if estoques is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao buscar registros de estoque"}
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Stock registres found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=estoques)
     except Exception as e:

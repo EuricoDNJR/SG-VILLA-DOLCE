@@ -4,7 +4,7 @@ from typing import Optional, List
 from decimal import Decimal
 from dependencies import get_token_header
 from database import crud
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -157,7 +157,7 @@ def get_all_orders():
         logging.info("Getting all orders")
         pedidos = crud.get_all_pedidos()
         if pedidos is None:
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum pedido encontrado"})
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Orders found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
     except Exception as e:

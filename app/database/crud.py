@@ -99,13 +99,13 @@ def get_all_caixa():
         return None
 
 def get_pedidos_caixa(idCaixa):
-    try:
-        pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+    
+    pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
 
-        # Verifica se há pedidos
-        if pedidos.exists():
-            # Retorna a lista de pedidos pagos ou pendentes se houver algum
-            return [
+    # Verifica se há pedidos
+    if pedidos.exists():
+        # Retorna a lista de pedidos pagos ou pendentes se houver algum
+        return [
                 { 
                 "idPedido": str(pedido.idPedido),
                 "idCliente": str(pedido.idCliente.idCliente),
@@ -119,14 +119,11 @@ def get_pedidos_caixa(idCaixa):
                 "idUsuario": str(pedido.idUsuario.idUsuario),
                 "nomeUsuario": pedido.idUsuario.nome,
                 "idCaixa": str(pedido.idCaixa.idCaixa),
-                "status": pedido.status,
+                "status": pedido.status
                 } for pedido in pedidos if pedido.status == 'Pago' or pedido.status == 'Pendente'
             ]
-        else:
-            # Se não houver pedidos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    else:
+        # Se não houver pedidos, retorna None
         return None
 
 def get_first_caixa_open():
@@ -471,7 +468,6 @@ def get_all_pedidos():
             for pedido in pedidos
         ]
     else:
-        print("Não há pedidos")
         # Se não houver pedidos, retorna None
         return None
 

@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 from database import crud
 from dependencies import get_token_header
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from datetime import datetime
 from fastapi import (
     APIRouter,
@@ -252,10 +252,7 @@ def get_all_caixa(jwt_token: str = Header()):
         caixas = crud.get_all_caixa()
         
         if caixas is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao pesquisar caixa"}
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
 
         '''
         caixa_closes = []
@@ -297,13 +294,12 @@ def get_pedidos_caixa(idCaixa: str, jwt_token: str = Header()):
                 logging.error("No permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
         logging.info("recording cash start:" + jwt_token)
-
+        logging.info("Getting pedidos")
         pedidos = crud.get_pedidos_caixa(idCaixa = idCaixa)
-        
         if pedidos is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao pesquisar pedidos"}
+            logging.error("No pedidos found")
+            return Response(
+                status_code=status.HTTP_204_NO_CONTENT
             )
 
         return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
