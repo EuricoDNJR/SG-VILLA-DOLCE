@@ -19,14 +19,14 @@ def create_produto(nome, descricao, categoria, valorVenda):
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
     return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
 
-def create_pagamento(valorTotal, valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
-    return models.Pagamento.create(valorTotal=Decimal(str(valorTotal)), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
+def create_pagamento(valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
+    return models.Pagamento.create(valorTotal=Decimal(0.0), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
 
-def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status, desconto):
-    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status, desconto=desconto)
+def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):
+    return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status)
 
 def create_produto_pedido(idPedido, idProduto, quantidade, valorVendaUnd, desconto=0.0):
-    return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade, valorVendaUnd=valorVendaUnd, valorTotal = valorVendaUnd * quantidade, desconto=Decimal(str(desconto)))
+    return models.ProdutoPedido.create(idPedido=idPedido, idProduto=idProduto, quantidade=quantidade, valorVendaUnd=valorVendaUnd, valorTotal = Decimal(str(valorVendaUnd * quantidade)), desconto=Decimal(str(desconto)))
 
 def create_cargo(nome):
     return models.Cargo.create(nome=nome)
@@ -308,7 +308,6 @@ def get_pedido_by_id(idPedido):
             "nomeUsuario": pedido.idUsuario.nome,
             "idCaixa": str(pedido.idCaixa.idCaixa),
             "status": pedido.status,
-            "desconto": pedido.desconto,
             "idProdutos": get_all_produtos_pedidos_by_id(idPedido)
         }
     except DoesNotExist:
@@ -556,7 +555,7 @@ def get_all_produtos_pedidos_by_id(idPedido):
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
-def update_balance_client(pedido):
+def update_balance_client_and_order(pedido):
     try:
         produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
 
@@ -564,7 +563,7 @@ def update_balance_client(pedido):
         if produtos_pedidos.exists():
             # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
             for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria.nome == 'Açaí':
+                if produto_pedido.idProduto.categoria.nome == 'Açaí' and verifier_client_promotion(pedido):
                     if produto_pedido.desconto > Decimal(0.0):
                         pedido.idCliente.saldo -= Decimal(150)
                         if produto_pedido.valorTotal < Decimal(15):
@@ -572,9 +571,16 @@ def update_balance_client(pedido):
                         produto_pedido.valorTotal -= produto_pedido.desconto
                         produto_pedido.save() 
                         pedido.idCliente.saldo += produto_pedido.valorTotal
+                        pedido.idPagamento.valorTotal += produto_pedido.valorTotal
                     else:    
                         pedido.idCliente.saldo += produto_pedido.valorTotal
+                        pedido.idPagamento.valorTotal += produto_pedido.valorTotal
                     pedido.idCliente.save()
+                    pedido.idPagamento.save()
+                else:
+                    #Se for visitante, não contabiliza o saldo do cliente
+                    pedido.idPagamento.valorTotal += produto_pedido.valorTotal
+                    pedido.idPagamento.save()
             return True
         else:
             # Se não houver produtos_pedidos, retorna None
@@ -583,7 +589,32 @@ def update_balance_client(pedido):
         # Se ocorrer uma exceção DoesNotExist, retorna None
         return None
 
-def update_balance_client_cancel(pedido):
+def update_balance_client_and_order_unique(pedido, produto_instance):
+    try:
+        if produto_instance.idProduto.categoria.nome == 'Açaí' and verifier_client_promotion(pedido):
+            if produto_instance.desconto > Decimal(0.0):
+                pedido.idCliente.saldo -= Decimal(150)
+                if produto_instance.valorTotal < Decimal(15):
+                    pedido.idCliente.saldo += Decimal(15) - produto_instance.desconto
+                produto_instance.valorTotal -= produto_instance.desconto
+                produto_instance.save() 
+                pedido.idCliente.saldo += produto_instance.valorTotal
+                pedido.idPagamento.valorTotal += produto_instance.valorTotal
+            else:  
+                pedido.idCliente.saldo += produto_instance.valorTotal
+                pedido.idPagamento.valorTotal += produto_instance.valorTotal
+            pedido.idCliente.save()
+            pedido.idPagamento.save()
+        else:
+            #Se for visitante, não contabiliza o saldo do cliente
+            pedido.idPagamento.valorTotal += produto_instance.valorTotal
+            pedido.idPagamento.save()
+        return True
+    except DoesNotExist:
+        # Se ocorrer uma exceção DoesNotExist, retorna None
+        return None
+
+def update_balance_client_and_order_cancel(pedido):
     try:
         produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
 
@@ -591,17 +622,25 @@ def update_balance_client_cancel(pedido):
         if produtos_pedidos.exists():
             # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
             for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria.nome == 'Açaí':
+                if produto_pedido.idProduto.categoria.nome == 'Açaí' and verifier_client_promotion(pedido):
                     if produto_pedido.desconto > Decimal(0.0):
                         pedido.idCliente.saldo += Decimal(150)
                         produto_pedido.valorTotal += produto_pedido.desconto
                         produto_pedido.save()
                         pedido.idCliente.saldo -= Decimal(15) - produto_pedido.desconto
                         if produto_pedido.valorTotal > Decimal(15):
-                            pedido.idCliente.saldo -= produto_pedido.valorTotal - Decimal(15) 
+                            pedido.idCliente.saldo -= produto_pedido.valorTotal - Decimal(15)
+                        pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
+                        pedido.idPagamento.save()
                     else:    
                         pedido.idCliente.saldo -= produto_pedido.valorTotal
+                        pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
+                        pedido.idPagamento.save()
                     pedido.idCliente.save()
+                else:
+                    #Se for visitante ou ate mesmo produto normal, so decrementa do valor total do pedido
+                    pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
+                    pedido.idPagamento.save()
             return True
         else:
             # Se não houver produtos_pedidos, retorna None
@@ -844,29 +883,28 @@ def update_stock(idEstoque, idProduto, quantidade=None, dataEntrada=None, dataVe
 def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
     try:
         caixa = models.Caixa.get(models.Caixa.idCaixa == idCaixa)
-        caixa.saldoFinal += Decimal(str(valorTotal))
+        caixa.saldoFinal += valorTotal
         caixa.save()
         if tipoPagamento == 'Dinheiro':
-            caixa.somenteDinheiro += Decimal(str(valorTotal))
+            caixa.somenteDinheiro += valorTotal
             caixa.save()
         return True
     except DoesNotExist:
         return None
 
-def update_pagamento(idPagamento, tipoPagamento, valorRecebimento=0.0, valorDevolvido=0.0):
+def update_pagamento(pedido, tipoPagamento, valorRecebimento=0.0, valorDevolvido=0.0):
     try:
-        pagamento = models.Pagamento.get(models.Pagamento.idPagamento == idPagamento)
-        pagamento.valorRecebimento = Decimal(str(valorRecebimento))
-        pagamento.valorDevolvido = Decimal(str(valorDevolvido))
-        pagamento.tipoPagamento = tipoPagamento
-        pagamento.save()
+        pedido.idPagamento.valorRecebimento = Decimal(str(valorRecebimento))
+        pedido.idPagamento.valorDevolvido = Decimal(str(valorDevolvido))
+        pedido.idPagamento.tipoPagamento = tipoPagamento
+        pedido.idPagamento.save()
         return True
     except DoesNotExist:
         return None
 
-def update_pagamento_valorTotal(idPagamento, valorTotal):
+def update_pagamento_valorTotal(idPagamento, valorTotalProduto):
     try:
-        idPagamento.valorTotal = Decimal(str(valorTotal))
+        idPagamento.valorTotal += valorTotalProduto
         idPagamento.save()
         return True
     except DoesNotExist:

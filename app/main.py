@@ -1,3 +1,7 @@
+import logging
+
+logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w', format="%(asctime)s - %(levelname)s - %(message)s")
+
 if __name__ == "__main__":
     import uvicorn
     from fastapi import FastAPI
@@ -7,10 +11,6 @@ if __name__ == "__main__":
     from database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo, TipoPagamento, Categoria
     from database.initial_data import create_initial_values
     from routers.v1 import cliente, usuario, produto, estoque, caixa, pedido, cargo, tipo_pagamento, categoria
-
-    import logging
-
-    logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w', format="%(asctime)s - %(levelname)s - %(message)s")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
