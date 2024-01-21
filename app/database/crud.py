@@ -619,12 +619,12 @@ def update_balance_client_and_order_cancel(pedido):
 def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
+        if cliente.nome == 'Visitante':
+            return False
         if cliente is None:
             return None
         # Atualiza os atributos fornecidos
         if telefone is not None:
-            if cliente.telefone == '00000000000':
-                return False
             cliente.telefone = telefone
         if email is not None:
             cliente.email = email
