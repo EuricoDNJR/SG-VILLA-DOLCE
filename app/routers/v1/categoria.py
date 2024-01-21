@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from dependencies import get_token_header
 from database import crud
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -62,7 +62,7 @@ def get_all_categories():
         logging.info("Getting all categories")
         categorias = crud.get_all_categorias()
         if categorias is None:
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhuma categoria encontrada"})
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Categories found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=categorias)
     except Exception as e:

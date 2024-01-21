@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from passlib.hash import bcrypt
 from database import crud
 from dependencies import get_token_header
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -165,7 +165,7 @@ def get_all_users(jwt_token: str = Header()):
         users = crud.get_all_users()
         if users is None:
             logging.error("Users not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum usuário encontrado"})
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Users found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=users)
     except Exception as e:
