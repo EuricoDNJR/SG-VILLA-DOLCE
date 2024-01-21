@@ -207,7 +207,6 @@ def update_user(idUsuario: str,
         logging.info("Verifying permission")
         if jwt_token != "test":
             user = crud.get_usuario_by_id(jwt_token)
-            print(user["cargo"])
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})

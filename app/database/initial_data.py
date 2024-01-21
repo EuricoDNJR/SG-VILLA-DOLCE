@@ -55,9 +55,9 @@ def create_initial_values():
             saldo=Decimal(0.0)
         )
 
-    # Verifica se o usuário 'Admin' já existe
+    # Verifica se ao menos um usuário com cargo de 'Admin' já existe
     try:
-        models.Usuario.get(models.Usuario.email == 'adminpadrao@gmail.com')
+        models.Usuario.get(models.Usuario.cargo == 'Admin')
     except DoesNotExist:
         create_usuario(
             email='adminpadrao@gmail.com',
