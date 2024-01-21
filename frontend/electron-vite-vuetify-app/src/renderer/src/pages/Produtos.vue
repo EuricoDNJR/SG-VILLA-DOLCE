@@ -1,6 +1,6 @@
 <script setup>
   import { ref, computed, watch, onMounted } from 'vue'
-  import { fetchGet, fetchDelete, confirmDialog } from '../utils/common';
+  import { fetchGet, fetchDelete, confirmDialog, getColorQuantidade } from '../utils/common';
   import { useAuthStore, useFormStore, useSnackbarStore } from '../utils/store';
   import Snackbar from '../components/Snackbar.vue';
   import CriarCategoria from '../components/CriarCategoria.vue';
@@ -76,20 +76,6 @@
     confirmDialog(`Tem certeza que deseja remover ${produto.nome} do sistema?`, () => requestDelete(produto));
   }
 
-  function getColorQuantidade(quantidade){
-    let color = undefined;
-    
-    if(quantidade > 0){
-      color = "green";
-    }else if(quantidade < 0){
-      color = "red";
-    }else{
-      color = "black";
-    }
-
-    return color;
-  }
-
   watch(recieve, async (newRecieve, oldRecieve) => {
     if(formStore.getFrom == "Adicionar Produto"){
       const produto = {
@@ -138,7 +124,6 @@
             prepend-inner-icon="mdi-magnify"
             variant="solo"
             hide-details
-            @input=""
           ></v-text-field>
         </v-col>
       </v-row>

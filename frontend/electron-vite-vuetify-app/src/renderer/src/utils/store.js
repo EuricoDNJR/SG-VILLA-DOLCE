@@ -262,64 +262,83 @@ export const useFormStore = defineStore('form', {
 export const usePedidoStore = defineStore('pedido', {
   id: 'pedido',
 
-  // "Pagamento": {
-  //     "valorTotal": 10.00,
-  //     "valorRecebimento": 30.00,
-  //     "valorDevolvido": 20.00,
-  //     "tipoPagamento": "Dinheiro"
-  // },
-          
-  // "idProdutos": [
-  //     {
-  //     "idProduto": "4718af40-ee5d-486f-8a8a-d1ffe3604a2a",
-  //     "quantidade": 0.450,
-  //     "valorVendaUnd": 40.00,
-  //     "desconto": 15.00
-  //     },
-  //     {
-  //     "idProduto": "8c9228f3-8d77-47fd-89e3-1ee7bb9b376e",
-  //     "quantidade": 2,
-  //     "valorVendaUnd": 5.00
-  //     }
-  // ],
   state: () => ({
-      idPedido: undefined,
-      idCliente: undefined,
-      Pagamento: {},
-      idCaixa: undefined,
-      idProdutos: [],
-      status: undefined,
-      desconto: true,
+      idProdutos: undefined,
+      idPedidoFinished: undefined,
+      produtoAdicionado: undefined,
+      produtoRemovido: undefined,
+      wasCreated: false,
+      wasUpdated: false,
+      wasFinished: false,
+      wasCancelled: false,
+      cliente: {nome: "", telefone: ""},
+      descontoWasClosed: false,
   }),
   
-  getters: {
-      getIdPedido(){
-        return this.idPedido;
-      }
+    getters: {
+      getIdProdutos(){
+        return this.idProdutos;
+      },
+      getIdPedidoFinished(){
+        return this.idPedidoFinished;
+      },
+      getProdutoAdicionado(){
+        return this.produtoAdicionado;
+      },
+      getProdutoRemovido(){
+        return this.produtoRemovido;
+      },
+      getWasCreated(){
+        return this.wasCreated;
+      },
+      getWasUpdated(){
+        return this.wasUpdated;
+      },
+      getWasFinished(){
+        return this.wasFinished;
+      },
+      getWasCancelled(){
+        return this.wasCancelled;
+      },
+      getCliente(){
+        return this.cliente;
+      },
+      getProdutosDescontados(){
+        return this.produtosDescontados;
+      },
+      getDescontoWasClosed(){
+        return this.descontoWasClosed;
+      },
   },
   actions: {
-    saveFuncionarioInfo({idUsuario, nome, email, telefone, cpf, dataNascimento, endereco, cargo}){
-      this.idUsuario = idUsuario;
-      this.nome = nome;
-      this.email = email;
-      this.telefone = telefone;
-      this.cpf = cpf;
-      this.dataNascimento = dataNascimento.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
-      this.endereco = endereco;
-      this.cargo = cargo;
+    create(){
+      this.wasCreated = !this.wasCreated;
     },
-    updateFuncionarioInfo(infos) {
-      Object.assign(this.$state, infos);
+    update(idProdutos){
+      this.idProdutos = idProdutos;
+      this.wasUpdated = !this.wasUpdated;
     },
-    reset() {
-      this.idUsuario= null;
-      this.nome = null;
-      this. email = null;
-      this.telefone = null;
-      this.cpf = null;
-      this.dataNascimento = null;
-      this.endereco = null;
-      this.cargo = null;
+    finish(idPedido){
+      this.idPedidoFinished = idPedido;
+      this.wasFinished = true;
+    },
+    cancel(){
+      this.wasCancelled = true;
+    },
+    adicionarProduto(produto){
+      this.produtoAdicionado = produto;
+    },
+    removeProduto(produto){
+      this.produtoRemovido = produto;
+    },
+    setCliente(cliente){
+      this.cliente = cliente;
+    },
+    closeDiscount(){
+      this.descontoWasClosed = !this.descontoWasClosed;
+    },
+    reset(){
+      this.$reset();
     }
   }
 });

@@ -84,7 +84,8 @@
                 responseJson = await response.json();
                 snackbarStore.set("Caixa fechado com sucesso", 'success');
             }else{
-                snackbarStore.set("Falha ao fechar caixa", 'warning');
+                const messageError = await response.json();
+                snackbarStore.set(messageError.message, 'warning');
             }
         }catch(e){
             console.log(e);
@@ -105,11 +106,13 @@
     async function closeCaixa(){
         const responseJson = await requestCloseCaixa();
 
-        const resettedCaixa = caixaStore.resetCaixa();
-        
-        // resetCaixaInfo(resettedCaixa);
-
-        isVisible.value = false;
+        if(responseJson){
+            const resettedCaixa = caixaStore.resetCaixa();
+            
+            // resetCaixaInfo(resettedCaixa);
+    
+            isVisible.value = false;
+        }
     }
     
     async function requestCaixaIsOpen(){

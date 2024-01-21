@@ -87,8 +87,11 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
         agora = datetime.now()
         dataFechamento = agora.strftime("%Y-%m-%d %H:%M:%S")
 
-        pedidos = crud.get_pedidos_caixa(idCaixa = idCaixa)
-        if pedidos is not None:
+        pedidos = crud.get_pedidos_pendentes_caixa(idCaixa = idCaixa)
+
+        logging.info("recording cash start:" + jwt_token)
+
+        if pedidos != []:
             return JSONResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     content={"message": "O caixa só pode ser fechado quando não houver pedidos em aberto"}

@@ -1,21 +1,15 @@
 <script setup>
-  import { ref, computed } from 'vue'
-  import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
-  import { fetchGet, replaceNullToEmptyString } from '../utils/common';
-  import Snackbar from '../components/Snackbar.vue';
+  import { ref, computed, watch, onMounted } from 'vue'
+  import { useAuthStore, useSnackbarStore, useCaixaStore, usePedidoStore } from '../utils/store';
+  import { fetchGet, fetchPatch, confirmDialog } from '../utils/common';
+  import EditarPedido from '../components/EditarPedido.vue';
 
   const authStore = useAuthStore();
   const snackbarStore = useSnackbarStore();
   const caixaStore = useCaixaStore();
-  const pedidosEmAberto = ref([
-        { id: 1, nome: 'Pedido 1', data: '01/01/2024', detalhes: 'Detalhes do pedido 1' },
-        { id: 2, nome: 'Pedido 2', data: '02/01/2024', detalhes: 'Detalhes do pedido 2' },
-        { id: 3, nome: 'Pedido 3', data: '03/01/2024', detalhes: 'Detalhes do pedido 3' },
-        { id: 4, nome: 'Pedido 4', data: '04/01/2024', detalhes: 'Detalhes do pedido 4' },
-        // Adicione mais pedidos conforme necessário
-      ]);
-
-  function calculatedRows(){
+  
+  const pedidosEmAberto = ref([]);
+  const calculatedRows = computed(() => {
     const pedidosMatrix = [];
 
     let j = -1;
@@ -28,16 +22,23 @@
     }
 
     return pedidosMatrix;
-  }
-  async function requestPedidosEmAberto(){
+  });
+
+  const isEditarPedido = ref(false);
+
+  let pedido = undefined;
+
+  
+  async function requestPedidosEmAberto(idCaixa=caixaStore.getId){
     try{
-      const url = "http://127.0.0.1:8000/v1/pedido/get_all_orders/";
+      const url = `http://127.0.0.1:8000/v1/caixa/get_pedidos_caixa/${idCaixa}`;
       const token = authStore.getToken;
       
       const response = await fetchGet(url, token);
+      const responseJson = await response.json();
 
       if(response.status === 200){
-        pedidosEmAberto.value = await response.json();;
+        pedidosEmAberto.value = responseJson.filter((pedido) => pedido.status == "Pendente");
       }
     }catch(e){
       console.log(e);
@@ -45,24 +46,81 @@
     }
   }
 
-  requestPedidosEmAberto();
+  async function requestCancelarPedido(idPedido=pedido.idPedido){
+    try{
+      const url = `http://127.0.0.1:8000/v1/pedido/cancel_order/${idPedido}/`
+      const body = {};
+      const token = authStore.getToken;
+
+      const response = await fetchPatch(url, body, token);
+      const responseJson = await response.json();
+
+      if(response.status === 200){
+        pedidosEmAberto.value = pedidosEmAberto.value.filter((pedido) => pedido.idPedido != idPedido);
+
+        snackbarStore.set("Pedido cancelado com sucesso", 'success');
+
+        toPedidosEmAberto();
+      }else{
+        snackbarStore.set(responseJson.message, 'warning');
+      }
+    }catch(e){
+      console.log(e);
+      snackbarStore.set("Erro ao cancelar pedido", 'warning');
+    }       
+  }
+
+  function toEditarPedido(order){
+    pedido = order;
+
+    isEditarPedido.value = true; 
+  }
+
+  function toPedidosEmAberto(){
+    isEditarPedido.value = false; 
+  }
+
+  function cancelarPedidoConfirmation(){
+    confirmDialog(`Tem certeza que deseja cancelar o pedido?`, requestCancelarPedido);
+  }
+
+  function finishPedido(idPedidoFinished){
+    isEditarPedido.value = false;
+
+    pedidosEmAberto.value = pedidosEmAberto.value.filter((pedido) => pedido.idPedido != idPedidoFinished);
+  }
+
+  function atualizarPedido(valorTotal){ 
+    pedido.valorTotal = valorTotal.toFixed(2);
+  }
+
+  onMounted(() => requestPedidosEmAberto());
 </script>
 
 <template>
-  <div class="pa-4">
-    <v-row v-for="(rowPedidos, rowIndex) in calculatedRows()" :key="rowIndex">
+  <div v-if="isEditarPedido" class="pa-2">    
+    <EditarPedido 
+      :pedido="pedido"
+      @voltar="toPedidosEmAberto"
+      @cancelarPedido="cancelarPedidoConfirmation"
+      @pedidoFinished="finishPedido"
+      @adicionadoAoPedido="atualizarPedido"
+    />
+  </div>
+  <div class="pa-4" v-else>
+    <v-row v-for="(rowPedidos, rowIndex) in calculatedRows" :key="rowIndex">
       <v-col
         v-for="pedido in rowPedidos"
-        :key="pedido.id"
+        :key="pedido.idPedido"
         cols="12"
         sm="6"
         md="4"
       >
         <v-card
           class="mb-4 border-start-card"
-          :title="pedido.nome"
-          :subtitle="pedido.data"
-          hover
+          :title="pedido.nomeCliente"
+          :subtitle="pedido.telefoneCliente"
+          @click="() => toEditarPedido(pedido)"
         >
           <template v-slot:prepend>
             <v-avatar color="blue-darken-2">
@@ -72,57 +130,9 @@
 
           <template v-slot:append>
             <v-chip color="green">
-              <h3>R$ 120,32</h3>
+              <h3>R$ {{ pedido.valorTotal.replace(".", ",") }}</h3>
             </v-chip>
           </template> 
-          
-          <v-card-text>
-            <v-timeline density="compact" align="start">
-              
-              <v-timeline-item
-                dot-color="blue-darken-2"
-                size="x-small"
-              >
-                {{ pedido.detalhes }}
-              </v-timeline-item>
-            </v-timeline>
-
-            <v-timeline density="compact" align="start">
-              
-              <v-timeline-item
-                dot-color="blue-darken-2"
-                size="x-small"
-              >
-                {{ pedido.detalhes }}
-              </v-timeline-item>
-            </v-timeline>
-
-            <v-timeline density="compact" align="start">
-              
-              <v-timeline-item
-                dot-color="grey-darken-3"
-                size="x-small"
-              >
-                <v-icon>mdi-dots-horizontal</v-icon>
-              </v-timeline-item>
-            </v-timeline>
-            <!-- <v-timeline density="compact" align="start">
-              pedido.detalhes 
-              <v-timeline-item
-                v-for="message in messages"
-                :key="message.time"
-                :dot-color="message.color"
-                size="x-small"
-              >
-                <div class="mb-4">
-                  <div class="font-weight-normal">
-                    <strong>{{ message.from }}</strong> @{{ message.time }}
-                  </div>
-                  <div>{{ message.message }}</div>
-                </div>
-              </v-timeline-item>
-            </v-timeline> -->
-          </v-card-text>
         </v-card>
       </v-col>
     </v-row>

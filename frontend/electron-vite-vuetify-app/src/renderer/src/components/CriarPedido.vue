@@ -1,254 +1,142 @@
 <script setup>
-  import { ref, computed, watch, onMounted, reactive } from 'vue'
-  import { fetchGet, fetchDelete, confirmDialog, getFormatedDate } from '../utils/common';
-  import { useAuthStore, useSnackbarStore, usePedidoStore } from '../utils/store';
-  import Snackbar from '../components/Snackbar.vue';
-  
-  defineOptions({
-    inheritAttrs: false
-  });
+  import { ref, computed, watch, onMounted, reactive, toRaw } from 'vue'
+  import { fetchGet, fetchPost, confirmDialog, getFormatedDate } from '../utils/common';
+  import { useAuthStore, useSnackbarStore, useCaixaStore, usePedidoStore } from '../utils/store';
+  import SelecionarProdutoPedido from '../components/SelecionarProdutoPedido.vue';
+  import PesquisarClientePedido from '../components/PesquisarClientePedido.vue';
+  import DescontoPedido from '../components/DescontoPedido.vue';
+
+  const emit = defineEmits(['pedidoCriado']);
 
   const authStore = useAuthStore();
   const snackbarStore = useSnackbarStore()
-  const pedidoStore = usePedidoStore();  
-  
-  const dialogIsVisible = ref(false);
+  const caixaStore = useCaixaStore();  
 
-  const searchText = ref('');
-  const headers = [
-    { title: 'Nome', key: 'nome', width:"40%" },
-    { title: 'Quantidade', key: 'quantidade' },
-    { title: 'Observações', key: 'observacoes' },
-    { title: 'Ações', key: 'acoes'},
-  ];
-  // "idProduto": "4718af40-ee5d-486f-8a8a-d1ffe3604a2a",
-  //     "quantidade": 0.450,
-  //     "valorVendaUnd": 40.00,
-  //     "desconto": 15.00
-  const idCliente = undefined;
-  const Pagamento = reactive({
-    valorTotal: 0,
-  });
-  const idCaixa = undefined;
-  const idProdutos = ref([]);
-  const status = "Pendente";
-  const desconto = reactive({
-    qtd: 0,
-    value: false,
-  });
-
-  const produtos = ref([]);
-
-  const produto = ref(undefined);
-  const quantidade = ref(0);
-  const valorVendaUnidade = ref(undefined);
-  const valorTotalProduto = computed(() => (valorVendaUnidade.value * quantidade.value).toFixed(2));
-  
-  const pedido = ref([]);
-  const clientes = ref([]);
   const telefoneVisitante = "00000000000";
-  const cliente = ref(undefined);
-  const loading = ref(true);
 
-  async function requestAllProducts(){
-    try{
-      const url = "http://127.0.0.1:8000/v1/produto/get_all_products/"
-      const token = authStore.getToken;
-      
-      const response = await fetchGet(url, token);
+  const produtoRemovido = reactive({
+    wasRemoved: false,
+    idProduto: undefined,
+    quantidade: undefined,
+  });
 
-      if(response.status === 200){
-        produtos.value = await response.json();
-      }else{
-        snackbarStore.set(`Falha ao carregar`, 'warning');
-      }
-    }catch(e){
-      console.log(e);
-      snackbarStore.set(`Falha ao carregar`, 'warning');
-    }
-  }
+  const Pagamento = reactive({
+    valorTotal: computed(() => {
+      return pedido.value.reduce((somatorio, produto) => {
+        return somatorio + Number(produto.quantidade) * Number(produto.valorVendaUnd) - Number(produto.desconto);
+      }, 0);
+    })
+  });
+
+  const pedido = ref([]);
+
+  let clienteSelecionado = undefined;
+
+  const loadingCriarPedido = ref(false);
   
-  async function requestAllClientes(){
-    try{
-      const url = "http://127.0.0.1:8000/v1/cliente/get_all_clients/"
-      const token = authStore.getToken;
-      
-      const response = await fetchGet(url, token);
 
-      if(response.status === 200){
-        clientes.value = await response.json();
+  function createOrder(){
+    const idProdutos = [];
+    
+    pedido.value.forEach((product) => {
+      idProdutos.push({
+        idProduto: product.idProduto,
+        quantidade: product.quantidade,
+        valorVendaUnd: product.valorVendaUnd,
+        desconto: product.desconto,
+      });
+    });
 
-        cliente.value = clientes.value.find((client) => client.telefone == telefoneVisitante);
-      }else{
-        snackbarStore.set(`Falha ao carregar`, 'warning');
+    const order = {
+      "idCliente": clienteSelecionado.idCliente,
+      "Pagamento": {
+        "valorTotal": Pagamento.valorTotal.toFixed(2),
+      },
+      "idCaixa": caixaStore.getId,
+      "idProdutos": idProdutos,
+      "status": "Pendente",
+      "desconto": true,
+    }
+
+    return order;
+  }
+
+  async function requestCreateOrder(){
+      loadingCriarPedido.value = true;
+
+      try{
+        const url = "http://127.0.0.1:8000/v1/pedido/create_order/";
+        const body = createOrder();
+        const token = authStore.getToken;
+
+        const response = await fetchPost(url, body, token);
+        const responseJson = await response.json();
+        
+        if(response.status === 201){
+          emit('pedidoCriado');
+          
+          snackbarStore.set(responseJson.message, "success");
+        }else{
+          snackbarStore.set(responseJson.message, "warning");
+        }
+      }catch(e){
+        console.log(e);
+        snackbarStore.set("Falha ao criar pedido", "warning");
       }
-    }catch(e){
-      console.log(e);
-      snackbarStore.set(`Falha ao carregar`, 'warning');
-    }
-  }
-  
-  function getColorQuantidade(quantidade){
-    let color = "black";
-    
-    if(quantidade > 0){
-      color = "green";
-    }else if(quantidade < 0){
-      color = "red";
-    }
 
-    return color;
-  }
-
-  function addProdutoInPedido(){
-    loading.value = true;
-
-    Pagamento.valorTotal += quantidade.value * valorVendaUnidade.value;
-    console.log(produto.value);
-    produto.value.quantidade -= quantidade.value
-    const product = {...produto.value};
-    product.quantidade = quantidade.value;
-    product.valorVenda = valorVendaUnidade.value;
-    product.id = pedido.value.length;
-    console.log(product);
-    pedido.value.push(product);
-
-    dialogIsVisible.value = false;
-    
-    loading.value = false;
+      loadingCriarPedido.value = false;
   }
 
   function removeProdutoInPedido(product){
-    loading.value = true;
-    const produtoToUpdate = produtos.value.find((prod) => prod.idProduto == product.idProduto);
-    console.log(produtoToUpdate);
-    Pagamento.valorTotal -= product.quantidade * product.valorVenda;
-    produtoToUpdate.quantidade = Number(produtoToUpdate.quantidade) + Number(product.quantidade);
+    pedido.value = pedido.value.filter((produto) => produto.id != product.id);
 
-    pedido.value = pedido.value.filter((prod) => prod.id != product.id);
-
-    loading.value = false;
+    produtoRemovido.idProduto = product.idProduto;
+    produtoRemovido.quantidade = product.quantidade;
+    produtoRemovido.wasRemoved = !produtoRemovido.wasRemoved;
   }
 
-  function selectProduto(product){
-    valorVendaUnidade.value = product.valorVenda;
-    produto.value = product;
+  function atualizaCliente(cliente){
+    clienteSelecionado = cliente;
+
+    pedido.value.forEach((produto) => {
+      produto.desconto = "0.00";
+    });
   }
 
-  function openDialog(){
-    dialogIsVisible.value = true;
-  }
+  function adicionarProduto(produto){
+    produto.id = pedido.value.length;
 
-  function closeDialog(){
-    dialogIsVisible.value = false;
-  }
-
-  watch(cliente, (newCliente, oldCliente) => {
-    desconto.qtd = Math.floor(Number(cliente.value.saldo)/15);
-  });
-
-  onMounted(() => {
-    requestAllProducts();
-    requestAllClientes()
-  });
-
+    pedido.value.push(produto);
+  };
 </script>
 
 <template>
-    <Snackbar/>
+  <div class="pa-2">
+    <SelecionarProdutoPedido
+      :produtoRemovido="produtoRemovido"
+      @produtoAdicionado="adicionarProduto"
+    />
+  </div>
 
   <v-navigation-drawer
     permanent
     location="right"
   >
     <template v-slot:prepend>
-      <div class="pa-2">
-        <v-autocomplete
-          v-model="cliente"
-          label="Cliente"
-          :items="clientes"
-          :item-title="(item)=>`${item.nome} (Tel: ${item.telefone})`"
-          return-object
-          variant="outlined"
-          hide-details="auto"
-        ></v-autocomplete>
-      </div>
+      <PesquisarClientePedido 
+        class="pa-2"
+        :telefoneCliente="telefoneVisitante"
+        :readonly="false" 
+        @clienteAtualizado="atualizaCliente"
+      />
     </template>
-
-    <v-dialog 
-        v-model="dialogIsVisible"
-        persistent
-        width="512"
-      >
-          <v-card>
-              <v-card-title>
-                  <span class="text-h5">Adicionar Produto ao Pedido</span>
-              </v-card-title>
-              <v-divider></v-divider>
-              <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col>
-                      <v-text-field
-                          v-model="quantidade"
-                          label="Quantidade"
-                          type="number"
-                          hide-details="auto"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col>
-                      <v-text-field
-                          v-model="valorVendaUnidade"
-                          label="Valor da Unidade"
-                          type="number"
-                          hide-details="auto"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-text-field
-                        v-model="valorTotalProduto"
-                        label="Valor Total"
-                        type="number"
-                        hide-details="auto"
-                        :readonly="true"
-                        density="comfortable"
-                  
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-
-              <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn   
-                      variant="text"
-                      @click="closeDialog"
-                  >
-                      Fechar
-                  </v-btn>
-                  <v-btn
-                      color="blue-darken-1"
-                      variant="flat"
-                      prepend-icon="mdi-plus"
-                      @click="() => addProdutoInPedido()"
-                  >
-                      Adicionar
-                  </v-btn>
-              </v-card-actions>
-          </v-card>
-    </v-dialog>
 
     <div class="pa-2">
       <v-list lines="one">
-        <v-row v-for="(produto, i) in pedido"
-            :key="i"
-            v-if="!loading">
+        <v-row v-for="(produto, i) in pedido" :key="i">
           <v-list-item
             :title="produto.nome"
-            :subtitle="`${String(produto.quantidade).replace('.', ',')} x ${produto.valorVenda}`"
+            :subtitle="`${produto.quantidade.replace('.', ',')} x ${produto.valorVendaUnd} - ${produto.desconto.replace('.', ',')}`"
           ></v-list-item>
   
           <v-spacer></v-spacer>
@@ -275,74 +163,23 @@
           <h2>R$ {{ Pagamento.valorTotal.toFixed(2).replace('.', ',') }}</h2>
         </v-chip>
       </v-row>
-      <!-- grey-darken-1 -->
-      <v-btn
-        block
-        color="deep-purple"
-        prepend-icon="mdi-sale"
-        @click=""
-        :disabled="desconto.qtd <= 0"
-      >
-        Aplicar Desconto ({{ desconto.qtd }})
-      </v-btn>
+
+      <DescontoPedido v-if="pedido.length > 0"
+        :pedido="pedido"
+        :saldoCliente="clienteSelecionado.saldo"
+      />
 
       <v-btn
         block
         color="green"
         prepend-icon="mdi-receipt-text-plus"
-        @click=""
-        >
+        @click="requestCreateOrder"
+        :loading="loadingCriarPedido"
+      >
         Criar
       </v-btn>
     </template>
   </v-navigation-drawer>
-  
-  <div
-    color="grey-lighten-4"
-    class="pa-3"
-  >
-
-    <v-toolbar color="grey-lighten-4">
-      <v-row align="center">
-        <v-col>
-          <v-text-field
-            v-model="searchText"
-            label="Produto"
-            prepend-inner-icon="mdi-magnify"
-            variant="solo"
-            hide-details
-          ></v-text-field>
-        </v-col>
-      </v-row>
-    </v-toolbar>
-
-    <v-data-table-virtual
-      :headers="headers"
-      :items="produtos"
-      :search="searchText"
-      hide-no-data
-      hover
-      class="elevation-2 rounded"
-    >
-      <template v-slot:item.quantidade="{ value }">
-        <v-chip :color="getColorQuantidade(value)">
-          {{ String(value).replace(".", ",") }}
-        </v-chip>
-      </template>
-
-      <template v-slot:item.acoes="{ item }">
-        <v-btn
-            color="primary"
-            variant="text"
-            icon="mdi-plus"
-            @click="() => {
-              openDialog()
-              selectProduto(item);
-            }"
-        ></v-btn>
-      </template>
-    </v-data-table-virtual>
-  </div>
 </template>
 
 <style scoped>
