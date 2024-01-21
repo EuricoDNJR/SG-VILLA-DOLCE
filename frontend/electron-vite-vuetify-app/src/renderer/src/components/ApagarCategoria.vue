@@ -7,6 +7,7 @@
     const formStore = useFormStore();
     const recieve = computed(() => formStore.getObj); 
     const categorias = ref(undefined);
+    const loading = ref(true);
 
     async function requestAllCategories(){
       try{
@@ -17,7 +18,9 @@
 
         if(response.status === 200){
           categorias.value = await response.json();
-        }else{
+
+          loading.value = false;
+        }else if(response.status != 204){
           setMessageSnackbar("Falha ao carregar categorias", "warning");
         }
       }catch(e){
@@ -45,7 +48,7 @@
 </script>
 
 <template>
-  <FormDelete
+  <FormDelete v-if="!loading"
     title="Apagar Categoria"
     :autocompleteItems="categorias"
     autocompleteTitle="nome"

@@ -72,17 +72,16 @@ async function requestPost(url=props.url){
             const token = authStore.getToken;
             
             const response = await fetchPost(url, body, token);
+            const responseJson = await response.json();
 
             if(response.status === 201){
-                const responseJson = await response.json();
-
                 Object.assign(body, responseJson);
                 
                 formStore.send(props.title, body);
                 
                 snackbarStore.set(props.successMessage, 'success');
             }else{
-                snackbarStore.set(props.errorMessage, 'warning');
+                snackbarStore.set(responseJson.message, 'warning');
             }
             
         }catch(e){

@@ -37,11 +37,12 @@
       const token = authStore.getToken;
       
       const response = await fetchGet(url, token);
+      const responseJson = await response.json();
 
       if(response.status === 200){
-        pessoas.value = await response.json();
+        pessoas.value = responseJson;
       }else{
-        snackbarStore.set(`Falha ao carregar ${props.tipoPessoa.toLowerCase()}`, 'warning');
+        snackbarStore.set(responseJson.message, 'warning');
       }
     }catch(e){
       console.log(e);

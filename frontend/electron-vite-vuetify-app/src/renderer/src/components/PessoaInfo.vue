@@ -252,12 +252,13 @@ async function updatePessoaInfo(id=idPessoa.value, rota=props.rotaUpdatePessoa){
             const token = authStore.getToken;   
 
             const response = await fetchPatch(url, body, token);
+            const responseJson = await response.json();
             
             if(response.status === 200){
                 pessoaStore.update(infoChange);
                 snackbarStore.set(`As informações do ${pessoaStore.getPessoa.nome} foram atualizadas com sucesso`, "success");
             }else{
-                snackbarStore.set(`Falha ao atualizar informações do ${pessoaStore.getPessoa.nome}`, "warning");
+                snackbarStore.set(responseJson.message, "warning");
             }
         }catch(e){
             console.log(e);
@@ -272,13 +273,14 @@ async function deletePessoa(id=idPessoa.value, rota=props.rotaDeletePessoa){
         const token = authStore.getToken;
         if(id !== authStore.getToken){
             const response = await fetchDelete(url, token);
+            const responseJson = await response.json();
 
             if(response.status === 200){
                 pessoaStore.delete(id);
                 
                 snackbarStore.set(`${pessoaStore.getPessoa.nome} foi removido do sistema com sucesso`, "success");
             }else{
-                snackbarStore.set(`Falha ao remover ${pessoaStore.getPessoa.nome} do sistema`, "warning");
+                snackbarStore.set(responseJson.message, "warning");
             }
         }else{
             snackbarStore.set("A ação de se remover do sistema não é permitida para usuários neste momento", "warning");

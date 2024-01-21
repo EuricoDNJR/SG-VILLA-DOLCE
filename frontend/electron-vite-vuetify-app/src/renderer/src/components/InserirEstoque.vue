@@ -13,18 +13,19 @@
         const token = getAuthToken();
 
         const response = await fetchGet(url, token);
+        const responseJson = await response.json();
 
         if(response.status === 200){
-          produtos = await response.json();
-        }else{
-          setMessageSnackbar("Falha ao carregar produtos", "warning");
+          produtos = responseJson;
+
+          loading.value = false;
+        }else if(response.status != 204){
+          setMessageSnackbar(responseJson.message, "warning");
         }
       }catch(e){
         console.log(e);
         setMessageSnackbar("Erro ao carregar produtos", "warning");
       }
-
-      loading.value = false;
     }
 
     requestAllProducts();
