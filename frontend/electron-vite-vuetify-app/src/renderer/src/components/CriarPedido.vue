@@ -1,7 +1,7 @@
 <script setup>
   import { ref, computed, watch, onMounted, reactive, toRaw } from 'vue'
   import { fetchGet, fetchPost, confirmDialog, getFormatedDate } from '../utils/common';
-  import { useAuthStore, useSnackbarStore, useCaixaStore, usePedidoStore } from '../utils/store';
+  import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
   import SelecionarProdutoPedido from '../components/SelecionarProdutoPedido.vue';
   import PesquisarClientePedido from '../components/PesquisarClientePedido.vue';
   import DescontoPedido from '../components/DescontoPedido.vue';
@@ -49,13 +49,10 @@
 
     const order = {
       "idCliente": clienteSelecionado.idCliente,
-      "Pagamento": {
-        "valorTotal": Pagamento.valorTotal.toFixed(2),
-      },
+      "Pagamento": {},
       "idCaixa": caixaStore.getId,
       "idProdutos": idProdutos,
       "status": "Pendente",
-      "desconto": true,
     }
 
     return order;

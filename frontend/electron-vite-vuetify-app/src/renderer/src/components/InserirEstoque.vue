@@ -21,7 +21,7 @@
         }
       }catch(e){
         console.log(e);
-        setMessageSnackbar("Falha ao carregar produtos", "warning");
+        setMessageSnackbar("Erro ao carregar produtos", "warning");
       }
 
       loading.value = false;

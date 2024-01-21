@@ -35,15 +35,16 @@
       const token = authStore.getToken;
       
       const response = await fetchGet(url, token);
+      const responseJson = await response.json();
 
       if(response.status === 200){
-        produtos.value = await response.json();
+        produtos.value = responseJson;
 
         produtos.value.forEach((produto) => {
           produtosObj[produto.idProduto] = produto;
-        })
-      }else{
-        snackbarStore.set("Falha ao carregar produtos", 'warning');
+        });
+      }else if(response.status != 204){
+        snackbarStore.set(responseJson.message, 'warning');
       }
     }catch(e){
       console.log(e);
@@ -56,15 +57,14 @@
         const url = "http://127.0.0.1:8000/v1/produto/delete_product/" + `${produto.idProduto}/`;
         const token = authStore.getToken;
         const response = await fetchDelete(url, token);
+        const responseJson = await response.json();
 
         if(response.status === 200){
-            const responseJson = await response.json();
+          produtos.value = produtos.value.filter((prod) => prod.idProduto != produto.idProduto);
 
-            produtos.value = produtos.value.filter((prod) => prod.idProduto != produto.idProduto);
-
-            snackbarStore.set("Produto removido com sucesso", 'success');
+          snackbarStore.set("Produto removido com sucesso", 'success');
         }else{
-          snackbarStore.set("Erro ao remover produto", 'warning');
+          snackbarStore.set(responseJson.message, 'warning');
         }
     }catch(e){
         console.log(e);
