@@ -120,40 +120,7 @@ def get_pedidos_caixa(idCaixa):
                 "nomeUsuario": pedido.idUsuario.nome,
                 "idCaixa": str(pedido.idCaixa.idCaixa),
                 "status": pedido.status,
-                "desconto": pedido.desconto,
                 } for pedido in pedidos if pedido.status == 'Pago' or pedido.status == 'Pendente'
-            ]
-        else:
-            # Se não houver pedidos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
-        return None
-
-def get_pedidos_pendentes_caixa(idCaixa):
-    try:
-        pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
-
-        # Verifica se há pedidos
-        if pedidos.exists():
-            # Retorna a lista de pedidos pagos ou pendentes se houver algum
-            return [
-                { 
-                "idPedido": str(pedido.idPedido),
-                "idCliente": str(pedido.idCliente.idCliente),
-                "nomeCliente": pedido.idCliente.nome,
-                "telefoneCliente": pedido.idCliente.telefone,
-                "idPagamento": str(pedido.idPagamento.idPagamento),
-                "valorTotal": str(pedido.idPagamento.valorTotal),
-                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
-                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
-                "tipoPagamento": pedido.idPagamento.tipoPagamento,
-                "idUsuario": str(pedido.idUsuario.idUsuario),
-                "nomeUsuario": pedido.idUsuario.nome,
-                "idCaixa": str(pedido.idCaixa.idCaixa),
-                "status": pedido.status,
-                "desconto": pedido.desconto,
-                } for pedido in pedidos if pedido.status == 'Pendente'
             ]
         else:
             # Se não houver pedidos, retorna None
@@ -320,6 +287,7 @@ def get_pedido_object_by_id(idPedido):
         return pedido
     except DoesNotExist:
         return None
+
 def get_cargo_by_id(uuid):
     try:
         cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
@@ -499,7 +467,6 @@ def get_all_pedidos():
                 "nomeUsuario": pedido.idUsuario.nome,
                 "idCaixa": str(pedido.idCaixa.idCaixa),
                 "status": pedido.status,
-                "desconto": pedido.desconto,
             }
             for pedido in pedidos
         ]
@@ -944,6 +911,7 @@ def update_tipo_pagamento(uuid, nome=None):
 
     except DoesNotExist:
         return None
+
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)

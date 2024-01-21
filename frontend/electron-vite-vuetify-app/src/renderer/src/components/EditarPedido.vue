@@ -1,7 +1,7 @@
 <script setup>
   import { ref, computed, watch, onMounted, reactive, toRaw,  onBeforeUnmount } from 'vue'
   import { fetchGet, fetchPost, fetchPatch, confirmDialog, getFormatedDate } from '../utils/common';
-  import { useAuthStore, useSnackbarStore, useCaixaStore, usePedidoStore } from '../utils/store';
+  import { useAuthStore, useSnackbarStore } from '../utils/store';
   import SelecionarProdutoPedido from '../components/SelecionarProdutoPedido.vue';
   import PesquisarClientePedido from '../components/PesquisarClientePedido.vue';
   import DescontoPedido from '../components/DescontoPedido.vue';
@@ -146,8 +146,6 @@
               };
             }
           ),
-          valorTotal: Pagamento.valorTotalComputed,
-          desconto: true,
       };
       const token = authStore.getToken;
       
@@ -219,7 +217,7 @@
 
       <v-btn
         class="ma-1"
-        variant="flat"
+        variant="tonal"
         prepend-icon="mdi-content-save-check"
         color="blue-darken-1"
         @click="() => requestAddInOrder()"
@@ -228,7 +226,7 @@
       </v-btn>
 
       <v-btn
-        variant="flat"
+        variant="tonal"
         prepend-icon="mdi-cancel"
         color="red-darken-1"
         @click="emit('cancelarPedido')"

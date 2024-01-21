@@ -63,10 +63,9 @@ async function requestRegisterPessoa(url=props.urlRegisterPessoa){
             const token = authStore.getToken;
 
             const response = await fetchPost(url, body, token);
-
-            if(response.status === 201){
-                const responseJson = await response.json();
-                
+            const responseJson = await response.json();
+            
+            if(response.status === 201){               
                 if(props.tipoPessoa === "Clientes"){
                     pessoa.idCliente = responseJson.uuid;
                 }else if(props.tipoPessoa === "Colaboradores"){
