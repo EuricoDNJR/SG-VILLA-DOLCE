@@ -138,8 +138,8 @@ def update_cliente(
             saldo=data.saldo
         )
         if update_cliente is False:
-            logging.error("Telefone do cliente Visitante não pode ser alterado")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Telefone do cliente Visitante não pode ser alterado"})
+            logging.error("Cliente Visitante não pode ser alterado!")
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente Visitante não pode ser alterado!"})
         if update_cliente is None:
             logging.error("Client not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado ou não atualizado"})
