@@ -33,9 +33,9 @@ async function requestDelete(rota=props.url){
         const url = rota + `${autocomplete.value}/`
         const token = getAuthToken();
         const response = await fetchDelete(url, token);
+        const responseJson = await response.json();
 
         if(response.status === 200){
-            const responseJson = await response.json();
             const idDeleted = {};
 
             idDeleted[props.autocompleteValue] = autocomplete.value;
@@ -46,7 +46,7 @@ async function requestDelete(rota=props.url){
 
             autocomplete.value = '';
         }else{
-            setMessageSnackbar(props.errorMessage, 'warning');
+            setMessageSnackbar(responseJson.message, 'warning');
         }
     }catch(e){
         console.log(e);

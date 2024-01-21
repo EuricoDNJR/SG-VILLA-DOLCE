@@ -76,7 +76,7 @@ async function requestRegisterPessoa(url=props.urlRegisterPessoa){
 
                 snackbarStore.set("Cadastro realizado com sucesso", 'success');
             }else{
-                snackbarStore.set("Falha no cadastro", 'warning');
+                snackbarStore.set(responseJson.message, 'warning');
             }
             
         }catch(e){

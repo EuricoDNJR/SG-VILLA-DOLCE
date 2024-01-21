@@ -32,15 +32,16 @@
       const token = authStore.getToken;
       
       const response = await fetchGet(url, token);
+      const responseJson = await response.json();
 
       if(response.status === 200){
-        entradas.value = await response.json();
-      }else{
-        snackbarStore.set(`Falha ao carregar`, 'warning');
+        entradas.value = responseJson;
+      }else if(response.status != 204){
+        snackbarStore.set(responseJson.message, 'warning');
       }
     }catch(e){
       console.log(e);
-      snackbarStore.set(`Falha ao carregar`, 'warning');
+      snackbarStore.set("Falha ao carregar estoque", 'warning');
     }
   }
   
@@ -49,15 +50,14 @@
         const url = "http://127.0.0.1:8000/v1/estoque/delete_stock_registre/" + `${estoque.idEstoque}/`;
         const token = authStore.getToken;
         const response = await fetchDelete(url, token);
+        const responseJson = await response.json();
 
         if(response.status === 200){
-            const responseJson = await response.json();
+          entradas.value = entradas.value.filter((stock) => stock.idEstoque != estoque.idEstoque);
 
-            entradas.value = entradas.value.filter((stock) => stock.idEstoque != estoque.idEstoque);
-
-            snackbarStore.set("Produto removido com sucesso", 'success');
+          snackbarStore.set("Produto removido com sucesso", 'success');
         }else{
-          snackbarStore.set("Erro ao remover produto", 'warning');
+          snackbarStore.set(responseJson.message, 'warning');
         }
     }catch(e){
         console.log(e);
