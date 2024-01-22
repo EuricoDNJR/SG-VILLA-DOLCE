@@ -102,30 +102,36 @@
     loading.finalizarBtn = true;
 
     try{
-      requestAddInOrder();
+      const needToSaveChanges =  pedido.value.find(
+            (produto) => produto.id != -1
+      );
       
-      const url = `http://127.0.0.1:8000/v1/pedido/finish_order/${idPedido}/`;
-      const body = {
-        valorRecebimento: Pagamento.valorRecebimento,
-        valorDevolvido: Pagamento.valorDevolvido,
-        tipoPagamento: Pagamento.pagamentoSelecionado.nome,
-      };
-      const token = authStore.getToken;
+      if(!needToSaveChanges){
+        const url = `http://127.0.0.1:8000/v1/pedido/finish_order/${idPedido}/`;
+        const body = {
+          valorRecebimento: Pagamento.valorRecebimento,
+          valorDevolvido: Pagamento.valorDevolvido,
+          tipoPagamento: Pagamento.pagamentoSelecionado.nome,
+        };
+        const token = authStore.getToken;
 
-      const response = await fetchPatch(url, body, token);
-      const responseJson = await response.json();
+        const response = await fetchPatch(url, body, token);
+        const responseJson = await response.json();
 
-      if(response.status === 200){       
-        emit('pedidoFinished', idPedido);
+        if(response.status === 200){       
+          emit('pedidoFinished', idPedido);
 
-        snackbarStore.set(responseJson.message, 'success');
+          snackbarStore.set(responseJson.message, 'success');
+        }else{
+          snackbarStore.set(responseJson.message, 'warning');
+        }
       }else{
-        snackbarStore.set(responseJson.message, 'warning');
+        snackbarStore.set("Salve as alterações antes de finalizar o pedido", 'info');
       }
     }catch(e){
-      console.log(e);
-      snackbarStore.set(`Falha ao carregar`, 'warning');
-    }
+        console.log(e);
+        snackbarStore.set("Falha ao finalizar pedido", 'warning');
+      }
 
     loading.finalizarBtn = false;
   }
@@ -167,7 +173,7 @@
       }
     }catch(e){
       console.log(e);
-      snackbarStore.set(`Falha ao adicionar produto ao pedido`, 'warning');
+      snackbarStore.set("Falha ao adicionar produto ao pedido", 'warning');
     }
   }
 

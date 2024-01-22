@@ -1,6 +1,12 @@
 <script setup>
-    import { createCelula } from '../utils/common';
-    import FormPost from '../components/FormPost.vue';
+  import { createCelula } from '../utils/common';
+  import FormPost from '../components/FormPost.vue';
+
+  const emit = defineEmits(['categoriaCriada']);
+
+  function emitCategoriaCriada(){
+    emit('categoriaCriada');
+  }
 </script>
 
 <template>
@@ -18,6 +24,7 @@
     btnIcon="mdi-book-plus-outline"
     successMessage="Categoria criada com sucesso"
     errorMessage="Falha ao criar categoria"
+    @requested="emitCategoriaCriada"
   />
 </template>
 

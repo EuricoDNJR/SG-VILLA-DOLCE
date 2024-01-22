@@ -10,7 +10,7 @@
 <template>
     <Snackbar/>
 
-    <Pessoas 
+    <Pessoas
       tipoPessoa="Clientes"
       urlGetAllPessoas="http://127.0.0.1:8000/v1/cliente/get_all_clients/"
       rotaUpdatePessoa="http://127.0.0.1:8000/v1/cliente/update_cliente/"

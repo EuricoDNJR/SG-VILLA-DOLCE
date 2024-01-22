@@ -28,6 +28,7 @@
   const searchText = ref('');
   const produtos = ref([]);
   const produtosObj = {};
+  const loading = ref(false);
 
   async function requestAllProducts(){
     try{
@@ -76,6 +77,14 @@
     confirmDialog(`Tem certeza que deseja remover ${produto.nome} do sistema?`, () => requestDelete(produto));
   }
 
+  async function reload(){
+    loading.value = true;
+
+    setTimeout(() => {
+      loading.value = false;
+    }, 0);
+  }
+
   watch(recieve, async (newRecieve, oldRecieve) => {
     if(formStore.getFrom == "Adicionar Produto"){
       const produto = {
@@ -92,6 +101,7 @@
       produtosObj[produto.idProduto] = produto;
     }
   });
+
   onMounted(() => {
     requestAllProducts();
   });
@@ -108,11 +118,13 @@
 
       <v-app-bar-title>Produtos</v-app-bar-title>
 
-      <AdicionarProduto/>
+      <AdicionarProduto v-if="!loading"/>
 
-      <CriarCategoria/>
+      <CriarCategoria
+        @categoriaCriada="reload"
+      />
      
-      <ApagarCategoria/>
+      <ApagarCategoria v-if="!loading"/>
   </v-app-bar>
 
     <v-toolbar color="grey-lighten-4" class="pa-4">
