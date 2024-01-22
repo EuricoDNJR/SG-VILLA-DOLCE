@@ -4,13 +4,16 @@
   import { useAuthStore, useSnackbarStore, useCaixaStore, usePedidoStore } from '../utils/store';
 
   const props = defineProps(['pedido', 'saldoCliente']);
-
+  console.log(props);
   const snackbarStore = useSnackbarStore();
 
   const pedido = computed(() => props.pedido);
 
   const qtdDescontosAplicadosGeral = computed(() => {
     return props.pedido.reduce((somatorio, produto) => {
+      if(produto.id == -1){
+        return somatorio;
+      }
       return somatorio + Math.ceil(Number(produto.desconto) / 15);
     }, 0);
   });
@@ -25,28 +28,29 @@
 
   const desconto = reactive({
     item: pedido.value[0],
-    qtdDescontosAplicados: computed({
-      get(){
-        return Math.ceil(Number(desconto.item.desconto)/15);
-      },
-      set(qtdDescontos){
-        if(desconto.item.id != -1){
-            const valorTotal = Number(desconto.item.quantidade) * Number(desconto.item.valorVendaUnd);
+    status: computed(() => Number(desconto.item.desconto) > 0 ? "Remover" : "Aplicar"),
+    color: computed(() => Number(desconto.item.desconto) > 0 ? "grey-darken-3" : "deep-purple"),
+    // qtdDescontosAplicados: computed({
+    //   get(){
+    //     return Math.ceil(Number(desconto.item.desconto)/15);
+    //   },
+    //   set(qtdDescontos){
+    //     if(desconto.item.id != -1){
+    //         const valorTotal = Number(desconto.item.quantidade) * Number(desconto.item.valorVendaUnd);
 
-            desconto.item.desconto = "0.00";
+    //         desconto.item.desconto = "0.00";
 
-            qtdDescontos = Math.min(qtdDescontos, desconto.descontosRestantes);
-            qtdDescontos = Math.max(0, qtdDescontos);
+    //         qtdDescontos = Math.min(qtdDescontos, desconto.descontosRestantes);
+    //         qtdDescontos = Math.max(0, qtdDescontos);
             
-            desconto.item.desconto = Math.min(qtdDescontos*15, valorTotal).toFixed(2);
-        }else{
-          snackbarStore.set("Por enquanto não é possivel aplicar descontos em itens adicionados anteriormente", 'warning');
-        }
-      }
-    }),
-    descontosRestantes: computed(() => Math.floor(Number(desconto.saldoCliente)/150)),
-    value: false,
+    //         desconto.item.desconto = Math.min(qtdDescontos*15, valorTotal).toFixed(2);
+    //     }else{
+    //       snackbarStore.set("Por enquanto não é possivel aplicar descontos em itens adicionados anteriormente", 'warning');
+    //     }
+    //   }
+    // }),
     saldoCliente: computed(() => props.saldoCliente - (150*qtdDescontosAplicadosGeral.value) + saldoRetorna.value),
+    descontosRestantes: computed(() => Math.floor(Number(desconto.saldoCliente)/150)),
     valorTotalItem: computed(() => (Number(desconto.item.quantidade) * Number(desconto.item.valorVendaUnd) - Number(desconto.item.desconto)).toFixed(2)),
   });
   
@@ -69,6 +73,28 @@
 
   function saveDiscount(){
     dialogIsVisible["desconto"] = false;
+  }
+
+  function applyDiscount(){
+    if(desconto.item.id != -1){
+      if(desconto.status == "Aplicar"){
+        const valorTotal = Number(desconto.item.quantidade) * Number(desconto.item.valorVendaUnd);
+        const valorDesconto = 15;
+      
+        desconto.item.desconto = "0.00";
+
+        if(desconto.descontosRestantes > 0){
+          desconto.item.desconto = Math.min(valorDesconto, valorTotal).toFixed(2);
+
+        }else{
+          snackbarStore.set("O cliente não possui descontos", 'warning');
+        }
+      }else if(desconto.status == "Remover"){
+        desconto.item.desconto = "0.00";
+      }
+    }else{
+      snackbarStore.set("Por enquanto não é possivel aplicar ou remover descontos em itens adicionados anteriormente", 'warning');
+    }
   }
 
   function discountItemProps(item){
@@ -136,13 +162,21 @@
           </v-row>
           <v-row>
             <v-col>
-              <v-text-field
+              <!-- <v-text-field
                 v-model.number="desconto.qtdDescontosAplicados"
                 label="Quantidade de Descontos Aplicados no Item"
                 type="number"
                 hide-details="auto"
                 density="comfortable"
-              ></v-text-field>
+              ></v-text-field> -->
+              <v-btn
+                block
+                :color="desconto.color"
+                prepend-icon="mdi-sale"
+                @click="applyDiscount"
+              >
+                {{ desconto.status }} Desconto
+              </v-btn>
             </v-col>
           </v-row>
           <v-row>
@@ -169,9 +203,8 @@
               Resetar
           </v-btn>
           <v-btn   
-              variant="flat"
-              color="deep-purple"
-              prepend-icon="mdi-sale"
+              variant="text"
+              color="green-darken-1"
               @click="() => saveDiscount()"
           >
               Salvar
