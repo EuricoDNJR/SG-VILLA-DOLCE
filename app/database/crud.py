@@ -129,30 +129,25 @@ def get_all_paid_and_canceled_orders_caixa(idCaixa):
 def get_all_pendent_orders_caixa(idCaixa):
         
         pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
-    
-        # Verifica se há pedidos
-        if pedidos.exists():
-            # Retorna a lista de pedidos pagos ou pendentes se houver algum
-            return [
-                    { 
-                    "idPedido": str(pedido.idPedido),
-                    "idCliente": str(pedido.idCliente.idCliente),
-                    "nomeCliente": pedido.idCliente.nome,
-                    "telefoneCliente": pedido.idCliente.telefone,
-                    "idPagamento": str(pedido.idPagamento.idPagamento),
-                    "valorTotal": str(pedido.idPagamento.valorTotal),
-                    "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
-                    "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
-                    "tipoPagamento": pedido.idPagamento.tipoPagamento,
-                    "idUsuario": str(pedido.idUsuario.idUsuario),
-                    "nomeUsuario": pedido.idUsuario.nome,
-                    "idCaixa": str(pedido.idCaixa.idCaixa),
-                    "status": pedido.status
-                    } for pedido in pedidos if pedido.status == 'Pendente'
-                ]
-        else:
-            # Se não houver pedidos, retorna None
-            return None
+        
+        # Retorna a lista de pedidos pagos ou pendentes se houver algum
+        return [
+                { 
+                "idPedido": str(pedido.idPedido),
+                "idCliente": str(pedido.idCliente.idCliente),
+                "nomeCliente": pedido.idCliente.nome,
+                "telefoneCliente": pedido.idCliente.telefone,
+                "idPagamento": str(pedido.idPagamento.idPagamento),
+                "valorTotal": str(pedido.idPagamento.valorTotal),
+                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+                "tipoPagamento": pedido.idPagamento.tipoPagamento,
+                "idUsuario": str(pedido.idUsuario.idUsuario),
+                "nomeUsuario": pedido.idUsuario.nome,
+                "idCaixa": str(pedido.idCaixa.idCaixa),
+                "status": pedido.status
+                } for pedido in pedidos if pedido.status == 'Pendente'
+            ]
     
 def get_first_caixa_open():
     try:
