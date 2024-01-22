@@ -4,7 +4,7 @@ from typing import Optional, List
 from decimal import Decimal
 from dependencies import get_token_header
 from database import crud
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -147,45 +147,6 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             )
     logging.info("Order created successfully")
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(pedido.idPedido), "message": "Pedido criado com sucesso"})
-
-@router.get("/get_all_orders/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def get_all_orders():
-    """
-    Retorna todos os pedidos.
-    """
-    try:
-        logging.info("Getting all orders")
-        pedidos = crud.get_all_pedidos()
-        if pedidos is None:
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum pedido encontrado"})
-        logging.info("Orders found")
-        return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedidos: " + str(e)}
-        )
-
-@router.get("/get_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def get_order(idPedido: str):
-    """
-    Retorna um pedido.
-    """
-    try:
-        logging.info("Getting order")
-        pedido = crud.get_pedido_by_id(idPedido=idPedido)
-        if pedido is None:
-            logging.error("Order not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
-        logging.info("Order found")
-        return JSONResponse(status_code=status.HTTP_200_OK, content=pedido)
-    except Exception as e:
-        logging.error(e)
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedido: " + str(e)}
-        )
 
 class AddInOrderRequest(BaseModel):
     idProdutos: List[ProdutoPedido]
@@ -534,3 +495,61 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         )
     logging.info("Order deleted successfully")
     return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido deletado com sucesso"})
+
+@router.get("/get_all_orders/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_orders():
+    """
+    Retorna todos os pedidos.
+    """
+    try:
+        logging.info("Getting all orders")
+        pedidos = crud.get_all_pedidos()
+        if pedidos is None:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("Orders found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedidos: " + str(e)}
+        )
+
+@router.get("/get_all_paid_and_canceled_orders/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_paid_and_canceled_orders():
+    """
+    Retorna todos os pedidos pagos e cancelados.
+    """
+    try:
+        logging.info("Getting all paid and canceled orders")
+        pedidos = crud.get_all_pedidos_pagos_cancelados()
+        if pedidos is None:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("Paid and canceled orders found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedidos pagos e cancelados: " + str(e)}
+        )
+
+@router.get("/get_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_order(idPedido: str):
+    """
+    Retorna um pedido.
+    """
+    try:
+        logging.info("Getting order")
+        pedido = crud.get_pedido_by_id(idPedido=idPedido)
+        if pedido is None:
+            logging.error("Order not found")
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
+        logging.info("Order found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=pedido)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedido: " + str(e)}
+        )

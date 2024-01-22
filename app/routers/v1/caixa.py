@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 from database import crud
 from dependencies import get_token_header
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from datetime import datetime
 from fastapi import (
     APIRouter,
@@ -87,12 +87,13 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
         agora = datetime.now()
         dataFechamento = agora.strftime("%Y-%m-%d %H:%M:%S")
 
-        pedidos = crud.get_pedidos_caixa(idCaixa = idCaixa)
+
+        pedidos = crud.get_all_pendent_orders_caixa(idCaixa = idCaixa)
 
         pedidos = [pedido for pedido in pedidos if pedido["status"] == "Pendente"]
         logging.info("recording cash start:" + jwt_token)
 
-        if pedidos != []:
+        if pedidos is not None:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"message": "O caixa só pode ser fechado quando não houver pedidos em aberto"}
@@ -252,10 +253,7 @@ def get_all_caixa(jwt_token: str = Header()):
         caixas = crud.get_all_caixa()
         
         if caixas is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao pesquisar caixa"}
-            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
 
         '''
         caixa_closes = []
@@ -286,8 +284,8 @@ def get_all_caixa(jwt_token: str = Header()):
             content={"message": "Erro ao buscar caixa " + str(e)}
         )
     
-@router.get("/get_pedidos_caixa/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def get_pedidos_caixa(idCaixa: str, jwt_token: str = Header()):
+@router.get("/get_all_paid_and_canceled_orders_caixa/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_paid_and_canceled_orders_caixa(idCaixa: str, jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
@@ -297,13 +295,12 @@ def get_pedidos_caixa(idCaixa: str, jwt_token: str = Header()):
                 logging.error("No permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
         logging.info("recording cash start:" + jwt_token)
-
-        pedidos = crud.get_pedidos_caixa(idCaixa = idCaixa)
-        
+        logging.info("Getting pedidos")
+        pedidos = crud.get_all_paid_and_canceled_orders_caixa(idCaixa = idCaixa)
         if pedidos is None:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao pesquisar pedidos"}
+            logging.error("No pedidos found")
+            return Response(
+                status_code=status.HTTP_204_NO_CONTENT
             )
 
         return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
@@ -315,6 +312,33 @@ def get_pedidos_caixa(idCaixa: str, jwt_token: str = Header()):
             content={"message": "Erro ao buscar pedidos " + str(e)}
         )
 
+@router.get("/get_all_pendent_orders_caixa/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_all_pendent_orders_caixa(idCaixa: str, jwt_token: str = Header()):
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = crud.get_usuario_by_id(jwt_token)
+
+            if user["cargo"] != "Admin":
+                logging.error("No permission")
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
+        logging.info("recording cash start:" + jwt_token)
+        logging.info("Getting pedidos")
+        pedidos = crud.get_all_pendent_orders_caixa(idCaixa = idCaixa)
+        if pedidos is None:
+            logging.error("No pedidos found")
+            return Response(
+                status_code=status.HTTP_204_NO_CONTENT
+            )
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content=pedidos)
+        
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar pedidos " + str(e)}
+        )
 @router.get("/get_first_caixa_open/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def get_first_caixa_open(jwt_token: str = Header()):
     try:

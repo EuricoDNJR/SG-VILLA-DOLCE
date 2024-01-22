@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 from database import crud
 from dependencies import get_token_header
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -90,7 +90,7 @@ def get_all_clients():
         if clientes is not None:
             return JSONResponse(status_code=status.HTTP_200_OK, content=clientes)
         else:
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum cliente encontrado"})
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         logging.error(e)
         return JSONResponse(

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from dependencies import get_token_header
 from database import crud
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
     status,
@@ -44,7 +44,7 @@ def get_all_payment_types():
         logging.info("Getting all PaymentTypes")
         tipo_pagamentos = crud.get_all_tipo_pagamentos()
         if tipo_pagamentos is None:
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Nenhum Tipo de Pagamento encontrado"})
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("PaymentTypes found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=tipo_pagamentos)
     except Exception as e:
