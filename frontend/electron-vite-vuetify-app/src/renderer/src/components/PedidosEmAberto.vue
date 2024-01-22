@@ -31,7 +31,7 @@
   
   async function requestPedidosEmAberto(idCaixa=caixaStore.getId){
     try{
-      const url = `http://127.0.0.1:8000/v1/caixa/get_pedidos_caixa/${idCaixa}`;
+      const url = `http://127.0.0.1:8000/v1/caixa/get_all_pendent_orders_caixa/${idCaixa}`;
       const token = authStore.getToken;
       
       const response = await fetchGet(url, token);
