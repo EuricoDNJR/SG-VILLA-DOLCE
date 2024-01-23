@@ -1,6 +1,5 @@
 import models
 from peewee import DoesNotExist
-from decimal import Decimal
 from passlib.hash import bcrypt
 
 def create_usuario(email, senha, nome, dataNascimento, cpf, endereco, telefone, cargo):
