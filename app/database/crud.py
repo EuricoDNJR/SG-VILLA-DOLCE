@@ -158,25 +158,21 @@ def get_first_caixa_open():
         return None
 
 def get_all_cargos():
-    try:
-        # Tenta buscar todos os cargos
-        cargos = models.Cargo.select()
+    # Tenta buscar todos os cargos
+    cargos = models.Cargo.select()
 
-        # Verifica se há cargos
-        if cargos.exists():
-            # Retorna a lista de cargos se houver algum
-            return [
-                {
-                    "idCargo": str(cargo.idCargo),
-                    "nome": cargo.nome
-                }
-                for cargo in cargos
-            ]
-        else:
-            # Se não houver cargos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há cargos
+    if cargos.exists():
+        # Retorna a lista de cargos se houver algum
+        return [
+            {
+                "idCargo": str(cargo.idCargo),
+                "nome": cargo.nome
+            }
+            for cargo in cargos
+        ]
+    else:
+        # Se não houver cargos, retorna None
         return None
 
 def get_usuario(telefone):
