@@ -16,12 +16,15 @@
 
         const response = await fetchGet(url, token);
 
-        if(response.status === 200){
-          categorias.value = await response.json();
+        if (response.status != 204){
+          const responseJson = await response.json();
+          if(response.status === 200){
+            categorias.value = await response.json();
 
-          loading.value = false;
-        }else if(response.status != 204){
-          setMessageSnackbar("Falha ao carregar categorias", "warning");
+            loading.value = false;
+          }else{
+            setMessageSnackbar(responseJson.message, "warning");
+          }
         }
       }catch(e){
         console.log(e);

@@ -32,12 +32,13 @@
       const token = authStore.getToken;
       
       const response = await fetchGet(url, token);
-      const responseJson = await response.json();
-
-      if(response.status === 200){
-        entradas.value = responseJson;
-      }else if(response.status != 204){
-        snackbarStore.set(responseJson.message, 'warning');
+      if (response.status != 204){
+        const responseJson = await response.json();
+        if(response.status === 200){
+          entradas.value = responseJson;
+        }else{
+          snackbarStore.set(responseJson.message, 'warning');
+        }
       }
     }catch(e){
       console.log(e);
