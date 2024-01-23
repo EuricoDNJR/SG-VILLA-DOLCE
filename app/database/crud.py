@@ -3,9 +3,6 @@ from peewee import DoesNotExist
 from passlib.hash import bcrypt
 from decimal import Decimal
 
-def create_categoria(nome, unidadeMedida):
-    return models.Categoria.create(nome=nome, unidadeMedida=unidadeMedida)
-
 def create_produto(nome, descricao, categoria, valorVenda):
     return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorVenda=valorVenda)
 
@@ -238,39 +235,12 @@ def get_cargo_by_id(uuid):
     except DoesNotExist:
         return None
 
-def get_categoria_by_id(uuid):
-    try:
-        categoria = models.Categoria.get(models.Categoria.idCategoria == uuid)
-
-        return categoria
-    except DoesNotExist:
-        return None
-
 def get_tipo_pagamento_by_id(uuid):
     try:
         tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
 
         return tipo_pagamento
     except DoesNotExist:
-        return None
-
-def get_all_categorias():
-    # Tenta buscar todos os categorias
-    categorias = models.Categoria.select()
-
-    # Verifica se há categorias
-    if categorias.exists():
-        # Retorna a lista de categorias se houver algum
-        return [
-            {
-                "idCategoria": str(categoria.idCategoria),
-                "nome": categoria.nome,
-                "unidadeMedida": categoria.unidadeMedida
-            }
-            for categoria in categorias
-        ]
-    else:
-        # Se não houver categorias, retorna None
         return None
 
 def get_all_produtos():
@@ -547,28 +517,6 @@ def update_novo_saldoInicial(uuid, novoSaldo = None):
     except DoesNotExist:
         return None
 
-def update_categoria(uuid, nome=None, unidadeMedida=None):
-    try:
-        categoria = models.Categoria.get(models.Categoria.idCategoria == uuid)
-        if categoria is None:
-            return None
-        # Atualiza os atributos fornecidos
-        if nome is not None:
-            categoria.nome = nome
-        if unidadeMedida is not None:
-            categoria.unidadeMedida = unidadeMedida
-
-        categoria.save()
-
-        return {
-            "idCategoria": str(categoria.idCategoria),
-            "nome": categoria.nome,
-            "unidadeMedida": categoria.unidadeMedida
-        }
-
-    except DoesNotExist:
-        return None
-    
 def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=None, valorVenda=None, unidadeMedida=None):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
@@ -742,14 +690,6 @@ def update_tipo_pagamento(uuid, nome=None):
             "nome": tipo_pagamento.nome
         }
 
-    except DoesNotExist:
-        return None
-
-def delete_categoria(uuid):
-    try:
-        categoria = models.Categoria.get(models.Categoria.idCategoria == uuid)
-        categoria.delete_instance()
-        return True
     except DoesNotExist:
         return None
 
