@@ -8,7 +8,7 @@ import { fetchPost } from '../utils/common';
 const props = defineProps(['title', 'url', 'configs', 
                         'fixies', 'btnText', 'btnIcon',
                         'successMessage', 'errorMessage']);
-const emit = defineEmits('requested');
+const emit = defineEmits(['requested']);
 
 const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();

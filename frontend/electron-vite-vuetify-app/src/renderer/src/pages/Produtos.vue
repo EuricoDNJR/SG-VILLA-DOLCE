@@ -28,7 +28,7 @@
   const searchText = ref('');
   const produtos = ref([]);
   const produtosObj = {};
-  const loading = ref(false);
+  const reloadVar = ref(false);
 
   async function requestAllProducts(){
     try{
@@ -78,11 +78,7 @@
   }
 
   async function reload(){
-    loading.value = true;
-
-    setTimeout(() => {
-      loading.value = false;
-    }, 0);
+    reloadVar.value = !reloadVar.value;
   }
 
   watch(recieve, async (newRecieve, oldRecieve) => {
@@ -118,13 +114,15 @@
 
       <v-app-bar-title>Produtos</v-app-bar-title>
 
-      <AdicionarProduto v-if="!loading"/>
+      <AdicionarProduto :key="reloadVar"/>
 
       <CriarCategoria
         @categoriaCriada="reload"
       />
      
-      <ApagarCategoria v-if="!loading"/>
+      <ApagarCategoria :key="reloadVar"
+        @categoriaApagada="reload"
+      />
   </v-app-bar>
 
     <v-toolbar color="grey-lighten-4" class="pa-4">
