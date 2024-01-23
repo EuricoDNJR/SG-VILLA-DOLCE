@@ -6,10 +6,6 @@
 
   const emit = defineEmits(['categoriaApagada']);
 
-  function emitCategoriaApagada(){
-    emit('categoriaApagada');
-  }
-
   const formStore = useFormStore();
   const recieve = computed(() => formStore.getObj); 
   const categorias = ref(undefined);
@@ -36,7 +32,14 @@
         console.log(e);
         setMessageSnackbar("Falha ao carregar categorias", "warning");
       }
-    }
+  }
+
+  function emitCategoriaApagada(idDeleted){
+    console.log("ID DELETED: ", idDeleted);
+
+    emit('categoriaApagada');
+  }
+  
 
   watch(recieve, async (newRecieve, oldRecieve) => {
     if(formStore.getFrom == "Apagar Categoria"){
@@ -67,7 +70,7 @@
     btnIcon="mdi-book-minus-outline"
     successMessage="Categoria apagada com sucesso"
     errorMessage="Falha ao apagar categoria"
-    @requested="emitCategoriaApagada"
+    @deleteRequested="emitCategoriaApagada"
   />
 </template>
 <style scoped>

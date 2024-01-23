@@ -132,7 +132,6 @@ function closeDialog(){
                                 v-model="atributo.obj"
                                 :label="atributo.title"
                                 :type="atributo.type"
-                                :rules="[value => !!value || 'Campo obrigatório.']"
                                 :error-messages="atributo.error ? ['Campo obrigatório.'] : []"
                                 hide-details="auto"
                                 required

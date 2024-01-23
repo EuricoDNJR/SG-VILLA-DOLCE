@@ -8,7 +8,7 @@ import { fetchPost } from '../utils/common';
 const props = defineProps(['title', 'url', 'configs', 
                         'fixies', 'btnText', 'btnIcon',
                         'successMessage', 'errorMessage']);
-const emit = defineEmits(['requested']);
+const emit = defineEmits(['postRequested']);
 
 const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
@@ -69,6 +69,7 @@ async function requestPost(url=props.url){
     const body = get();
 
     if(body){
+        console.log(body);
         try{
             const token = authStore.getToken;
             
@@ -80,13 +81,12 @@ async function requestPost(url=props.url){
                 
                 formStore.send(props.title, body);
 
-                emit('requested');
+                emit('postRequested');
                 
                 snackbarStore.set(props.successMessage, 'success');
             }else{
                 snackbarStore.set(responseJson.message, 'warning');
             }
-            
         }catch(e){
             console.log(e);
             snackbarStore.set(props.errorMessage, 'warning');

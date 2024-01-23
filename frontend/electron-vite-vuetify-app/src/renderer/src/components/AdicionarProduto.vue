@@ -19,9 +19,7 @@
         if (response.status != 204){
           const responseJson = await response.json();
           if(response.status === 200){
-            categorias = responseJson;
-
-            loading.value = false;
+            categorias.value = responseJson;
           }else{
             setMessageSnackbar(responseJson.message, "warning");
           }
@@ -58,7 +56,7 @@
 </script>
 
 <template>
-  <div :key="reload">
+  <div :key="reloadVar">
     <FormPost 
       title="Adicionar Produto"
       url="http://127.0.0.1:8000/v1/produto/create_product/"

@@ -24,7 +24,7 @@
     btnIcon="mdi-book-plus-outline"
     successMessage="Categoria criada com sucesso"
     errorMessage="Falha ao criar categoria"
-    @requested="emitCategoriaCriada"
+    @postRequested="emitCategoriaCriada"
   />
 </template>
 

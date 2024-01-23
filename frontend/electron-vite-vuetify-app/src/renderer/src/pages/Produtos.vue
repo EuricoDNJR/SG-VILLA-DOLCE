@@ -114,14 +114,13 @@
       </template>
 
       <v-app-bar-title>Produtos</v-app-bar-title>
-
-      <AdicionarProduto :key="reloadVar"/>
+        <AdicionarProduto />
 
       <CriarCategoria
         @categoriaCriada="reload"
       />
      
-      <ApagarCategoria :key="reloadVar"
+      <ApagarCategoria
         @categoriaApagada="reload"
       />
   </v-app-bar>

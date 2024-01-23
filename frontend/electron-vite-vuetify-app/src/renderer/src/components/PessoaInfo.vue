@@ -87,6 +87,7 @@ const props = defineProps(['pessoa',
                         'rotaUpdatePessoa',
                         'rotaDeletePessoa']);
 
+console.log(props.pessoa.saldo);
 pessoaStore.setTipoPessoa(props.tipoPessoa);
 savePessoaInStore({...props.pessoa});
 
@@ -156,8 +157,8 @@ function getAtributosEspecificos(){
     const atributosEspecificos = [];
 
     if(props.tipoPessoa === "Clientes"){
-        const saldo = computed(() => pessoaStore.getPessoa.saldo);
-        const pontos = computed(() => Math.floor(pessoaStore.getPessoa.saldo/15));
+        const saldo = computed(() => Number(props.pessoa.saldo).toFixed(2).replace('.', ','));
+        const pontos = computed(() => Math.floor(Number(props.pessoa.saldo/15)).toFixed(2).replace('.', ','));
 
         atributosEspecificos.push({
             color: "green",
