@@ -57,45 +57,38 @@ def close_caixa(uuid, dataFechamento, idUsuarioFechamento):
     
 def get_caixa(date):
 
-    try:
+    caixa = models.Caixa.get(models.Caixa.dataAbertura == date)
 
-        caixa = models.Caixa.get(models.Caixa.dataAbertura == date)
-
-        if caixa.aberto == False:
-            return caixa
-        else:
-            None 
-    except:
-        return None
+    if caixa.aberto == False:
+        return caixa
+    else:
+        None 
     
 def get_all_caixa():
-    try:
-        # Tenta buscar todos os caixas 
-        caixas = models.Caixa.select()
+    
+    # Tenta buscar todos os caixas 
+    caixas = models.Caixa.select()
 
-        # Verifica se há usuários
-        if caixas.exists():
-            # Retorna a lista de usuários se houver algum
-            return [
-                {
-                    "idCaixa": str(caixa.idCaixa),
-                    "saldoInicial": str(caixa.saldoInicial),
-                    "dataAbertura": str(caixa.dataAbertura),
-                    "dataFechamento": str(caixa.dataFechamento),
-                    "aberto": caixa.aberto,
-                    "observacoes": caixa.observacoes,
-                    "somenteDinheiro": str(caixa.somenteDinheiro),            
-                    "SaldoFinal": str(caixa.saldoFinal)                    
-                }
+    # Verifica se há usuários
+    if caixas.exists():
+        # Retorna a lista de usuários se houver algum
+        return [
+            {
+                "idCaixa": str(caixa.idCaixa),
+                "saldoInicial": str(caixa.saldoInicial),
+                "dataAbertura": str(caixa.dataAbertura),
+                "dataFechamento": str(caixa.dataFechamento),
+                "aberto": caixa.aberto,
+                "observacoes": caixa.observacoes,
+                "somenteDinheiro": str(caixa.somenteDinheiro),            
+                "SaldoFinal": str(caixa.saldoFinal)                    
+            }
 
-                for caixa in caixas #if caixa.aberto == False
-               
-            ]
-        else:
-            # Se não houver usuários, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+            for caixa in caixas #if caixa.aberto == False
+            
+        ]
+    else:
+        # Se não houver usuários, retorna None
         return None
 
 def get_all_paid_and_canceled_orders_caixa(idCaixa):
@@ -165,25 +158,21 @@ def get_first_caixa_open():
         return None
 
 def get_all_cargos():
-    try:
-        # Tenta buscar todos os cargos
-        cargos = models.Cargo.select()
+    # Tenta buscar todos os cargos
+    cargos = models.Cargo.select()
 
-        # Verifica se há cargos
-        if cargos.exists():
-            # Retorna a lista de cargos se houver algum
-            return [
-                {
-                    "idCargo": str(cargo.idCargo),
-                    "nome": cargo.nome
-                }
-                for cargo in cargos
-            ]
-        else:
-            # Se não houver cargos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há cargos
+    if cargos.exists():
+        # Retorna a lista de cargos se houver algum
+        return [
+            {
+                "idCargo": str(cargo.idCargo),
+                "nome": cargo.nome
+            }
+            for cargo in cargos
+        ]
+    else:
+        # Se não houver cargos, retorna None
         return None
 
 def get_usuario(telefone):
@@ -251,29 +240,26 @@ def get_product_by_id(uuid):
         return None
 
 def get_all_estoques_by_product(uuid):
-    try:
-        estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid)
+    
+    estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid)
 
-        # Verifica se há registros de estoque
-        if estoques.exists():
-            # Retorna a lista de registros de estoque se houver algum
-            return [
-                {
-                    "idEstoque": str(estoque.idEstoque),
-                    "idProduto": str(estoque.idProduto.idProduto),
-                    "nome": estoque.idProduto.nome,
-                    "quantidade": str(estoque.quantidade),
-                    "dataEntrada": str(estoque.dataEntrada),
-                    "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
-                    "observacoes": estoque.observacoes if estoque.observacoes is not None else None
-                }
-                for estoque in estoques
-            ]
-        else:
-            # Se não houver registros de estoque, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há registros de estoque
+    if estoques.exists():
+        # Retorna a lista de registros de estoque se houver algum
+        return [
+            {
+                "idEstoque": str(estoque.idEstoque),
+                "idProduto": str(estoque.idProduto.idProduto),
+                "nome": estoque.idProduto.nome,
+                "quantidade": str(estoque.quantidade),
+                "dataEntrada": str(estoque.dataEntrada),
+                "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
+                "observacoes": estoque.observacoes if estoque.observacoes is not None else None
+            }
+            for estoque in estoques
+        ]
+    else:
+        # Se não houver registros de estoque, retorna None
         return None
 
 def get_pedido_by_id(idPedido):
@@ -333,136 +319,116 @@ def get_tipo_pagamento_by_id(uuid):
         return None
     
 def get_all_users():
-    try:
-        # Tenta buscar todos os usuários
-        usuarios = models.Usuario.select()
+    # Tenta buscar todos os usuários
+    usuarios = models.Usuario.select()
 
-        # Verifica se há usuários
-        if usuarios.exists():
-            # Retorna a lista de usuários se houver algum
-            return [
-                {
-                    "idUsuario": str(usuario.idUsuario),
-                    "email": usuario.email,
-                    "nome": usuario.nome,
-                    "dataNascimento": str(usuario.dataNascimento),
-                    "cpf": usuario.cpf,
-                    "endereco": usuario.endereco,
-                    "telefone": usuario.telefone,
-                    "cargo": usuario.cargo
-                }
-                for usuario in usuarios
-            ]
-        else:
-            # Se não houver usuários, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há usuários
+    if usuarios.exists():
+        # Retorna a lista de usuários se houver algum
+        return [
+            {
+                "idUsuario": str(usuario.idUsuario),
+                "email": usuario.email,
+                "nome": usuario.nome,
+                "dataNascimento": str(usuario.dataNascimento),
+                "cpf": usuario.cpf,
+                "endereco": usuario.endereco,
+                "telefone": usuario.telefone,
+                "cargo": usuario.cargo
+            }
+            for usuario in usuarios
+        ]
+    else:
+        # Se não houver usuários, retorna None
         return None
     
 def get_all_clientes():
-    try:
-        # Tenta buscar todos os clientes
-        clientes = models.Cliente.select()
+    # Tenta buscar todos os clientes
+    clientes = models.Cliente.select()
 
-        # Verifica se há clientes
-        if clientes.exists():
-            # Retorna a lista de clientes se houver algum
-            return [
-                {
-                    "idCliente": str(cliente.idCliente),
-                    "email": cliente.email if cliente.email is not None else None,
-                    "nome": cliente.nome,
-                    "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
-                    "cpf": cliente.cpf if cliente.cpf is not None else None,
-                    "endereco": cliente.endereco if cliente.endereco is not None else None,
-                    "telefone": cliente.telefone if cliente.telefone is not None else None,
-                    "saldo": str(cliente.saldo) if cliente.saldo is not None else None
-                }
-                for cliente in clientes
-            ]
-        else:
-            # Se não houver clientes, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há clientes
+    if clientes.exists():
+        # Retorna a lista de clientes se houver algum
+        return [
+            {
+                "idCliente": str(cliente.idCliente),
+                "email": cliente.email if cliente.email is not None else None,
+                "nome": cliente.nome,
+                "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
+                "cpf": cliente.cpf if cliente.cpf is not None else None,
+                "endereco": cliente.endereco if cliente.endereco is not None else None,
+                "telefone": cliente.telefone if cliente.telefone is not None else None,
+                "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+            }
+            for cliente in clientes
+        ]
+    else:
+        # Se não houver clientes, retorna None
         return None
 
 def get_all_categorias():
-    try:
-        # Tenta buscar todos os categorias
-        categorias = models.Categoria.select()
+    # Tenta buscar todos os categorias
+    categorias = models.Categoria.select()
 
-        # Verifica se há categorias
-        if categorias.exists():
-            # Retorna a lista de categorias se houver algum
-            return [
-                {
-                    "idCategoria": str(categoria.idCategoria),
-                    "nome": categoria.nome,
-                    "unidadeMedida": categoria.unidadeMedida
-                }
-                for categoria in categorias
-            ]
-        else:
-            # Se não houver categorias, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há categorias
+    if categorias.exists():
+        # Retorna a lista de categorias se houver algum
+        return [
+            {
+                "idCategoria": str(categoria.idCategoria),
+                "nome": categoria.nome,
+                "unidadeMedida": categoria.unidadeMedida
+            }
+            for categoria in categorias
+        ]
+    else:
+        # Se não houver categorias, retorna None
         return None
 
 def get_all_produtos():
-    try:
-        # Tenta buscar todos os produtos
-        produtos = models.Produto.select()
+    # Tenta buscar todos os produtos
+    produtos = models.Produto.select()
 
-        # Verifica se há produtos
-        if produtos.exists():
-            # Retorna a lista de produtos se houver algum
-            return [
-                {
-                    "idProduto": str(produto.idProduto),
-                    "nome": produto.nome,
-                    "descricao": produto.descricao if produto.descricao is not None else None,
-                    "categoria": produto.categoria.nome,
-                    "valorVenda": str(produto.valorVenda),
-                    "unidadeMedida": produto.categoria.unidadeMedida,
-                    "quantidade": str(produto.quantidade)
-                }
-                for produto in produtos
-            ]
-        else:
-            # Se não houver produtos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há produtos
+    if produtos.exists():
+        # Retorna a lista de produtos se houver algum
+        return [
+            {
+                "idProduto": str(produto.idProduto),
+                "nome": produto.nome,
+                "descricao": produto.descricao if produto.descricao is not None else None,
+                "categoria": produto.categoria.nome,
+                "valorVenda": str(produto.valorVenda),
+                "unidadeMedida": produto.categoria.unidadeMedida,
+                "quantidade": str(produto.quantidade)
+            }
+            for produto in produtos
+        ]
+    else:
+        # Se não houver produtos, retorna None
         return None
 
 def get_all_estoques():
-    try:
-        # Tenta buscar todos os registros de estoque
-        estoques = models.Estoque.select()
+    # Tenta buscar todos os registros de estoque
+    estoques = models.Estoque.select()
 
-        # Verifica se há registros de estoque
-        if estoques.exists():
-            # Retorna a lista de registros de estoque se houver algum
-            return [
-                {
-                    "idEstoque": str(estoque.idEstoque),
-                    "idProduto": str(estoque.idProduto.idProduto),
-                    "nome": estoque.idProduto.nome,
-                    "quantidade": str(estoque.quantidade),
-                    "dataEntrada": str(estoque.dataEntrada),
-                    "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
-                    "observacoes": estoque.observacoes if estoque.observacoes is not None else None
-                }
-                for estoque in estoques
-            ]
-        else:
-            # Se não houver registros de estoque, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há registros de estoque
+    if estoques.exists():
+        # Retorna a lista de registros de estoque se houver algum
+        return [
+            {
+                "idEstoque": str(estoque.idEstoque),
+                "idProduto": str(estoque.idProduto.idProduto),
+                "nome": estoque.idProduto.nome,
+                "quantidade": str(estoque.quantidade),
+                "dataEntrada": str(estoque.dataEntrada),
+                "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
+                "observacoes": estoque.observacoes if estoque.observacoes is not None else None
+            }
+            for estoque in estoques
+        ]
+    else:
+        # Se não houver registros de estoque, retorna None
         return None
 
 def get_all_pedidos():
@@ -553,84 +519,72 @@ def get_all_pedidos_pagos_cancelados():
         return None
 
 def get_all_tipo_pagamentos():
-    try:
-        tipo_pagamentos = models.TipoPagamento.select()
+    tipo_pagamentos = models.TipoPagamento.select()
 
-        # Verifica se há tipo_pagamentos
-        if tipo_pagamentos.exists():
-            # Retorna a lista de tipo_pagamentos se houver algum
-            return [
-                {
-                    "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
-                    "nome": tipo_pagamento.nome
-                }
-                for tipo_pagamento in tipo_pagamentos
-            ]
-        else:
-            # Se não houver tipo_pagamentos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há tipo_pagamentos
+    if tipo_pagamentos.exists():
+        # Retorna a lista de tipo_pagamentos se houver algum
+        return [
+            {
+                "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
+                "nome": tipo_pagamento.nome
+            }
+            for tipo_pagamento in tipo_pagamentos
+        ]
+    else:
+        # Se não houver tipo_pagamentos, retorna None
         return None
 
 def get_all_produtos_pedidos_by_id(idPedido):
-    try:
-        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
+    produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
 
-        # Verifica se há produtos_pedidos
-        if produtos_pedidos.exists():
-            # Retorna a lista de produtos_pedidos se houver algum
-            return [
-                {
-                    "idProdutoPedido": str(produto_pedido.idProdutoPedido),
-                    "idProduto": str(produto_pedido.idProduto.idProduto),
-                    "nome": produto_pedido.idProduto.nome,
-                    "quantidade": str(produto_pedido.quantidade),
-                    "desconto": str(produto_pedido.desconto),
-                    "valorVendaUnd": str(produto_pedido.valorVendaUnd),
-                    "valorTotal": str(produto_pedido.valorTotal)
-                }
-                for produto_pedido in produtos_pedidos
-            ]
-        else:
-            # Se não houver produtos_pedidos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+    # Verifica se há produtos_pedidos
+    if produtos_pedidos.exists():
+        # Retorna a lista de produtos_pedidos se houver algum
+        return [
+            {
+                "idProdutoPedido": str(produto_pedido.idProdutoPedido),
+                "idProduto": str(produto_pedido.idProduto.idProduto),
+                "nome": produto_pedido.idProduto.nome,
+                "quantidade": str(produto_pedido.quantidade),
+                "desconto": str(produto_pedido.desconto),
+                "valorVendaUnd": str(produto_pedido.valorVendaUnd),
+                "valorTotal": str(produto_pedido.valorTotal)
+            }
+            for produto_pedido in produtos_pedidos
+        ]
+    else:
+        # Se não houver produtos_pedidos, retorna None
         return None
 
 def update_balance_client_and_order(pedido):
-    try:
-        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
+    produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
 
-        # Verifica se há produtos_pedidos
-        if produtos_pedidos.exists():
-            # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
-            for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria.nome == 'Açaí' and verifier_client_promotion(pedido):
-                    if produto_pedido.desconto > Decimal(0.0):
-                        pedido.idCliente.saldo -= Decimal(150)
-                        if produto_pedido.valorTotal < Decimal(15):
-                            pedido.idCliente.saldo += Decimal(15) - produto_pedido.desconto
-                        produto_pedido.valorTotal -= produto_pedido.desconto
-                        produto_pedido.save() 
-                        pedido.idCliente.saldo += produto_pedido.valorTotal
-                        pedido.idPagamento.valorTotal += produto_pedido.valorTotal
-                    else:    
-                        pedido.idCliente.saldo += produto_pedido.valorTotal
-                        pedido.idPagamento.valorTotal += produto_pedido.valorTotal
-                    pedido.idCliente.save()
-                    pedido.idPagamento.save()
-                else:
-                    #Se for visitante, não contabiliza o saldo do cliente
+    # Verifica se há produtos_pedidos
+    if produtos_pedidos.exists():
+        # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
+        for produto_pedido in produtos_pedidos:
+            if produto_pedido.idProduto.categoria.nome == 'Açaí' and verifier_client_promotion(pedido):
+                if produto_pedido.desconto > Decimal(0.0):
+                    pedido.idCliente.saldo -= Decimal(150)
+                    if produto_pedido.valorTotal < Decimal(15):
+                        pedido.idCliente.saldo += Decimal(15) - produto_pedido.desconto
+                    produto_pedido.valorTotal -= produto_pedido.desconto
+                    produto_pedido.save() 
+                    pedido.idCliente.saldo += produto_pedido.valorTotal
                     pedido.idPagamento.valorTotal += produto_pedido.valorTotal
-                    pedido.idPagamento.save()
-            return True
-        else:
-            # Se não houver produtos_pedidos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+                else:    
+                    pedido.idCliente.saldo += produto_pedido.valorTotal
+                    pedido.idPagamento.valorTotal += produto_pedido.valorTotal
+                pedido.idCliente.save()
+                pedido.idPagamento.save()
+            else:
+                #Se for visitante, não contabiliza o saldo do cliente
+                pedido.idPagamento.valorTotal += produto_pedido.valorTotal
+                pedido.idPagamento.save()
+        return True
+    else:
+        # Se não houver produtos_pedidos, retorna None
         return None
 
 def update_balance_client_and_order_unique(pedido, produto_instance):
@@ -659,38 +613,34 @@ def update_balance_client_and_order_unique(pedido, produto_instance):
         return None
 
 def update_balance_client_and_order_cancel(pedido):
-    try:
-        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
+    produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == pedido.idPedido)
 
-        # Verifica se há produtos_pedidos
-        if produtos_pedidos.exists():
-            # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
-            for produto_pedido in produtos_pedidos:
-                if produto_pedido.idProduto.categoria.nome == 'Açaí' and verifier_client_promotion(pedido):
-                    if produto_pedido.desconto > Decimal(0.0):
-                        pedido.idCliente.saldo += Decimal(150)
-                        produto_pedido.valorTotal += produto_pedido.desconto
-                        produto_pedido.save()
-                        pedido.idCliente.saldo -= Decimal(15) - produto_pedido.desconto
-                        if produto_pedido.valorTotal > Decimal(15):
-                            pedido.idCliente.saldo -= produto_pedido.valorTotal - Decimal(15)
-                        pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
-                        pedido.idPagamento.save()
-                    else:    
-                        pedido.idCliente.saldo -= produto_pedido.valorTotal
-                        pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
-                        pedido.idPagamento.save()
-                    pedido.idCliente.save()
-                else:
-                    #Se for visitante ou ate mesmo produto normal, so decrementa do valor total do pedido
+    # Verifica se há produtos_pedidos
+    if produtos_pedidos.exists():
+        # Verifica se nos produtos do pedido há algum com a categoria Açaí para contabilizar no saldo do cliente
+        for produto_pedido in produtos_pedidos:
+            if produto_pedido.idProduto.categoria.nome == 'Açaí' and verifier_client_promotion(pedido):
+                if produto_pedido.desconto > Decimal(0.0):
+                    pedido.idCliente.saldo += Decimal(150)
+                    produto_pedido.valorTotal += produto_pedido.desconto
+                    produto_pedido.save()
+                    pedido.idCliente.saldo -= Decimal(15) - produto_pedido.desconto
+                    if produto_pedido.valorTotal > Decimal(15):
+                        pedido.idCliente.saldo -= produto_pedido.valorTotal - Decimal(15)
                     pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
                     pedido.idPagamento.save()
-            return True
-        else:
-            # Se não houver produtos_pedidos, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+                else:    
+                    pedido.idCliente.saldo -= produto_pedido.valorTotal
+                    pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
+                    pedido.idPagamento.save()
+                pedido.idCliente.save()
+            else:
+                #Se for visitante ou ate mesmo produto normal, so decrementa do valor total do pedido
+                pedido.idPagamento.valorTotal -= produto_pedido.valorTotal
+                pedido.idPagamento.save()
+        return True
+    else:
+        # Se não houver produtos_pedidos, retorna None
         return None
         
 def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
@@ -873,16 +823,13 @@ def update_quantity_product(uuid, quantidade):
         return None
 
 def sum_all_stock_by_product(uuid_product):
-    try:
-        total = Decimal(0.0)
-        estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid_product)
-        if estoques.exists():
-            for estoque in estoques:
-                total += estoque.quantidade
-            return total
-        else:
-            return None
-    except DoesNotExist:
+    total = Decimal(0.0)
+    estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid_product)
+    if estoques.exists():
+        for estoque in estoques:
+            total += estoque.quantidade
+        return total
+    else:
         return None
         
 def update_stock(idEstoque, idProduto, quantidade=None, dataEntrada=None, dataVencimento=None, observacoes=None):
@@ -1036,29 +983,23 @@ def delete_stock_registre(uuid):
         return None
 
 def delete_replace_quantity_product(idPedido):
-    try:
-        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
-        if produtos_pedidos.exists():
-            for produto_pedido in produtos_pedidos:
-                produto = get_product_by_id(produto_pedido.idProduto.idProduto)
-                produto.quantidade += produto_pedido.quantidade
-                produto.save()
-            return True
-        else:
-            return None
-    except DoesNotExist:
+    produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
+    if produtos_pedidos.exists():
+        for produto_pedido in produtos_pedidos:
+            produto = get_product_by_id(produto_pedido.idProduto.idProduto)
+            produto.quantidade += produto_pedido.quantidade
+            produto.save()
+        return True
+    else:
         return None
 
 def delete_produto_pedido(idPedido):
-    try:
-        produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
-        if produtos_pedidos.exists():
-            for produto_pedido in produtos_pedidos:
-                produto_pedido.delete_instance()
-            return True
-        else:
-            return None
-    except DoesNotExist:
+    produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
+    if produtos_pedidos.exists():
+        for produto_pedido in produtos_pedidos:
+            produto_pedido.delete_instance()
+        return True
+    else:
         return None
 
 def delete_pagamento(idPagamento):
