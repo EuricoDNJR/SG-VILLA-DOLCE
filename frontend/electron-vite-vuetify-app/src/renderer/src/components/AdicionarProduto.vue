@@ -7,8 +7,8 @@
 
     const formStore = useFormStore();
     const recieve = computed(() => formStore.getObj); 
-    let categorias = undefined;
-    const loading = ref(true);
+    const categorias = ref([]);
+    const reloadVar = ref(false);
 
     async function requestAllCategories(){
       try{
@@ -19,9 +19,7 @@
         if (response.status != 204){
           const responseJson = await response.json();
           if(response.status === 200){
-            categorias = responseJson;
-
-            loading.value = false;
+            categorias.value = responseJson;
           }else{
             setMessageSnackbar(responseJson.message, "warning");
           }
@@ -32,22 +30,15 @@
       }
     }
 
-    function reload(callback){
-      loading.value = true;
-
-      setTimeout(() => {
-        callback();
-
-        loading.value = false;
-      }, 0);
+    function reload(){
+      reloadVar.value = !reloadVar.value;
     }
 
     watch(recieve, async (newRecieve, oldRecieve) => {
-      reload(() => {
         if(formStore.getFrom == "Apagar Categoria"){
           const idCategoria = formStore.getObj.idCategoria;
 
-          categorias = categorias.filter((categoria) => categoria.idCategoria != idCategoria);
+          categorias.value = categorias.value.filter((categoria) => categoria.idCategoria != idCategoria);
 
         }else if(formStore.getFrom == "Criar Categoria"){
           const categoria = {
@@ -55,33 +46,36 @@
             nome: formStore.getObj.nome,
             unidadeMedida: formStore.getObj.unidadeMedida,
           }
-          categorias.push(categoria);
+          categorias.value.push(categoria);
         }
-      });
+
+        reload();
     });
 
     requestAllCategories();
 </script>
 
 <template>
-  <FormPost v-if="!loading"
-    title="Adicionar Produto"
-    url="http://127.0.0.1:8000/v1/produto/create_product/"
-    :configs="[
-        [createCelula('nome', 'Nome', 'text', true), createCelula('descricao', 'Descrição', 'text')],
-        [createCelula('categoria', 'Categoria', 'select', true), createCelula('valorVenda', 'Valor de Venda', 'number', true)],
-    ]"
-    :fixies="[
-        ['Categoria.items', categorias],
-        ['Categoria.itemsTitle', 'nome'],
-        ['Categoria.itemsValue', 'idCategoria'],
-        ['Categoria.obj.value', categorias[0].idCategoria],
-    ]"
-    btnText="Adicionar"
-    btnIcon="mdi-package-variant-plus"
-    successMessage="Produto adicionado com sucesso"
-    errorMessage="Falha ao adicionar produto"
-  />
+  <div :key="reloadVar">
+    <FormPost 
+      title="Adicionar Produto"
+      url="http://127.0.0.1:8000/v1/produto/create_product/"
+      :configs="[
+          [createCelula('nome', 'Nome', 'text', true), createCelula('descricao', 'Descrição', 'text')],
+          [createCelula('categoria', 'Categoria', 'select', true), createCelula('valorVenda', 'Valor de Venda', 'number', true)],
+      ]"
+      :fixies="[
+          ['Categoria.items', categorias],
+          ['Categoria.itemsTitle', 'nome'],
+          ['Categoria.itemsValue', 'idCategoria'],
+          ['Categoria.obj.value', categorias[0] ? categorias[0].idCategoria : ''],
+      ]"
+      btnText="Adicionar"
+      btnIcon="mdi-package-variant-plus"
+      successMessage="Produto adicionado com sucesso"
+      errorMessage="Falha ao adicionar produto"
+    />
+  </div>
 </template>
 <style scoped>
 </style>

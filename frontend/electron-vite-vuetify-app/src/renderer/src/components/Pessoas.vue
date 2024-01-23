@@ -144,8 +144,8 @@
             </v-row>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
-            <PessoaInfo 
-              :pessoa="toRaw(pessoa)"
+            <PessoaInfo
+              :pessoa="pessoa"
               :tipoPessoa="props.tipoPessoa"
               :rotaUpdatePessoa="props.rotaUpdatePessoa"
               :rotaDeletePessoa="props.rotaDeletePessoa"

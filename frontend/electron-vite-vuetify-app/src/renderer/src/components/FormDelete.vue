@@ -8,6 +8,7 @@ const props = defineProps(['title', 'autocompleteItems',
                         'autocompleteTitle', 'autocompleteValue',
                         'url', 'btnText', 'btnIcon',
                         'successMessage', 'errorMessage']);
+const emit = defineEmits(['deleteRequested']);
 
 const formStore = useFormStore();
 
@@ -42,8 +43,10 @@ async function requestDelete(rota=props.url){
 
             formStore.send(props.title, idDeleted);
 
-            setMessageSnackbar(props.successMessage, 'success');
+            emit('deleteRequested', idDeleted);
 
+            setMessageSnackbar(props.successMessage, 'success');
+            
             autocomplete.value = '';
         }else{
             setMessageSnackbar(responseJson.message, 'warning');
