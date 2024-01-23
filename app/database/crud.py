@@ -57,45 +57,38 @@ def close_caixa(uuid, dataFechamento, idUsuarioFechamento):
     
 def get_caixa(date):
 
-    try:
+    caixa = models.Caixa.get(models.Caixa.dataAbertura == date)
 
-        caixa = models.Caixa.get(models.Caixa.dataAbertura == date)
-
-        if caixa.aberto == False:
-            return caixa
-        else:
-            None 
-    except:
-        return None
+    if caixa.aberto == False:
+        return caixa
+    else:
+        None 
     
 def get_all_caixa():
-    try:
-        # Tenta buscar todos os caixas 
-        caixas = models.Caixa.select()
+    
+    # Tenta buscar todos os caixas 
+    caixas = models.Caixa.select()
 
-        # Verifica se há usuários
-        if caixas.exists():
-            # Retorna a lista de usuários se houver algum
-            return [
-                {
-                    "idCaixa": str(caixa.idCaixa),
-                    "saldoInicial": str(caixa.saldoInicial),
-                    "dataAbertura": str(caixa.dataAbertura),
-                    "dataFechamento": str(caixa.dataFechamento),
-                    "aberto": caixa.aberto,
-                    "observacoes": caixa.observacoes,
-                    "somenteDinheiro": str(caixa.somenteDinheiro),            
-                    "SaldoFinal": str(caixa.saldoFinal)                    
-                }
+    # Verifica se há usuários
+    if caixas.exists():
+        # Retorna a lista de usuários se houver algum
+        return [
+            {
+                "idCaixa": str(caixa.idCaixa),
+                "saldoInicial": str(caixa.saldoInicial),
+                "dataAbertura": str(caixa.dataAbertura),
+                "dataFechamento": str(caixa.dataFechamento),
+                "aberto": caixa.aberto,
+                "observacoes": caixa.observacoes,
+                "somenteDinheiro": str(caixa.somenteDinheiro),            
+                "SaldoFinal": str(caixa.saldoFinal)                    
+            }
 
-                for caixa in caixas #if caixa.aberto == False
-               
-            ]
-        else:
-            # Se não houver usuários, retorna None
-            return None
-    except DoesNotExist:
-        # Se ocorrer uma exceção DoesNotExist, retorna None
+            for caixa in caixas #if caixa.aberto == False
+            
+        ]
+    else:
+        # Se não houver usuários, retorna None
         return None
 
 def get_all_paid_and_canceled_orders_caixa(idCaixa):
