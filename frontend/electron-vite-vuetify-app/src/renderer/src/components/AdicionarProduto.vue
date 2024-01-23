@@ -16,12 +16,15 @@
         const token = getAuthToken();
 
         const response = await fetchGet(url, token);
-        const responseJson = await response.json();
+        if (response.status != 204){
+          const responseJson = await response.json();
+          if(response.status === 200){
+            categorias = responseJson;
 
-        if(response.status === 200){
-          categorias.value = responseJson;
-        }else if(response.status != 204){
-          setMessageSnackbar(responseJson.message, "warning");
+            loading.value = false;
+          }else{
+            setMessageSnackbar(responseJson.message, "warning");
+          }
         }
       }catch(e){
         console.log(e);

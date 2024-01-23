@@ -38,7 +38,7 @@
       const responseJson = await response.json();
 
       if(response.status === 200){
-        pedidosEmAberto.value = responseJson.filter((pedido) => pedido.status == "Pendente");
+        pedidosEmAberto.value = responseJson
       }
     }catch(e){
       console.log(e);

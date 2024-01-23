@@ -22,18 +22,21 @@
 
       const response = await fetchGet(url, token);
 
-      if(response.status === 200){
-        categorias.value = await response.json();
+        if (response.status != 204){
+          const responseJson = await response.json();
+          if(response.status === 200){
+            categorias.value = await response.json();
 
-        loading.value = false;
-      }else if(response.status != 204){
+            loading.value = false;
+          }else{
+            setMessageSnackbar(responseJson.message, "warning");
+          }
+        }
+      }catch(e){
+        console.log(e);
         setMessageSnackbar("Falha ao carregar categorias", "warning");
       }
-    }catch(e){
-      console.log(e);
-      setMessageSnackbar("Falha ao carregar categorias", "warning");
     }
-  }
 
   watch(recieve, async (newRecieve, oldRecieve) => {
     if(formStore.getFrom == "Apagar Categoria"){
