@@ -19,7 +19,7 @@
         if (response.status != 204){
           const responseJson = await response.json();
           if(response.status === 200){
-            categorias.value = await response.json();
+            categorias.value = responseJson;
 
             loading.value = false;
           }else{
