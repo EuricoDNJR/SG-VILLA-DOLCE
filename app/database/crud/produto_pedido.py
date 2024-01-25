@@ -1,4 +1,4 @@
-import models
+from database import models
 from decimal import Decimal
 
 

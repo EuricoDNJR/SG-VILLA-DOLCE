@@ -1,4 +1,5 @@
-import models
+# importa models
+from database import models
 from peewee import DoesNotExist
 
 

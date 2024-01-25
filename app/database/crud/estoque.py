@@ -1,7 +1,7 @@
-import models
+from database import models
 from peewee import DoesNotExist
 from decimal import Decimal
-from produto import get_product_by_id
+from .produto import get_product_by_id
 
 
 def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):

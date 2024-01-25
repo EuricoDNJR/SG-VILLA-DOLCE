@@ -1,10 +1,10 @@
 import os
 import dotenv
-import models
-from crud.cargo import create_cargo
-from crud.tipo_pagamento import create_tipo_pagamento
-from crud.cliente import create_cliente
-from crud.usuario import create_usuario
+from . import models
+from .crud.cargo import create_cargo
+from .crud.tipo_pagamento import create_tipo_pagamento
+from .crud.cliente import create_cliente
+from .crud.usuario import create_usuario
 
 from passlib.hash import bcrypt
 from peewee import DoesNotExist

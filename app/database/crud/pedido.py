@@ -1,9 +1,9 @@
-import models
+from database import models
 from peewee import DoesNotExist
 from decimal import Decimal
 
-from produto_pedido import get_all_produtos_pedidos_by_id
-from produto import get_product_by_id
+from .produto_pedido import get_all_produtos_pedidos_by_id
+from .produto import get_product_by_id
 
 
 def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):

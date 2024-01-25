@@ -1,4 +1,4 @@
-import models
+from database import models
 from peewee import DoesNotExist
 from passlib.hash import bcrypt
 
