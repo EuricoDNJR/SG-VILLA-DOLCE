@@ -3,7 +3,11 @@ from pydantic import BaseModel
 from typing import Optional, List
 from decimal import Decimal
 from dependencies import get_token_header
-from database import crud
+from database.crud.pedido import create_pedido, update_balance_client_and_order, update_balance_client_and_order_unique, update_balance_client_and_order_cancel, update_pedido_status, delete_produto_pedido, delete_pedido, delete_replace_quantity_product, get_pedido_by_id, get_pedido_object_by_id, get_all_pedidos, get_all_pedidos_pagos_cancelados
+from database.crud.pagamento import create_pagamento, update_pagamento, delete_pagamento
+from database.crud.produto_pedido import create_produto_pedido
+from database.crud.produto import update_quantity_product
+from database.crud.caixa import update_balance_caixa_pedido
 from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
@@ -66,7 +70,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     logging.info("Getting user")
     logging.info("Creating order by user: " + jwt_token)
     logging.info("Creating instance of payment")
-    pagamento = crud.create_pagamento( 
+    pagamento = create_pagamento( 
         valorRecebimento=data.Pagamento.valorRecebimento, 
         valorDevolvido=data.Pagamento.valorDevolvido, 
         tipoPagamento=data.Pagamento.tipoPagamento)
@@ -77,7 +81,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
         )
     logging.info("Payment created")
     logging.info("Creating instance of order")
-    pedido = crud.create_pedido(
+    pedido = create_pedido(
         idCliente=data.idCliente,
         idPagamento=pagamento.idPagamento,
         idUsuario=jwt_token,
@@ -93,7 +97,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     try:
         logging.info("adding products to order")
         for produto in data.idProdutos:
-            crud.create_produto_pedido(
+            create_produto_pedido(
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
                 quantidade=produto.quantidade,
@@ -110,7 +114,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     try:
         logging.info("Updating quantity of products")
         for produto in data.idProdutos:
-            if crud.update_quantity_product(produto.idProduto, produto.quantidade):
+            if update_quantity_product(produto.idProduto, produto.quantidade):
                 logging.info("Quantity of product {} updated".format(produto.idProduto))
             else:
                 logging.info("Quantity of product {} not updated".format(produto.idProduto))
@@ -122,7 +126,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             content={"message": "Erro ao atualizar quantidade de produtos"}
         )
     try:
-        if crud.update_balance_client_and_order(pedido):
+        if update_balance_client_and_order(pedido):
             logging.info("Balance of client and order updated")
         else:
             logging.info("Balance of client and order not updated")
@@ -135,7 +139,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     if data.status == "Pago":
         try:
             logging.info("Updating caixa balance")
-            if crud.update_balance_caixa_pedido(data.idCaixa, pedido.idPagamento.valorTotal, pedido.idPagamento.tipoPagamento):
+            if update_balance_caixa_pedido(data.idCaixa, pedido.idPagamento.valorTotal, pedido.idPagamento.tipoPagamento):
                 logging.info("Balance of caixa updated")
             else:
                 logging.info("Balance of caixa not updated")
@@ -175,7 +179,7 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
     """
     logging.info("Getting order by id")
     try:
-        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        pedido = get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
@@ -203,18 +207,18 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
         )
     try:
         for produto in data.idProdutos:
-            produto_instance = crud.create_produto_pedido(
+            produto_instance = create_produto_pedido(
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
                 quantidade=produto.quantidade,
                 valorVendaUnd=produto.valorVendaUnd,
                 desconto=produto.desconto
             )
-            if crud.update_quantity_product(produto.idProduto, produto.quantidade):
+            if update_quantity_product(produto.idProduto, produto.quantidade):
                 logging.info("Quantity of product {} updated".format(produto.idProduto))
             else:
                 logging.info("Quantity of product {} not updated".format(produto.idProduto))
-            if crud.update_balance_client_and_order_unique(pedido, produto_instance):
+            if update_balance_client_and_order_unique(pedido, produto_instance):
                 logging.info("Balance of client and order updated")
             else:
                 logging.info("Balance of client and order not updated")
@@ -246,7 +250,7 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
     """
     logging.info("Getting order by id")
     try:
-        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        pedido = get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
@@ -289,7 +293,7 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
         )
     try:
         logging.info("Updating payment of order")
-        if crud.update_pagamento(pedido=pedido, valorRecebimento=data.valorRecebimento, valorDevolvido=data.valorDevolvido, tipoPagamento=data.tipoPagamento):
+        if update_pagamento(pedido=pedido, valorRecebimento=data.valorRecebimento, valorDevolvido=data.valorDevolvido, tipoPagamento=data.tipoPagamento):
             logging.info("Payment of order updated")
         else:
             logging.info("Payment of order not updated")
@@ -301,7 +305,7 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
         )
     try:
         logging.info("Updating caixa balance")
-        if crud.update_balance_caixa_pedido(pedido.idCaixa, pedido.idPagamento.valorTotal, pedido.idPagamento.tipoPagamento):
+        if update_balance_caixa_pedido(pedido.idCaixa, pedido.idPagamento.valorTotal, pedido.idPagamento.tipoPagamento):
             logging.info("Balance of caixa updated")
         else:
             logging.info("Balance of caixa not updated")
@@ -313,7 +317,7 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
         )
     try:
         logging.info("Updating status of order")
-        if crud.update_pedido_status(pedido, "Pago"):
+        if update_pedido_status(pedido, "Pago"):
             logging.info("Status of order updated")
         else:
             logging.info("Status of order not updated")
@@ -333,7 +337,7 @@ def cancel_order(idPedido: str):
     """
     logging.info("Getting order by id")
     try:
-        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        pedido = get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
@@ -361,7 +365,7 @@ def cancel_order(idPedido: str):
         )
     try:
         logging.info("Updating caixa balance")
-        if crud.update_balance_caixa_pedido(pedido.idCaixa, -abs(pedido.idPagamento.valorTotal), pedido.idPagamento.tipoPagamento):
+        if update_balance_caixa_pedido(pedido.idCaixa, -abs(pedido.idPagamento.valorTotal), pedido.idPagamento.tipoPagamento):
             logging.info("Balance of caixa updated")
         else:
             logging.info("Balance of caixa not updated")
@@ -373,7 +377,7 @@ def cancel_order(idPedido: str):
         )
     try:
         logging.info("Updating payment of order")
-        if crud.update_pagamento(pedido=pedido, valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento="Cancelado"):
+        if update_pagamento(pedido=pedido, valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento="Cancelado"):
             logging.info("Payment of order updated")
         else:
             logging.info("Payment of order not updated")
@@ -385,7 +389,7 @@ def cancel_order(idPedido: str):
         )
     try:
         logging.info("Updating balance of client")
-        if crud.update_balance_client_and_order_cancel(pedido):
+        if update_balance_client_and_order_cancel(pedido):
             logging.info("Balance of client and order updated")
         else:
             logging.info("Balance of client and order not updated")
@@ -397,7 +401,7 @@ def cancel_order(idPedido: str):
         )
     try: 
         logging.info("getting products of order and replacing quantity")
-        if crud.delete_replace_quantity_product(pedido.idPedido):
+        if delete_replace_quantity_product(pedido.idPedido):
             logging.info("Quantity of products replaced")
         else:
             logging.info("Quantity of products not replaced")
@@ -409,7 +413,7 @@ def cancel_order(idPedido: str):
         )
     try:
         logging.info("Updating status of order")
-        if crud.update_pedido_status(pedido, "Cancelado"):
+        if update_pedido_status(pedido, "Cancelado"):
             logging.info("Status of order updated")
         else:
             logging.info("Status of order not updated")
@@ -431,7 +435,7 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
     logging.info("Deleting products of order {} by {}".format(idPedido, jwt_token))
     logging.info("Getting order")
     try:
-        pedido = crud.get_pedido_by_id(idPedido=idPedido)
+        pedido = get_pedido_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
@@ -459,7 +463,7 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         )
     try:
         logging.info("Deleting products of order")
-        if crud.delete_produto_pedido(pedido["idPedido"]):
+        if delete_produto_pedido(pedido["idPedido"]):
             logging.info("Products of order deleted")
         else:
             logging.info("Products of order not deleted")
@@ -471,7 +475,7 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         )
     try:
         logging.info("Deleting order")
-        if crud.delete_pedido(pedido["idPedido"]):
+        if delete_pedido(pedido["idPedido"]):
             logging.info("Order deleted")
         else:
             logging.info("Order not deleted")
@@ -483,7 +487,7 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         )
     try:
         logging.info("Deleting payment of order")
-        if crud.delete_pagamento(pedido["idPagamento"]):
+        if delete_pagamento(pedido["idPagamento"]):
             logging.info("Payment of order deleted")
         else:
             logging.info("Payment of order not deleted")
@@ -503,7 +507,7 @@ def get_all_orders():
     """
     try:
         logging.info("Getting all orders")
-        pedidos = crud.get_all_pedidos()
+        pedidos = get_all_pedidos()
         if pedidos is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Orders found")
@@ -522,7 +526,7 @@ def get_all_paid_and_canceled_orders():
     """
     try:
         logging.info("Getting all paid and canceled orders")
-        pedidos = crud.get_all_pedidos_pagos_cancelados()
+        pedidos = get_all_pedidos_pagos_cancelados()
         if pedidos is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Paid and canceled orders found")
@@ -541,7 +545,7 @@ def get_order(idPedido: str):
     """
     try:
         logging.info("Getting order")
-        pedido = crud.get_pedido_by_id(idPedido=idPedido)
+        pedido = get_pedido_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
