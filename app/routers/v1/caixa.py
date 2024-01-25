@@ -1,7 +1,8 @@
 import logging
 from typing import Optional
 from pydantic import BaseModel
-from database import crud
+from database.crud.usuario import get_usuario_by_id
+from database.crud.caixa import open_caixa, close_caixa, update_novo_saldoInicial, get_caixa, get_all_caixa, get_all_paid_and_canceled_orders_caixa, get_all_pendent_orders_caixa, get_first_caixa_open
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
 from datetime import datetime
@@ -38,7 +39,7 @@ def open_caixa(data: CaixaRequest, jwt_token: str = Header()):
 
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
         logging.info("recording cash start:" + jwt_token)
         
@@ -46,7 +47,7 @@ def open_caixa(data: CaixaRequest, jwt_token: str = Header()):
         dataAbertura = agora.strftime("%Y-%m-%d")
         horaAbertura = agora.strftime("%H:%M:%S")
         
-        caixa = crud.open_caixa(
+        caixa = open_caixa(
             saldoInicial = data.saldoInicial,
             dataAbertura = dataAbertura,
             observacoes = data.observacoes,
@@ -80,7 +81,7 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
         logging.info("recording cash start:" + jwt_token)
 
@@ -88,7 +89,7 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
         dataFechamento = agora.strftime("%Y-%m-%d %H:%M:%S")
 
 
-        pedidos = crud.get_all_pendent_orders_caixa(idCaixa = idCaixa)
+        pedidos = get_all_pendent_orders_caixa(idCaixa = idCaixa)
         logging.info("recording cash start:" + jwt_token)
 
         if pedidos != []:
@@ -98,7 +99,7 @@ def close_caixa(idCaixa: str, jwt_token: str = Header()):
             )  
 
         logging.info("Closing caixa")
-        caixa = crud.close_caixa(uuid = idCaixa, dataFechamento=dataFechamento, idUsuarioFechamento = jwt_token)
+        caixa = close_caixa(uuid = idCaixa, dataFechamento=dataFechamento, idUsuarioFechamento = jwt_token)
         if caixa is False:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -136,7 +137,7 @@ def update_saldoIncial_caixa(data: novoSaldo, uuid: str, jwt_token: str = Header
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
             if user["cargo"] != "Admin":
                 logging.error("No permission")
@@ -144,7 +145,7 @@ def update_saldoIncial_caixa(data: novoSaldo, uuid: str, jwt_token: str = Header
         logging.info("recording cash start:" + jwt_token)
 
 
-        caixa = crud.update_novo_saldoInicial(uuid = uuid, novoSaldo=data.novoSaldo)
+        caixa = update_novo_saldoInicial(uuid = uuid, novoSaldo=data.novoSaldo)
 
         if caixa is None:
             return JSONResponse(
@@ -180,7 +181,7 @@ def get_caixa(date: str, jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
             if user["cargo"] != "Admin":
                 logging.error("No permission")
@@ -190,7 +191,7 @@ def get_caixa(date: str, jwt_token: str = Header()):
         date = datetime.strptime(date, "%d-%m-%Y")
         date = date.strftime("%Y-%m-%d")
 
-        caixa = crud.get_caixa(date = date)
+        caixa = get_caixa(date = date)
         
         if caixa is None:
             return JSONResponse(
@@ -240,7 +241,7 @@ def get_all_caixa(jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
             if user["cargo"] != "Admin":
                 logging.error("No permission")
@@ -248,7 +249,7 @@ def get_all_caixa(jwt_token: str = Header()):
         logging.info("recording cash start:" + jwt_token)
 
  
-        caixas = crud.get_all_caixa()
+        caixas = get_all_caixa()
         
         if caixas is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -287,14 +288,14 @@ def get_all_paid_and_canceled_orders_caixa(idCaixa: str, jwt_token: str = Header
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
             if user["cargo"] != "Admin":
                 logging.error("No permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
         logging.info("recording cash start:" + jwt_token)
         logging.info("Getting pedidos")
-        pedidos = crud.get_all_paid_and_canceled_orders_caixa(idCaixa = idCaixa)
+        pedidos = get_all_paid_and_canceled_orders_caixa(idCaixa = idCaixa)
         if pedidos is None:
             logging.error("No pedidos found")
             return Response(
@@ -315,14 +316,14 @@ def get_all_pendent_orders_caixa(idCaixa: str, jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
             if user["cargo"] != "Admin":
                 logging.error("No permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
         logging.info("recording cash start:" + jwt_token)
         logging.info("Getting pedidos")
-        pedidos = crud.get_all_pendent_orders_caixa(idCaixa = idCaixa)
+        pedidos = get_all_pendent_orders_caixa(idCaixa = idCaixa)
         if pedidos is None:
             logging.error("No pedidos found")
             return Response(
@@ -342,14 +343,14 @@ def get_first_caixa_open(jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
 
             if user["cargo"] != "Admin":
                 logging.error("No permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No permission"})
         logging.info("recording cash start:" + jwt_token)
 
-        caixa = crud.get_first_caixa_open()
+        caixa = get_first_caixa_open()
         
         if caixa is None:
             return JSONResponse(
