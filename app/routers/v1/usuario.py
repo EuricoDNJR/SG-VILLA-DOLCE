@@ -3,17 +3,20 @@ import logging
 from typing import Optional
 from pydantic import BaseModel
 from passlib.hash import bcrypt
-from database import crud
+from database.crud.usuario import (
+    get_usuario,
+    create_usuario,
+    get_usuario_by_id,
+    get_all_users,
+    update_user,
+    delete_user,
+)
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
-from fastapi import (
-    APIRouter,
-    status,
-    Header,
-    Depends
-)
+from fastapi import APIRouter, status, Header, Depends
 
 router = APIRouter()
+
 
 class LoginRequest(BaseModel):
     senha: str
@@ -41,17 +44,25 @@ def login(data: LoginRequest):
         logging.info("Receiving data")
         logging.info("Data received")
         logging.info("Getting user")
-        user = crud.get_usuario(telefone=data.telefone)
+        user = get_usuario(telefone=data.telefone)
         if user is None:
             logging.error("User not found")
-            return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Usuário não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"message": "Usuário não encontrado"},
+            )
         logging.info("User found")
         logging.info("Verifying password")
         if user and bcrypt.verify(data.senha, user.senha):
             logging.info("Login successful")
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
-                content={"token": str(user.idUsuario), "cargo": user.cargo, "nome": user.nome, "message": "Login realizado com sucesso"},
+                content={
+                    "token": str(user.idUsuario),
+                    "cargo": user.cargo,
+                    "nome": user.nome,
+                    "message": "Login realizado com sucesso",
+                },
             )
         else:
             logging.warning("Login failed: Invalid email or password")
@@ -66,6 +77,7 @@ def login(data: LoginRequest):
             content={"message": "Erro ao realizar login: " + str(e)},
         )
 
+
 class CreateUserRequest(BaseModel):
     email: str
     senha: str
@@ -76,12 +88,17 @@ class CreateUserRequest(BaseModel):
     telefone: str
     cargo: str
 
-@router.post("/create_user/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
+
+@router.post(
+    "/create_user/",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_token_header)],
+)
 def create_user(data: CreateUserRequest, jwt_token: str = Header()):
     """
     Criação de usuário.
     exemplo de entrada:
-    
+
         {
             "email": "usuario@test2.com",
             "senha": "senha_abashla",
@@ -96,15 +113,18 @@ def create_user(data: CreateUserRequest, jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
         # Gerar hash da senha usando passlib
         hashed_password = bcrypt.using(rounds=12).hash(data.senha)
 
         logging.info("Creating user")
-        user = crud.create_usuario(
+        user = create_usuario(
             email=data.email,
             senha=hashed_password,
             nome=data.nome,
@@ -112,57 +132,89 @@ def create_user(data: CreateUserRequest, jwt_token: str = Header()):
             cpf=data.cpf,
             endereco=data.endereco,
             telefone=data.telefone,
-            cargo=data.cargo
+            cargo=data.cargo,
         )
-        
+
         logging.info("User created")
-        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(user.idUsuario), "message": "Usuário criado com sucesso"})
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "uuid": str(user.idUsuario),
+                "message": "Usuário criado com sucesso",
+            },
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao criar usuário: " + str(e)})
-    
-@router.get("/get_user/{telefone}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def get_user(telefone: str, jwt_token: str = Header()):  
+            content={"message": "Erro ao criar usuário: " + str(e)},
+        )
+
+
+@router.get(
+    "/get_user/{telefone}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def get_user(telefone: str, jwt_token: str = Header()):
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
         logging.info("Getting user")
-        user = crud.get_usuario(telefone=telefone)
+        user = get_usuario(telefone=telefone)
         if user is None:
             logging.error("User not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Usuário não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Usuário não encontrado"},
+            )
         logging.info("User found")
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"idUsuario": str(user.idUsuario),
-                                                                      "email": user.email, 
-                                                                      "nome": user.nome, 
-                                                                      "dataNascimento": user.dataNascimento.isoformat(), 
-                                                                      "cpf": user.cpf, 
-                                                                      "endereco": user.endereco, 
-                                                                      "telefone": user.telefone, 
-                                                                      "cargo": user.cargo})
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "idUsuario": str(user.idUsuario),
+                "email": user.email,
+                "nome": user.nome,
+                "dataNascimento": user.dataNascimento.isoformat(),
+                "cpf": user.cpf,
+                "endereco": user.endereco,
+                "telefone": user.telefone,
+                "cargo": user.cargo,
+            },
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar usuário: " + str(e)})
-    
-@router.get("/get_all_users/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def get_all_users(jwt_token: str = Header()):
+            content={"message": "Erro ao buscar usuário: " + str(e)},
+        )
+
+
+@router.get(
+    "/get_all_users/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def get_all_user(jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
         logging.info("Getting all users")
-        users = crud.get_all_users()
+        users = get_all_users()
         if users is None:
             logging.error("Users not found")
             return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -172,7 +224,9 @@ def get_all_users(jwt_token: str = Header()):
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar usuários: " + str(e)})
+            content={"message": "Erro ao buscar usuários: " + str(e)},
+        )
+
 
 class UpdateUserRequest(BaseModel):
     email: Optional[str] = None
@@ -183,15 +237,20 @@ class UpdateUserRequest(BaseModel):
     endereco: Optional[str] = None
     telefone: Optional[str] = None
     cargo: Optional[str] = None
-   
-@router.patch("/update_user/{idUsuario}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def update_user(idUsuario: str, 
-                data: UpdateUserRequest,
-                jwt_token: str = Header()):
-    '''
+
+
+@router.patch(
+    "/update_user/{idUsuario}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def update_user_by_id(
+    idUsuario: str, data: UpdateUserRequest, jwt_token: str = Header()
+):
+    """
     Atualização de usuário.
     exemplo de entrada:
-    
+
         {
             "email": "abashala@gmail.com",
             "senha": "bombinhadorato",
@@ -202,16 +261,19 @@ def update_user(idUsuario: str,
             "telefone": "40028922",
             "cargo": "Funcionario"
         }
-    '''
+    """
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
         logging.info("Updating user")
-        update_user = crud.update_user(
+        user_updated = update_user(
             uuid=idUsuario,
             email=data.email,
             senha=data.senha,
@@ -220,37 +282,59 @@ def update_user(idUsuario: str,
             cpf=data.cpf,
             endereco=data.endereco,
             telefone=data.telefone,
-            cargo=data.cargo
+            cargo=data.cargo,
         )
-        if update_user is None:
+        if user_updated is None:
             logging.error("User not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Usuário não encontrado ou não atualizado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Usuário não encontrado ou não atualizado"},
+            )
         logging.info("User updated")
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Usuário atualizado com sucesso"})
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"message": "Usuário atualizado com sucesso"},
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao atualizar usuário: " + str(e)})
-    
-@router.delete("/delete_user/{idUsuario}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def delete_user(idUsuario: str, jwt_token: str = Header()):
+            content={"message": "Erro ao atualizar usuário: " + str(e)},
+        )
+
+
+@router.delete(
+    "/delete_user/{idUsuario}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def delete_user_by_id(idUsuario: str, jwt_token: str = Header()):
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
         logging.info("Deleting user")
-        delete_user = crud.delete_user(idUsuario)
-        if delete_user is None:
+        user_deleted = delete_user(idUsuario)
+        if user_deleted is None:
             logging.error("User not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Usuário não encontrado ou não deletado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Usuário não encontrado ou não deletado"},
+            )
         logging.info("User deleted")
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Usuário deletado com sucesso"})
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"message": "Usuário deletado com sucesso"},
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao deletar usuário: " + str(e)})
+            content={"message": "Erro ao deletar usuário: " + str(e)},
+        )
