@@ -2,8 +2,12 @@ import models
 from peewee import DoesNotExist
 from decimal import Decimal
 
+
 def create_produto(nome, descricao, categoria, valorVenda):
-    return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorVenda=valorVenda)
+    return models.Produto.create(
+        nome=nome, descricao=descricao, categoria=categoria, valorVenda=valorVenda
+    )
+
 
 def get_product_by_id(uuid):
     try:
@@ -11,6 +15,7 @@ def get_product_by_id(uuid):
         return produto
     except DoesNotExist:
         return None
+
 
 def get_all_produtos():
     # Tenta buscar todos os produtos
@@ -23,19 +28,30 @@ def get_all_produtos():
             {
                 "idProduto": str(produto.idProduto),
                 "nome": produto.nome,
-                "descricao": produto.descricao if produto.descricao is not None else None,
+                "descricao": produto.descricao
+                if produto.descricao is not None
+                else None,
                 "categoria": produto.categoria.nome,
                 "valorVenda": str(produto.valorVenda),
                 "unidadeMedida": produto.categoria.unidadeMedida,
-                "quantidade": str(produto.quantidade)
+                "quantidade": str(produto.quantidade),
             }
             for produto in produtos
         ]
     else:
         # Se não houver produtos, retorna None
         return None
-    
-def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=None, valorVenda=None, unidadeMedida=None):
+
+
+def update_product(
+    uuid,
+    nome=None,
+    descricao=None,
+    categoria=None,
+    valorCusto=None,
+    valorVenda=None,
+    unidadeMedida=None,
+):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
         if produto is None:
@@ -63,11 +79,12 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
             "categoria": produto.categoria.nome,
             "valorVenda": str(produto.valorVenda),
             "unidadeMedida": produto.categoria.unidadeMedida,
-            "quantidade": str(produto.quantidade)
+            "quantidade": str(produto.quantidade),
         }
 
     except DoesNotExist:
         return None
+
 
 def update_quantity_product(uuid, quantidade):
     try:
@@ -77,7 +94,8 @@ def update_quantity_product(uuid, quantidade):
         return True
     except DoesNotExist:
         return None
-    
+
+
 def update_stock_product(uuid, quantidade):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
@@ -86,10 +104,10 @@ def update_stock_product(uuid, quantidade):
         return True
     except DoesNotExist:
         return None
-    
+
+
 def delete_product(uuid):
     try:
-
         models.Estoque.delete().where(models.Estoque.idProduto == uuid).execute()
 
         produto = models.Produto.get(models.Produto.idProduto == uuid)

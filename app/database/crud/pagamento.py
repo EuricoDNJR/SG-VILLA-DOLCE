@@ -2,8 +2,15 @@ import models
 from peewee import DoesNotExist
 from decimal import Decimal
 
+
 def create_pagamento(valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
-    return models.Pagamento.create(valorTotal=Decimal(0.0), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
+    return models.Pagamento.create(
+        valorTotal=Decimal(0.0),
+        valorRecebimento=Decimal(str(valorRecebimento)),
+        valorDevolvido=Decimal(str(valorDevolvido)),
+        tipoPagamento=tipoPagamento,
+    )
+
 
 def update_pagamento(pedido, tipoPagamento, valorRecebimento=0.0, valorDevolvido=0.0):
     try:
@@ -15,6 +22,7 @@ def update_pagamento(pedido, tipoPagamento, valorRecebimento=0.0, valorDevolvido
     except DoesNotExist:
         return None
 
+
 def update_pagamento_valorTotal(idPagamento, valorTotalProduto):
     try:
         idPagamento.valorTotal += valorTotalProduto
@@ -22,6 +30,7 @@ def update_pagamento_valorTotal(idPagamento, valorTotalProduto):
         return True
     except DoesNotExist:
         return None
+
 
 def delete_pagamento(idPagamento):
     try:

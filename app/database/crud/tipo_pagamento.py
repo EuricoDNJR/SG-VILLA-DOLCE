@@ -1,16 +1,21 @@
 import models
 from peewee import DoesNotExist
 
+
 def create_tipo_pagamento(nome):
     return models.TipoPagamento.create(nome=nome)
 
+
 def get_tipo_pagamento_by_id(uuid):
     try:
-        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+        tipo_pagamento = models.TipoPagamento.get(
+            models.TipoPagamento.idTipoPagamento == uuid
+        )
 
         return tipo_pagamento
     except DoesNotExist:
         return None
+
 
 def get_all_tipo_pagamentos():
     tipo_pagamentos = models.TipoPagamento.select()
@@ -21,7 +26,7 @@ def get_all_tipo_pagamentos():
         return [
             {
                 "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
-                "nome": tipo_pagamento.nome
+                "nome": tipo_pagamento.nome,
             }
             for tipo_pagamento in tipo_pagamentos
         ]
@@ -29,9 +34,12 @@ def get_all_tipo_pagamentos():
         # Se não houver tipo_pagamentos, retorna None
         return None
 
+
 def update_tipo_pagamento(uuid, nome=None):
     try:
-        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+        tipo_pagamento = models.TipoPagamento.get(
+            models.TipoPagamento.idTipoPagamento == uuid
+        )
         if tipo_pagamento is None:
             return None
         # Atualiza os atributos fornecidos
@@ -42,15 +50,18 @@ def update_tipo_pagamento(uuid, nome=None):
 
         return {
             "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
-            "nome": tipo_pagamento.nome
+            "nome": tipo_pagamento.nome,
         }
 
     except DoesNotExist:
         return None
 
+
 def delete_payment_type(uuid):
     try:
-        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
+        tipo_pagamento = models.TipoPagamento.get(
+            models.TipoPagamento.idTipoPagamento == uuid
+        )
         tipo_pagamento.delete_instance()
         return True
     except DoesNotExist:

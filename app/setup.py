@@ -1,8 +1,18 @@
 from cx_Freeze import setup, Executable
 
 build_exe_options = {
-    "packages": ["asyncio", "uvicorn", "fastapi", "contextlib", "database", "routers", "passlib", "pydantic", "peewee"],
-    "include_files": ["app.log"]
+    "packages": [
+        "asyncio",
+        "uvicorn",
+        "fastapi",
+        "contextlib",
+        "database",
+        "routers",
+        "passlib",
+        "pydantic",
+        "peewee",
+    ],
+    "include_files": ["app.log"],
 }
 
 executables = [

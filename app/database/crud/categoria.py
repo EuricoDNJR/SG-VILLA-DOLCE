@@ -1,8 +1,10 @@
 import models
 from peewee import DoesNotExist
 
+
 def create_categoria(nome, unidadeMedida):
     return models.Categoria.create(nome=nome, unidadeMedida=unidadeMedida)
+
 
 def get_categoria_by_id(uuid):
     try:
@@ -11,7 +13,8 @@ def get_categoria_by_id(uuid):
         return categoria
     except DoesNotExist:
         return None
-    
+
+
 def get_all_categorias():
     # Tenta buscar todos os categorias
     categorias = models.Categoria.select()
@@ -23,13 +26,14 @@ def get_all_categorias():
             {
                 "idCategoria": str(categoria.idCategoria),
                 "nome": categoria.nome,
-                "unidadeMedida": categoria.unidadeMedida
+                "unidadeMedida": categoria.unidadeMedida,
             }
             for categoria in categorias
         ]
     else:
         # Se não houver categorias, retorna None
         return None
+
 
 def update_categoria(uuid, nome=None, unidadeMedida=None):
     try:
@@ -47,11 +51,12 @@ def update_categoria(uuid, nome=None, unidadeMedida=None):
         return {
             "idCategoria": str(categoria.idCategoria),
             "nome": categoria.nome,
-            "unidadeMedida": categoria.unidadeMedida
+            "unidadeMedida": categoria.unidadeMedida,
         }
 
     except DoesNotExist:
         return None
+
 
 def delete_categoria(uuid):
     try:

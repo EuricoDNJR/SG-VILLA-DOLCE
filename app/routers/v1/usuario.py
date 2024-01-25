@@ -202,7 +202,7 @@ def get_user(telefone: str, jwt_token: str = Header()):
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_token_header)],
 )
-def get_all_users(jwt_token: str = Header()):
+def get_all_user(jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
@@ -244,7 +244,9 @@ class UpdateUserRequest(BaseModel):
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_token_header)],
 )
-def update_user(idUsuario: str, data: UpdateUserRequest, jwt_token: str = Header()):
+def update_user_by_id(
+    idUsuario: str, data: UpdateUserRequest, jwt_token: str = Header()
+):
     """
     Atualização de usuário.
     exemplo de entrada:
@@ -306,7 +308,7 @@ def update_user(idUsuario: str, data: UpdateUserRequest, jwt_token: str = Header
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_token_header)],
 )
-def delete_user(idUsuario: str, jwt_token: str = Header()):
+def delete_user_by_id(idUsuario: str, jwt_token: str = Header()):
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":

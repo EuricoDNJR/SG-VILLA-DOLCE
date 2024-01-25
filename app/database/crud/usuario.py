@@ -2,14 +2,26 @@ import models
 from peewee import DoesNotExist
 from passlib.hash import bcrypt
 
+
 def create_usuario(email, senha, nome, dataNascimento, cpf, endereco, telefone, cargo):
-    return models.Usuario.create(email=email, senha=senha, nome=nome, dataNascimento=dataNascimento, cpf=cpf, endereco=endereco, telefone=telefone, cargo=cargo)
+    return models.Usuario.create(
+        email=email,
+        senha=senha,
+        nome=nome,
+        dataNascimento=dataNascimento,
+        cpf=cpf,
+        endereco=endereco,
+        telefone=telefone,
+        cargo=cargo,
+    )
+
 
 def get_usuario(telefone):
     try:
         return models.Usuario.get(models.Usuario.telefone == telefone)
     except DoesNotExist:
         return None
+
 
 def get_usuario_by_id(uuid):
     try:
@@ -23,10 +35,11 @@ def get_usuario_by_id(uuid):
             "cpf": usuario.cpf,
             "endereco": usuario.endereco,
             "telefone": usuario.telefone,
-            "cargo": usuario.cargo
+            "cargo": usuario.cargo,
         }
     except DoesNotExist:
         return None
+
 
 def get_all_users():
     # Tenta buscar todos os usuários
@@ -44,7 +57,7 @@ def get_all_users():
                 "cpf": usuario.cpf,
                 "endereco": usuario.endereco,
                 "telefone": usuario.telefone,
-                "cargo": usuario.cargo
+                "cargo": usuario.cargo,
             }
             for usuario in usuarios
         ]
@@ -52,7 +65,18 @@ def get_all_users():
         # Se não houver usuários, retorna None
         return None
 
-def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNascimento=None, cpf=None, endereco=None, cargo=None):
+
+def update_user(
+    uuid,
+    telefone=None,
+    email=None,
+    senha=None,
+    nome=None,
+    dataNascimento=None,
+    cpf=None,
+    endereco=None,
+    cargo=None,
+):
     try:
         usuario = models.Usuario.get(models.Usuario.idUsuario == uuid)
         if usuario is None:
@@ -86,11 +110,12 @@ def update_user(uuid, telefone=None, email=None, senha=None, nome=None, dataNasc
             "cpf": usuario.cpf,
             "endereco": usuario.endereco,
             "telefone": usuario.telefone,
-            "cargo": usuario.cargo
+            "cargo": usuario.cargo,
         }
 
     except DoesNotExist:
         return None
+
 
 def delete_user(uuid):
     try:

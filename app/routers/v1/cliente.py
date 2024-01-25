@@ -2,17 +2,20 @@ import logging
 import json
 from typing import Optional
 from pydantic import BaseModel
-from database.crud.cliente import create_cliente, get_cliente, get_all_clientes, update_cliente, delete_cliente
+from database.crud.cliente import (
+    create_cliente,
+    get_cliente,
+    get_all_clientes,
+    update_cliente,
+    delete_cliente,
+    get_client_discounts,
+)
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
-from fastapi import (
-    APIRouter,
-    status,
-    Header,
-    Depends
-)
+from fastapi import APIRouter, status, Header, Depends
 
 router = APIRouter()
+
 
 class ClienteRequest(BaseModel):
     email: Optional[str]
@@ -23,12 +26,17 @@ class ClienteRequest(BaseModel):
     telefone: str
     saldo: Optional[float]
 
-@router.post("/create_client/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
+
+@router.post(
+    "/create_client/",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_token_header)],
+)
 def create_client(data: ClienteRequest, jwt_token: str = Header()):
     """
     Criação de usuário.
     exemplo de entrada:
-    
+
         {
             "email": "test3@gmail.com",
             "nome": "Nome do Usuário",
@@ -51,15 +59,24 @@ def create_client(data: ClienteRequest, jwt_token: str = Header()):
             data.saldo,
         )
         logging.info("Client created")
-        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(cliente.idCliente), "Nome": cliente.nome})
-        
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={"uuid": str(cliente.idCliente), "Nome": cliente.nome},
+        )
+
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao criar cliente: " + str(e)})
+            content={"message": "Erro ao criar cliente: " + str(e)},
+        )
 
-@router.get("/get_client/{telefone}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.get(
+    "/get_client/{telefone}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def get_client(telefone: str):
     """
     Retorna um cliente.
@@ -69,7 +86,10 @@ def get_client(telefone: str):
         cliente = get_cliente(telefone=telefone)
         if cliente is None:
             logging.error("Client not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Cliente não encontrado"},
+            )
         else:
             logging.info("Client found")
             return JSONResponse(status_code=status.HTTP_200_OK, content=cliente)
@@ -77,9 +97,15 @@ def get_client(telefone: str):
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar cliente: " + str(e)})
+            content={"message": "Erro ao buscar cliente: " + str(e)},
+        )
 
-@router.get("/get_all_clients/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.get(
+    "/get_all_clients/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def get_all_clients():
     """
     Retorna todos os clientes.
@@ -95,7 +121,9 @@ def get_all_clients():
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar clientes: " + str(e)})
+            content={"message": "Erro ao buscar clientes: " + str(e)},
+        )
+
 
 class ClienteUpdateRequest(BaseModel):
     telefone: Optional[str] = None
@@ -105,16 +133,18 @@ class ClienteUpdateRequest(BaseModel):
     cpf: Optional[str] = None
     endereco: Optional[str] = None
     saldo: Optional[float] = None
-    
-@router.patch("/update_cliente/{idCliente}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def update_cliente(
-    data: ClienteUpdateRequest,
-    idCliente: str
-):
-    '''
+
+
+@router.patch(
+    "/update_cliente/{idCliente}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def update_client(data: ClienteUpdateRequest, idCliente: str):
+    """
     Atualiza um cliente.
     exemplo de entrada:
-    
+
         {
             "telefone": "999999999",
             "email": "flavinhodopneu@gmail.com",
@@ -124,7 +154,7 @@ def update_cliente(
             "endereco": "Rua bem ali na UFPI",
             "saldo": 0
         }
-    '''
+    """
     try:
         logging.info("Updating client")
         cliente_updated = update_cliente(
@@ -135,14 +165,20 @@ def update_cliente(
             dataNascimento=data.dataNascimento,
             cpf=data.cpf,
             endereco=data.endereco,
-            saldo=data.saldo
+            saldo=data.saldo,
         )
         if cliente_updated is False:
             logging.error("Cliente Visitante não pode ser alterado!")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente Visitante não pode ser alterado!"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Cliente Visitante não pode ser alterado!"},
+            )
         if cliente_updated is None:
             logging.error("Client not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado ou não atualizado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Cliente não encontrado ou não atualizado"},
+            )
         else:
             logging.info("Client updated")
             return JSONResponse(status_code=status.HTTP_200_OK, content=update_cliente)
@@ -150,27 +186,45 @@ def update_cliente(
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao atualizar cliente: " + str(e)})
-    
-@router.delete("/delete_cliente/{idCliente}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def delete_cliente(idCliente: str):
+            content={"message": "Erro ao atualizar cliente: " + str(e)},
+        )
+
+
+@router.delete(
+    "/delete_cliente/{idCliente}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def delete_client(idCliente: str):
     try:
         logging.info("Deleting client")
         client_deleted = delete_cliente(uuid=idCliente)
         if client_deleted:
             logging.info("Client deleted")
-            return JSONResponse(status_code=status.HTTP_200_OK, content={'message': 'Cliente deletado com sucesso'})
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content={"message": "Cliente deletado com sucesso"},
+            )
         else:
             logging.error("Client not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado ou não deletado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Cliente não encontrado ou não deletado"},
+            )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao deletar cliente: " + str(e)})
-    
-@router.get("/get_client_discounts/{idCliente}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def get_client_discounts(idCliente: str):
+            content={"message": "Erro ao deletar cliente: " + str(e)},
+        )
+
+
+@router.get(
+    "/get_client_discounts/{idCliente}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def get_client_discount(idCliente: str):
     try:
         logging.info("Getting client discounts")
         discounts = get_client_discounts(uuid=idCliente)
@@ -179,9 +233,13 @@ def get_client_discounts(idCliente: str):
             return JSONResponse(status_code=status.HTTP_200_OK, content=discounts)
         else:
             logging.error("Discounts not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Descontos não encontrados"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Descontos não encontrados"},
+            )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar descontos do cliente: " + str(e)})
+            content={"message": "Erro ao buscar descontos do cliente: " + str(e)},
+        )

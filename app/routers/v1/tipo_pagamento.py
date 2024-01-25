@@ -135,7 +135,7 @@ def update_payment_type(idTipoPagamento: str, data: UpdatePaymentTypeRequest):
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_token_header)],
 )
-def delete_payment_type(idTipoPagamento: str):
+def delete_payment_type_by_id(idTipoPagamento: str):
     try:
         delete_tipo_pagamento = delete_payment_type(idTipoPagamento)
         if delete_tipo_pagamento:

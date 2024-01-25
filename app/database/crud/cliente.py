@@ -2,8 +2,18 @@ import models
 from peewee import DoesNotExist
 from decimal import Decimal
 
+
 def create_cliente(email, nome, dataNascimento, cpf, endereco, telefone, saldo):
-    return models.Cliente.create(email=email, nome=nome, dataNascimento=dataNascimento, cpf=cpf, endereco=endereco, telefone=telefone, saldo=saldo)
+    return models.Cliente.create(
+        email=email,
+        nome=nome,
+        dataNascimento=dataNascimento,
+        cpf=cpf,
+        endereco=endereco,
+        telefone=telefone,
+        saldo=saldo,
+    )
+
 
 def get_cliente(telefone):
     try:
@@ -14,15 +24,18 @@ def get_cliente(telefone):
             "idCliente": str(cliente.idCliente),
             "email": cliente.email if cliente.email is not None else None,
             "nome": cliente.nome,
-            "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
+            "dataNascimento": str(cliente.dataNascimento)
+            if cliente.dataNascimento is not None
+            else None,
             "cpf": cliente.cpf if cliente.cpf is not None else None,
             "endereco": cliente.endereco if cliente.endereco is not None else None,
             "telefone": cliente.telefone if cliente.telefone is not None else None,
-            "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+            "saldo": str(cliente.saldo) if cliente.saldo is not None else None,
         }
 
     except DoesNotExist:
         return None
+
 
 def get_client_discounts(uuid):
     try:
@@ -34,10 +47,11 @@ def get_client_discounts(uuid):
             "descontos": str(int(descontos)),
             "pontos": str(int(cliente.saldo / Decimal(15))),
             "saldo": str(cliente.saldo),
-            "proximo_desconto": str(valor_prox_desconto - cliente.saldo)
+            "proximo_desconto": str(valor_prox_desconto - cliente.saldo),
         }
     except DoesNotExist:
         return None
+
 
 def get_all_clientes():
     # Tenta buscar todos os clientes
@@ -51,11 +65,13 @@ def get_all_clientes():
                 "idCliente": str(cliente.idCliente),
                 "email": cliente.email if cliente.email is not None else None,
                 "nome": cliente.nome,
-                "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
+                "dataNascimento": str(cliente.dataNascimento)
+                if cliente.dataNascimento is not None
+                else None,
                 "cpf": cliente.cpf if cliente.cpf is not None else None,
                 "endereco": cliente.endereco if cliente.endereco is not None else None,
                 "telefone": cliente.telefone if cliente.telefone is not None else None,
-                "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+                "saldo": str(cliente.saldo) if cliente.saldo is not None else None,
             }
             for cliente in clientes
         ]
@@ -63,10 +79,20 @@ def get_all_clientes():
         # Se não houver clientes, retorna None
         return None
 
-def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=None, cpf=None, endereco=None, saldo=None):
+
+def update_cliente(
+    uuid,
+    telefone=None,
+    email=None,
+    nome=None,
+    dataNascimento=None,
+    cpf=None,
+    endereco=None,
+    saldo=None,
+):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
-        if cliente.nome == 'Visitante':
+        if cliente.nome == "Visitante":
             return False
         if cliente is None:
             return None
@@ -92,16 +118,19 @@ def update_cliente(uuid, telefone=None, email=None, nome=None, dataNascimento=No
             "idCliente": str(cliente.idCliente),
             "email": cliente.email if cliente.email is not None else None,
             "nome": cliente.nome,
-            "dataNascimento": str(cliente.dataNascimento) if cliente.dataNascimento is not None else None,
+            "dataNascimento": str(cliente.dataNascimento)
+            if cliente.dataNascimento is not None
+            else None,
             "cpf": cliente.cpf if cliente.cpf is not None else None,
             "endereco": cliente.endereco if cliente.endereco is not None else None,
             "telefone": cliente.telefone if cliente.telefone is not None else None,
-            "saldo": str(cliente.saldo) if cliente.saldo is not None else None
+            "saldo": str(cliente.saldo) if cliente.saldo is not None else None,
         }
 
     except DoesNotExist:
         return None
-    
+
+
 def delete_cliente(uuid):
     try:
         cliente = models.Cliente.get(models.Cliente.idCliente == uuid)
