@@ -2,7 +2,7 @@ import logging
 import json
 from typing import Optional
 from pydantic import BaseModel
-from database import crud
+from database.crud.cliente import create_cliente, get_cliente, get_all_clientes, update_cliente, delete_cliente
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
 from fastapi import (
@@ -41,7 +41,7 @@ def create_client(data: ClienteRequest, jwt_token: str = Header()):
     """
     try:
         logging.info("Creating client by user: " + jwt_token)
-        cliente = crud.create_cliente(
+        cliente = create_cliente(
             data.email,
             data.nome,
             data.dataNascimento,
@@ -66,7 +66,7 @@ def get_client(telefone: str):
     """
     try:
         logging.info("Getting client")
-        cliente = crud.get_cliente(telefone=telefone)
+        cliente = get_cliente(telefone=telefone)
         if cliente is None:
             logging.error("Client not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado"})
@@ -86,7 +86,7 @@ def get_all_clients():
     """
     try:
         logging.info("Getting all clients")
-        clientes = crud.get_all_clientes()
+        clientes = get_all_clientes()
         if clientes is not None:
             return JSONResponse(status_code=status.HTTP_200_OK, content=clientes)
         else:
@@ -127,7 +127,7 @@ def update_cliente(
     '''
     try:
         logging.info("Updating client")
-        update_cliente = crud.update_cliente(
+        cliente_updated = update_cliente(
             uuid=idCliente,
             telefone=data.telefone,
             email=data.email,
@@ -137,10 +137,10 @@ def update_cliente(
             endereco=data.endereco,
             saldo=data.saldo
         )
-        if update_cliente is False:
+        if cliente_updated is False:
             logging.error("Cliente Visitante não pode ser alterado!")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente Visitante não pode ser alterado!"})
-        if update_cliente is None:
+        if cliente_updated is None:
             logging.error("Client not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cliente não encontrado ou não atualizado"})
         else:
@@ -156,8 +156,8 @@ def update_cliente(
 def delete_cliente(idCliente: str):
     try:
         logging.info("Deleting client")
-        delete_cliente = crud.delete_cliente(uuid=idCliente)
-        if delete_cliente:
+        client_deleted = delete_cliente(uuid=idCliente)
+        if client_deleted:
             logging.info("Client deleted")
             return JSONResponse(status_code=status.HTTP_200_OK, content={'message': 'Cliente deletado com sucesso'})
         else:
@@ -173,7 +173,7 @@ def delete_cliente(idCliente: str):
 def get_client_discounts(idCliente: str):
     try:
         logging.info("Getting client discounts")
-        discounts = crud.get_client_discounts(uuid=idCliente)
+        discounts = get_client_discounts(uuid=idCliente)
         if discounts is not None:
             logging.info("Discounts found")
             return JSONResponse(status_code=status.HTTP_200_OK, content=discounts)
