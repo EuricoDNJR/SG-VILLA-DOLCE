@@ -2,7 +2,7 @@ import logging
 from pydantic import BaseModel
 from typing import Optional, List
 from dependencies import get_token_header
-from database import crud
+from database.crud.cargo import create_cargo, get_cargo_by_id, get_all_cargos, update_cargo, delete_cargo
 from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
@@ -27,7 +27,7 @@ def create_role(data: CreateRoleRequest):
     """
     try:
         logging.info("Creating role")
-        cargo = crud.create_cargo(data.nome)
+        cargo = create_cargo(data.nome)
         logging.info("Role created")
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(cargo.idCargo), "Nome": cargo.nome})
     except Exception as e:
@@ -38,7 +38,7 @@ def create_role(data: CreateRoleRequest):
 def get_role(idCargo: str):
     try:
         logging.info("Getting role")
-        cargo = crud.get_cargo_by_id(idCargo)
+        cargo = get_cargo_by_id(idCargo)
         if cargo is None:
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Cargo não encontrado"})
         logging.info("Role found")
@@ -51,7 +51,7 @@ def get_role(idCargo: str):
 def get_all_roles():
     try:
         logging.info("Getting all roles")
-        cargos = crud.get_all_cargos()
+        cargos = get_all_cargos()
         if cargos is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Roles found")
@@ -66,8 +66,8 @@ class UpdateRoleRequest(BaseModel):
 def update_role(idCargo: str, data: UpdateRoleRequest):
     try:
         logging.info("Updating role")
-        update_cargo = crud.update_cargo(idCargo, data.nome)
-        if update_cargo:
+        cargo_updated = update_cargo(idCargo, data.nome)
+        if cargo_updated:
             logging.info("Role updated")
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Cargo atualizado com sucesso"})
         else:
@@ -80,8 +80,8 @@ def update_role(idCargo: str, data: UpdateRoleRequest):
 @router.delete("/delete_role/{idCargo}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
 def delete_role(idCargo: str):
     try:
-        delete_cargo = crud.delete_cargo(idCargo)
-        if delete_cargo:
+        cargo_deleted = delete_cargo(idCargo)
+        if cargo_deleted:
             logging.info("Role deleted")
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Cargo deletado com sucesso"})
         else:
