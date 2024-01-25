@@ -2,7 +2,9 @@ import logging
 from pydantic import BaseModel
 from typing import Optional
 from dependencies import get_token_header
-from database import crud
+from database.crud.usuario import get_usuario_by_id
+from database.crud.produto import create_produto, get_product_by_id, get_all_produtos, update_product, delete_product
+from database.crud.categoria import get_categoria_by_id
 from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
@@ -45,13 +47,13 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
         
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
             
         logging.info("Creating product by user: " + jwt_token)
-        produto = crud.create_produto(
+        produto = create_produto(
             data.nome,
             data.descricao,
             data.categoria,
@@ -63,7 +65,7 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
                 content={"message": "Erro ao criar produto"}
             )
         logging.info("Product created")
-        categoria = crud.get_categoria_by_id(produto.categoria)
+        categoria = get_categoria_by_id(produto.categoria)
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(produto.idProduto), "Nome": produto.nome, "categoria": categoria.nome, "unidadeMedida": categoria.unidadeMedida, "valorVenda": str(produto.valorVenda), "idCategoria": str(categoria.idCategoria), "quantidade": str(produto.quantidade)})
     except Exception as e:
         logging.error(e)
@@ -80,7 +82,7 @@ def get_all_products():
     try:
         logging.info("Getting user")
         logging.info("Getting all products")
-        produtos = crud.get_all_produtos()
+        produtos = get_all_produtos()
         if produtos is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Products found")
@@ -99,7 +101,7 @@ def get_product(uuid: str):
     """
     try:
         logging.info("Getting product")
-        produto = crud.get_product_by_id(uuid=uuid)
+        produto = get_product_by_id(uuid=uuid)
         if produto is None:
             logging.error("Product not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Produto não encontrado"})
@@ -143,12 +145,12 @@ def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Heade
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Updating product")
-        produto = crud.update_product(
+        produto = update_product(
             uuid=uuid,
             nome=data.nome,
             descricao=data.descricao,
@@ -178,12 +180,12 @@ def delete_product(uuid: str, jwt_token: str = Header()):
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Deleting product")
-        produto = crud.delete_product(uuid)
+        produto = delete_product(uuid)
         if produto is None:
             logging.error("Product not found")
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Produto não encontrado"})
