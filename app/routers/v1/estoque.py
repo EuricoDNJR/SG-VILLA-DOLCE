@@ -2,7 +2,9 @@ import logging
 from pydantic import BaseModel
 from typing import Optional
 from dependencies import get_token_header
-from database import crud
+from database.crud.usuario import get_usuario_by_id
+from database.crud.estoque import create_estoque, get_all_estoques, get_all_estoques_by_product, update_stock, delete_stock_registre
+from database.crud.produto import update_stock_product
 from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
@@ -37,13 +39,13 @@ def create_stock_registre(data:CreateStockRegistreRequest, jwt_token: str = Head
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Creating stock registre by user: " + jwt_token)
         
-        estoque = crud.create_estoque(
+        estoque = create_estoque(
             data.idProduto,
             data.quantidade,
             data.dataEntrada,
@@ -59,7 +61,7 @@ def create_stock_registre(data:CreateStockRegistreRequest, jwt_token: str = Head
         logging.info("Updating product stock")
 
         try:
-            if crud.update_stock_product(data.idProduto, data.quantidade):
+            if update_stock_product(data.idProduto, data.quantidade):
                 logging.info("Product stock updated")
             else:
                 logging.info("Product stock not updated")
@@ -84,7 +86,7 @@ def get_all_stock_registres():
     """
     try:
         logging.info("Getting all stock registres")
-        estoques = crud.get_all_estoques()
+        estoques = get_all_estoques()
         if estoques is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Stock registres found")
@@ -103,7 +105,7 @@ def get_all_stock_registres_by_id(idProduto: str):
     """
     try:
         logging.info("Getting all stock registres")
-        estoques = crud.get_all_estoques_by_product(idProduto)
+        estoques = get_all_estoques_by_product(idProduto)
         if estoques is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Stock registres found")
@@ -139,12 +141,12 @@ def update_stock_registre(data: UpdateStockRegistreRequest, idEstoque: str, jwt_
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Updating stock registre by user: " + jwt_token)
-        estoque = crud.update_stock(
+        estoque = update_stock(
             idEstoque=idEstoque,
             idProduto=data.idProduto,
             quantidade=data.quantidade,
@@ -174,12 +176,12 @@ def delete_stock_registre(idEstoque: str, jwt_token: str = Header()):
     try:
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
         logging.info("Deleting stock registre by user: " + jwt_token)
-        estoque = crud.delete_stock_registre(idEstoque)
+        estoque = delete_stock_registre(idEstoque)
         if estoque is None:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
