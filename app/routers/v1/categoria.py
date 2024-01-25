@@ -2,7 +2,7 @@ import logging
 from pydantic import BaseModel
 from typing import Optional, List
 from dependencies import get_token_header
-from database import crud
+from database.crud.categoria import create_categoria, get_categoria_by_id, get_all_categorias, update_categoria, delete_categoria
 from fastapi.responses import JSONResponse, Response
 from fastapi import (
     APIRouter,
@@ -36,7 +36,7 @@ def create_category(data: CreateCategoryRequest):
     """
     try:
         logging.info("Creating category")
-        categoria = crud.create_categoria(data.nome, data.unidadeMedida)
+        categoria = create_categoria(data.nome, data.unidadeMedida)
         logging.info("Category created")
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(categoria.idCategoria), "Nome": categoria.nome, "Unidade de Medida": categoria.unidadeMedida})
     except Exception as e:
@@ -47,7 +47,7 @@ def create_category(data: CreateCategoryRequest):
 def get_category(idCategoria: str):
     try:
         logging.info("Getting category")
-        categoria = crud.get_categoria_by_id(idCategoria)
+        categoria = get_categoria_by_id(idCategoria)
         if categoria is None:
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Categoria não encontrada"})
         logging.info("Category found")
@@ -60,7 +60,7 @@ def get_category(idCategoria: str):
 def get_all_categories():
     try:
         logging.info("Getting all categories")
-        categorias = crud.get_all_categorias()
+        categorias = get_all_categorias()
         if categorias is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Categories found")
@@ -77,7 +77,7 @@ class UpdateCategoryRequest(BaseModel):
 def update_category(idCategoria: str, data: UpdateCategoryRequest):
     try:
         logging.info("Updating category")
-        categoria = crud.update_categoria(idCategoria, data.nome, data.unidadeMedida)
+        categoria = update_categoria(idCategoria, data.nome, data.unidadeMedida)
         if categoria is None:
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Categoria não encontrada ou não atualizada"})
         logging.info("Category updated")
@@ -90,7 +90,7 @@ def update_category(idCategoria: str, data: UpdateCategoryRequest):
 def delete_category(idCategoria: str):
     try:
         logging.info("Deleting category")
-        categoria = crud.delete_categoria(idCategoria)
+        categoria = delete_categoria(idCategoria)
         if categoria is None:
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Categoria não encontrada ou não deletada"})
         logging.info("Category deleted")
