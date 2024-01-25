@@ -3,9 +3,6 @@ from peewee import DoesNotExist
 from passlib.hash import bcrypt
 from decimal import Decimal
 
-def create_pagamento(valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
-    return models.Pagamento.create(valorTotal=Decimal(0.0), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
-
 def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):
     return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status)
 
@@ -14,9 +11,6 @@ def create_produto_pedido(idPedido, idProduto, quantidade, valorVendaUnd, descon
 
 def create_cargo(nome):
     return models.Cargo.create(nome=nome)
-
-def create_tipo_pagamento(nome):
-    return models.TipoPagamento.create(nome=nome)
     
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura, idUsuarioAbertura, idUsuarioFechamento=None):
     return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, idUsuarioAbertura=idUsuarioAbertura, idUsuarioFechamento=idUsuarioFechamento)
@@ -199,14 +193,6 @@ def get_cargo_by_id(uuid):
     except DoesNotExist:
         return None
 
-def get_tipo_pagamento_by_id(uuid):
-    try:
-        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
-
-        return tipo_pagamento
-    except DoesNotExist:
-        return None
-
 def get_all_pedidos():
     # Tenta buscar todos os pedidos
     pedidos = models.Pedido.select()
@@ -292,23 +278,6 @@ def get_all_pedidos_pagos_cancelados():
         ]
     else:
         # Se não houver pedidos, retorna None
-        return None
-
-def get_all_tipo_pagamentos():
-    tipo_pagamentos = models.TipoPagamento.select()
-
-    # Verifica se há tipo_pagamentos
-    if tipo_pagamentos.exists():
-        # Retorna a lista de tipo_pagamentos se houver algum
-        return [
-            {
-                "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
-                "nome": tipo_pagamento.nome
-            }
-            for tipo_pagamento in tipo_pagamentos
-        ]
-    else:
-        # Se não houver tipo_pagamentos, retorna None
         return None
 
 def get_all_produtos_pedidos_by_id(idPedido):
@@ -475,24 +444,6 @@ def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
     except DoesNotExist:
         return None
 
-def update_pagamento(pedido, tipoPagamento, valorRecebimento=0.0, valorDevolvido=0.0):
-    try:
-        pedido.idPagamento.valorRecebimento = Decimal(str(valorRecebimento))
-        pedido.idPagamento.valorDevolvido = Decimal(str(valorDevolvido))
-        pedido.idPagamento.tipoPagamento = tipoPagamento
-        pedido.idPagamento.save()
-        return True
-    except DoesNotExist:
-        return None
-
-def update_pagamento_valorTotal(idPagamento, valorTotalProduto):
-    try:
-        idPagamento.valorTotal += valorTotalProduto
-        idPagamento.save()
-        return True
-    except DoesNotExist:
-        return None
-
 def update_pedido_status(pedido, status):
     try:
         pedido.status = status
@@ -506,25 +457,6 @@ def update_pedido_desconto(pedido, desconto):
         pedido.desconto = desconto
         pedido.save()
         return True
-    except DoesNotExist:
-        return None
-
-def update_tipo_pagamento(uuid, nome=None):
-    try:
-        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
-        if tipo_pagamento is None:
-            return None
-        # Atualiza os atributos fornecidos
-        if nome is not None:
-            tipo_pagamento.nome = nome
-
-        tipo_pagamento.save()
-
-        return {
-            "idTipoPagamento": str(tipo_pagamento.idTipoPagamento),
-            "nome": tipo_pagamento.nome
-        }
-
     except DoesNotExist:
         return None
 
@@ -548,14 +480,6 @@ def delete_produto_pedido(idPedido):
     else:
         return None
 
-def delete_pagamento(idPagamento):
-    try:
-        pagamento = models.Pagamento.get(models.Pagamento.idPagamento == idPagamento)
-        pagamento.delete_instance()
-        return True
-    except DoesNotExist:
-        return None
-
 def delete_pedido(idPedido):
     try:
         pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
@@ -568,14 +492,6 @@ def delete_cargo(uuid):
     try:
         cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
         cargo.delete_instance()
-        return True
-    except DoesNotExist:
-        return None
-
-def delete_payment_type(uuid):
-    try:
-        tipo_pagamento = models.TipoPagamento.get(models.TipoPagamento.idTipoPagamento == uuid)
-        tipo_pagamento.delete_instance()
         return True
     except DoesNotExist:
         return None
