@@ -8,57 +8,6 @@ from produto import get_product_by_id
 def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):
     return models.Pedido.create(idCliente=idCliente, idPagamento=idPagamento, idUsuario=idUsuario, idCaixa=idCaixa, status=status)
 
-def get_all_paid_and_canceled_orders_caixa(idCaixa):
-    
-    pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
-
-    # Verifica se há pedidos
-    if pedidos.exists():
-        # Retorna a lista de pedidos pagos ou pendentes se houver algum
-        return [
-                { 
-                "idPedido": str(pedido.idPedido),
-                "idCliente": str(pedido.idCliente.idCliente),
-                "nomeCliente": pedido.idCliente.nome,
-                "telefoneCliente": pedido.idCliente.telefone,
-                "idPagamento": str(pedido.idPagamento.idPagamento),
-                "valorTotal": str(pedido.idPagamento.valorTotal),
-                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
-                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
-                "tipoPagamento": pedido.idPagamento.tipoPagamento,
-                "idUsuario": str(pedido.idUsuario.idUsuario),
-                "nomeUsuario": pedido.idUsuario.nome,
-                "idCaixa": str(pedido.idCaixa.idCaixa),
-                "status": pedido.status
-                } for pedido in pedidos if pedido.status == 'Pago' or pedido.status == 'Cancelado'
-            ]
-    else:
-        # Se não houver pedidos, retorna None
-        return None
-
-def get_all_pendent_orders_caixa(idCaixa):
-        
-        pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
-        
-        # Retorna a lista de pedidos pagos ou pendentes se houver algum
-        return [
-                { 
-                "idPedido": str(pedido.idPedido),
-                "idCliente": str(pedido.idCliente.idCliente),
-                "nomeCliente": pedido.idCliente.nome,
-                "telefoneCliente": pedido.idCliente.telefone,
-                "idPagamento": str(pedido.idPagamento.idPagamento),
-                "valorTotal": str(pedido.idPagamento.valorTotal),
-                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
-                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
-                "tipoPagamento": pedido.idPagamento.tipoPagamento,
-                "idUsuario": str(pedido.idUsuario.idUsuario),
-                "nomeUsuario": pedido.idUsuario.nome,
-                "idCaixa": str(pedido.idCaixa.idCaixa),
-                "status": pedido.status
-                } for pedido in pedidos if pedido.status == 'Pendente'
-            ]
-
 def get_pedido_by_id(idPedido):
     try:
         pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)

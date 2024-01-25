@@ -1,5 +1,4 @@
 import models
-from peewee import DoesNotExist
 from decimal import Decimal
 
 def create_produto_pedido(idPedido, idProduto, quantidade, valorVendaUnd, desconto=0.0):

@@ -1,8 +1,7 @@
-from . import models
-from peewee import DoesNotExist
-from passlib.hash import bcrypt
+import models
 from decimal import Decimal
-    
+from peewee import DoesNotExist
+
 def open_caixa(saldoInicial, dataAbertura, observacoes, horaAbertura, idUsuarioAbertura, idUsuarioFechamento=None):
     return models.Caixa.create(saldoInicial=saldoInicial, dataAbertura=dataAbertura,horaAbertura = horaAbertura, observacoes=observacoes, idUsuarioAbertura=idUsuarioAbertura, idUsuarioFechamento=idUsuarioFechamento)
 
@@ -102,9 +101,54 @@ def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
         return True
     except DoesNotExist:
         return None
+
+def get_all_paid_and_canceled_orders_caixa(idCaixa):
     
-def verifier_client_promotion(pedido):
-    if pedido.idCliente.nome != 'Visitante':
-        return True
+    pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+
+    # Verifica se há pedidos
+    if pedidos.exists():
+        # Retorna a lista de pedidos pagos ou pendentes se houver algum
+        return [
+                { 
+                "idPedido": str(pedido.idPedido),
+                "idCliente": str(pedido.idCliente.idCliente),
+                "nomeCliente": pedido.idCliente.nome,
+                "telefoneCliente": pedido.idCliente.telefone,
+                "idPagamento": str(pedido.idPagamento.idPagamento),
+                "valorTotal": str(pedido.idPagamento.valorTotal),
+                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+                "tipoPagamento": pedido.idPagamento.tipoPagamento,
+                "idUsuario": str(pedido.idUsuario.idUsuario),
+                "nomeUsuario": pedido.idUsuario.nome,
+                "idCaixa": str(pedido.idCaixa.idCaixa),
+                "status": pedido.status
+                } for pedido in pedidos if pedido.status == 'Pago' or pedido.status == 'Cancelado'
+            ]
     else:
-        return False
+        # Se não houver pedidos, retorna None
+        return None
+
+def get_all_pendent_orders_caixa(idCaixa):
+        
+        pedidos = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+        
+        # Retorna a lista de pedidos pagos ou pendentes se houver algum
+        return [
+                { 
+                "idPedido": str(pedido.idPedido),
+                "idCliente": str(pedido.idCliente.idCliente),
+                "nomeCliente": pedido.idCliente.nome,
+                "telefoneCliente": pedido.idCliente.telefone,
+                "idPagamento": str(pedido.idPagamento.idPagamento),
+                "valorTotal": str(pedido.idPagamento.valorTotal),
+                "valorRecebimento": str(pedido.idPagamento.valorRecebimento),
+                "valorDevolvido": str(pedido.idPagamento.valorDevolvido),
+                "tipoPagamento": pedido.idPagamento.tipoPagamento,
+                "idUsuario": str(pedido.idUsuario.idUsuario),
+                "nomeUsuario": pedido.idUsuario.nome,
+                "idCaixa": str(pedido.idCaixa.idCaixa),
+                "status": pedido.status
+                } for pedido in pedidos if pedido.status == 'Pendente'
+            ]
