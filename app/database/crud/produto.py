@@ -69,6 +69,15 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
     except DoesNotExist:
         return None
 
+def update_quantity_product(uuid, quantidade):
+    try:
+        produto = models.Produto.get(models.Produto.idProduto == uuid)
+        produto.quantidade -= Decimal(str(quantidade))
+        produto.save()
+        return True
+    except DoesNotExist:
+        return None
+    
 def update_stock_product(uuid, quantidade):
     try:
         produto = models.Produto.get(models.Produto.idProduto == uuid)
