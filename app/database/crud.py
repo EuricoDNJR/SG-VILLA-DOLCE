@@ -3,9 +3,6 @@ from peewee import DoesNotExist
 from passlib.hash import bcrypt
 from decimal import Decimal
 
-def create_estoque(idProduto, quantidade, dataEntrada, dataVencimento, observacoes):
-    return models.Estoque.create(idProduto=idProduto, quantidade=quantidade, dataEntrada=dataEntrada, dataVencimento=dataVencimento, observacoes=observacoes)
-
 def create_pagamento(valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento=None):
     return models.Pagamento.create(valorTotal=Decimal(0.0), valorRecebimento=Decimal(str(valorRecebimento)), valorDevolvido=Decimal(str(valorDevolvido)), tipoPagamento=tipoPagamento)
 
@@ -162,29 +159,6 @@ def get_all_cargos():
         # Se não houver cargos, retorna None
         return None
 
-def get_all_estoques_by_product(uuid):
-    
-    estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid)
-
-    # Verifica se há registros de estoque
-    if estoques.exists():
-        # Retorna a lista de registros de estoque se houver algum
-        return [
-            {
-                "idEstoque": str(estoque.idEstoque),
-                "idProduto": str(estoque.idProduto.idProduto),
-                "nome": estoque.idProduto.nome,
-                "quantidade": str(estoque.quantidade),
-                "dataEntrada": str(estoque.dataEntrada),
-                "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
-                "observacoes": estoque.observacoes if estoque.observacoes is not None else None
-            }
-            for estoque in estoques
-        ]
-    else:
-        # Se não houver registros de estoque, retorna None
-        return None
-
 def get_pedido_by_id(idPedido):
     try:
         pedido = models.Pedido.get(models.Pedido.idPedido == idPedido)
@@ -231,29 +205,6 @@ def get_tipo_pagamento_by_id(uuid):
 
         return tipo_pagamento
     except DoesNotExist:
-        return None
-
-def get_all_estoques():
-    # Tenta buscar todos os registros de estoque
-    estoques = models.Estoque.select()
-
-    # Verifica se há registros de estoque
-    if estoques.exists():
-        # Retorna a lista de registros de estoque se houver algum
-        return [
-            {
-                "idEstoque": str(estoque.idEstoque),
-                "idProduto": str(estoque.idProduto.idProduto),
-                "nome": estoque.idProduto.nome,
-                "quantidade": str(estoque.quantidade),
-                "dataEntrada": str(estoque.dataEntrada),
-                "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
-                "observacoes": estoque.observacoes if estoque.observacoes is not None else None
-            }
-            for estoque in estoques
-        ]
-    else:
-        # Se não houver registros de estoque, retorna None
         return None
 
 def get_all_pedidos():
@@ -512,55 +463,6 @@ def update_quantity_product(uuid, quantidade):
     except DoesNotExist:
         return None
 
-def sum_all_stock_by_product(uuid_product):
-    total = Decimal(0.0)
-    estoques = models.Estoque.select().where(models.Estoque.idProduto == uuid_product)
-    if estoques.exists():
-        for estoque in estoques:
-            total += estoque.quantidade
-        return total
-    else:
-        return None
-        
-def update_stock(idEstoque, idProduto, quantidade=None, dataEntrada=None, dataVencimento=None, observacoes=None):
-    try:
-        estoque = models.Estoque.get(models.Estoque.idEstoque == idEstoque)
-        if estoque is None:
-            return None
-        # Atualiza os atributos fornecidos
-        if quantidade is not None:
-            try:
-                estoque.quantidade = quantidade
-                estoque.save()
-                quantidade_atualizada = sum_all_stock_by_product(idProduto)
-                produto = models.Produto.get(models.Produto.idProduto == idProduto)
-                produto.quantidade = Decimal(str(quantidade_atualizada))
-                produto.save()
-            except Exception as e:
-                print(e)
-                return None
-        if dataEntrada is not None:
-            estoque.dataEntrada = dataEntrada
-        if dataVencimento is not None:
-            estoque.dataVencimento = dataVencimento
-        if observacoes is not None:
-            estoque.observacoes = observacoes
-
-        estoque.save()
-
-        return {
-            "idEstoque": str(estoque.idEstoque),
-            "idProduto": str(estoque.idProduto.idProduto),
-            "nome": estoque.idProduto.nome,
-            "quantidade": str(estoque.quantidade),
-            "dataEntrada": str(estoque.dataEntrada),
-            "dataVencimento": str(estoque.dataVencimento) if estoque.dataVencimento is not None else None,
-            "observacoes": estoque.observacoes if estoque.observacoes is not None else None
-        }
-
-    except DoesNotExist:
-        return None
-
 def update_balance_caixa_pedido(idCaixa, valorTotal, tipoPagamento):
     try:
         caixa = models.Caixa.get(models.Caixa.idCaixa == idCaixa)
@@ -626,17 +528,6 @@ def update_tipo_pagamento(uuid, nome=None):
     except DoesNotExist:
         return None
 
-def delete_stock_registre(uuid):
-    try:
-        estoque = models.Estoque.get(models.Estoque.idEstoque == uuid)
-        produto = get_product_by_id(estoque.idProduto.idProduto)
-        produto.quantidade -= estoque.quantidade
-        produto.save()
-        estoque.delete_instance()
-        return True
-    except DoesNotExist:
-        return None
-
 def delete_replace_quantity_product(idPedido):
     produtos_pedidos = models.ProdutoPedido.select().where(models.ProdutoPedido.idPedido == idPedido)
     if produtos_pedidos.exists():
@@ -677,15 +568,6 @@ def delete_cargo(uuid):
     try:
         cargo = models.Cargo.get(models.Cargo.idCargo == uuid)
         cargo.delete_instance()
-        return True
-    except DoesNotExist:
-        return None
-    
-def update_stock_product(uuid, quantidade):
-    try:
-        produto = models.Produto.get(models.Produto.idProduto == uuid)
-        produto.quantidade += Decimal(str(quantidade))
-        produto.save()
         return True
     except DoesNotExist:
         return None

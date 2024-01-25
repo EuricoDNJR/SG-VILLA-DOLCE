@@ -1,5 +1,6 @@
 import models
 from peewee import DoesNotExist
+from decimal import Decimal
 
 def create_produto(nome, descricao, categoria, valorVenda):
     return models.Produto.create(nome=nome, descricao=descricao, categoria=categoria, valorVenda=valorVenda)
@@ -65,6 +66,15 @@ def update_product(uuid, nome=None, descricao=None, categoria=None, valorCusto=N
             "quantidade": str(produto.quantidade)
         }
 
+    except DoesNotExist:
+        return None
+
+def update_stock_product(uuid, quantidade):
+    try:
+        produto = models.Produto.get(models.Produto.idProduto == uuid)
+        produto.quantidade += Decimal(str(quantidade))
+        produto.save()
+        return True
     except DoesNotExist:
         return None
     
