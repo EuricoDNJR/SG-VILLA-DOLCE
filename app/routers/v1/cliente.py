@@ -10,6 +10,7 @@ from database.crud.cliente import (
     delete_cliente,
     get_client_discounts,
 )
+from database.crud.usuario import verifying_permission_admin
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
 from fastapi import APIRouter, status, Header, Depends
@@ -49,6 +50,19 @@ def create_client(data: ClienteRequest, jwt_token: str = Header()):
     """
     try:
         logging.info("Creating client by user: " + jwt_token)
+        logging.info(
+            "Verifying if user have permission to create client with balance > 0"
+        )
+        if verifying_permission_admin(jwt_token) is False and data.saldo > 0:
+            logging.error(
+                "User don't have permission to create client with balance > 0"
+            )
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "message": "Usuário não tem permissão para criar cliente com saldo > 0"
+                },
+            )
         cliente = create_cliente(
             data.email,
             data.nome,

@@ -124,3 +124,14 @@ def delete_user(uuid):
         return True
     except DoesNotExist:
         return None
+
+
+def verifying_permission_admin(uuid):
+    try:
+        usuario = models.Usuario.get(models.Usuario.idUsuario == uuid)
+        if usuario.cargo == "Admin":
+            return True
+        else:
+            return False
+    except DoesNotExist:
+        return None
