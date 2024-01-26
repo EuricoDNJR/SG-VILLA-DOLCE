@@ -1,9 +1,16 @@
 <script setup>
+  import { getAllRolesArray, getAuthToken } from '../utils/common';
   import Snackbar from '../components/Snackbar.vue';
   import Pessoas from '../components/Pessoas.vue';
   
   defineOptions({
     inheritAttrs: false
+  });
+  
+  const cargos = ref(undefined);
+
+  getAllRolesArray(getAuthToken()).then((cargosArray) => {
+    cargos.value = cargosArray;
   });
 </script>
 

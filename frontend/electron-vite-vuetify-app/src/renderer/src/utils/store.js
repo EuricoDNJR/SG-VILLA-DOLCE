@@ -35,149 +35,6 @@ export const useAuthStore = defineStore('auth', {
     }
 });
 
-export const usePessoaStore = defineStore('pessoa', {
-  id: 'pessoa',
-
-  state: () => ({
-      tipoPessoa: null,
-      pessoa: null,
-      oldPessoa: null,
-      infoChange: null,
-      wasDeleted: false,
-      wasUpdated: false,
-      wasCreated: false,
-  }),
-  
-  getters: {
-    idPessoa(){
-      return this.getId(this.pessoa);
-    },
-    getPessoa(){
-      return this.pessoa;
-    },
-    getOldPessoa(){
-      return this.oldPessoa;
-    },
-    getInfoChange(){
-      return this.infoChange;
-    },
-    getWasDeleted(){
-      return this.wasDeleted;
-    },
-    getWasUpdated(){
-      return this.wasUpdated;
-    },
-    getWasCreated(){
-      return this.wasCreated;
-    },
-  },
-  actions: {
-    setTipoPessoa(tipoPessoa){
-      this.tipoPessoa = tipoPessoa;
-    },
-    setPessoa(pessoa){
-      this.oldPessoa = {...this.pessoa};
-      this.pessoa = {};
-
-      for (let attr in pessoa) {
-        if (pessoa[attr] === null) {
-          this.pessoa[attr] = "";
-        }else{
-          this.pessoa[attr] = pessoa[attr];
-        }
-      }
-    },
-    setAttrPessoa(attr, value){
-      this.pessoa[attr] = value;
-    },
-    delete(id){
-      this.wasDeleted = !this.wasDeleted;
-    },
-    update(pessoa){
-      this.infoChange = {...pessoa};
-      Object.assign(this.pessoa, pessoa);
-      this.wasUpdated = !this.wasUpdated;
-    },
-    create(pessoa){
-      this.pessoa = {...pessoa};
-      if(this.tipoPessoa === "Clientes"){
-        this.pessoa.saldo = "0.00";
-      }
-      this.wasCreated = !this.wasCreated;
-    },
-    getId(pessoa){
-      const tipoPessoa = this.tipoPessoa.toLowerCase();
-      let id = undefined;
-
-      if(tipoPessoa === "clientes"){
-        id = pessoa.idCliente;
-      }else if(tipoPessoa === "colaboradores"){
-        id = pessoa.idUsuario;
-      }
-  
-      return id;
-    },
-  }
-});
-
-export const useCargosStore = defineStore('cargos', {
-  id: 'cargos',
-
-  state: () => ({
-      cargos: []
-  }),
-
-  getters: {
-      getCargos() {
-        return this.cargos;
-      },
-  },
-
-  actions: {
-    saveCargos(cargos){
-      this.cargos = cargos;
-    },
-    reset() {
-      this.cargos = [];
-    }
-  }
-});
-
-export const useSnackbarStore = defineStore('snackbar', {
-  id:'snackbar',
-
-  state: () => ({
-    wasActivated: false,
-    wasClosed: false,
-    text: "",
-    messageType: 'info',
-  }),
-  getters: {
-    getWasActivated(){
-      return this.wasActivated;
-    },
-    getWasClosed(){
-      return this.wasClosed;
-    },
-    getText(){
-      return this.text;
-    },
-    getMessageType(){
-      return this.messageType;
-    },
-  },
-  actions: {
-    set(text, messageType){
-      this.wasActivated = !this.wasActivated;
-      this.text = text;
-      this.messageType = messageType;
-    },
-    close(){
-      this.wasClosed = !this.wasClosed;
-    }
-  }
-});
-
 export const useCaixaStore = defineStore('caixa', {
   state: () => ({
     id: undefined,
@@ -235,110 +92,37 @@ export const useCaixaStore = defineStore('caixa', {
   }
 });
 
-export const useFormStore = defineStore('form', {
-  id: 'form',
+export const useSnackbarStore = defineStore('snackbar', {
+  id:'snackbar',
 
   state: () => ({
-      obj: null,
-      from: "",
+    wasActivated: false,
+    wasClosed: false,
+    text: "",
+    messageType: 'info',
   }),
-  
   getters: {
-    getObj(){
-      return this.obj;
+    getWasActivated(){
+      return this.wasActivated;
     },
-    getFrom(){
-      return this.from;
+    getWasClosed(){
+      return this.wasClosed;
+    },
+    getText(){
+      return this.text;
+    },
+    getMessageType(){
+      return this.messageType;
     },
   },
   actions: {
-    send(from, obj){
-      this.obj = obj;
-      this.from = from;
+    set(text, messageType){
+      this.wasActivated = !this.wasActivated;
+      this.text = text;
+      this.messageType = messageType;
     },
-  }
-});
-
-export const usePedidoStore = defineStore('pedido', {
-  id: 'pedido',
-
-  state: () => ({
-      idProdutos: undefined,
-      idPedidoFinished: undefined,
-      produtoAdicionado: undefined,
-      produtoRemovido: undefined,
-      wasCreated: false,
-      wasUpdated: false,
-      wasFinished: false,
-      wasCancelled: false,
-      cliente: {nome: "", telefone: ""},
-      descontoWasClosed: false,
-  }),
-  
-    getters: {
-      getIdProdutos(){
-        return this.idProdutos;
-      },
-      getIdPedidoFinished(){
-        return this.idPedidoFinished;
-      },
-      getProdutoAdicionado(){
-        return this.produtoAdicionado;
-      },
-      getProdutoRemovido(){
-        return this.produtoRemovido;
-      },
-      getWasCreated(){
-        return this.wasCreated;
-      },
-      getWasUpdated(){
-        return this.wasUpdated;
-      },
-      getWasFinished(){
-        return this.wasFinished;
-      },
-      getWasCancelled(){
-        return this.wasCancelled;
-      },
-      getCliente(){
-        return this.cliente;
-      },
-      getProdutosDescontados(){
-        return this.produtosDescontados;
-      },
-      getDescontoWasClosed(){
-        return this.descontoWasClosed;
-      },
-  },
-  actions: {
-    create(){
-      this.wasCreated = !this.wasCreated;
-    },
-    update(idProdutos){
-      this.idProdutos = idProdutos;
-      this.wasUpdated = !this.wasUpdated;
-    },
-    finish(idPedido){
-      this.idPedidoFinished = idPedido;
-      this.wasFinished = true;
-    },
-    cancel(){
-      this.wasCancelled = true;
-    },
-    adicionarProduto(produto){
-      this.produtoAdicionado = produto;
-    },
-    removeProduto(produto){
-      this.produtoRemovido = produto;
-    },
-    setCliente(cliente){
-      this.cliente = cliente;
-    },
-    closeDiscount(){
-      this.descontoWasClosed = !this.descontoWasClosed;
-    },
-    reset(){
-      this.$reset();
+    close(){
+      this.wasClosed = !this.wasClosed;
     }
   }
 });

@@ -1,8 +1,5 @@
 <script setup>
-  import { ref, computed, watch, toRaw } from 'vue'
-  import { useAuthStore, usePessoaStore, useSnackbarStore } from '../utils/store';
-  import { fetchGet } from '../utils/common';
-  import Snackbar from '../components/Snackbar.vue';
+  import { ref, computed, reactive } from 'vue'
   import PessoaInfo from '../components/PessoaInfo.vue';
   import CadastrarPessoa from '../components/CadastrarPessoa.vue';
   
@@ -10,105 +7,88 @@
     inheritAttrs: false
   });
 
-  const props = defineProps(['tipoPessoa', 
-                          'urlGetAllPessoas', 
-                          'rotaUpdatePessoa',
-                          'rotaDeletePessoa',
-                          'urlRegisterPessoa',
-                          'tooltipText']);
+  const props = defineProps(['title', 'pessoas', 'registerTitle', 'loadingBtnRegister', 'configs', 'fixies']);
+  const emit = defineEmits(['cadastrarPessoa', 'removerPessoa']);
 
-  const authStore = useAuthStore();
-  const pessoaStore = usePessoaStore();
-  const snackbarStore = useSnackbarStore();
-  let pessoas = ref([]);
-  let pessoasFiltered = ref([]);
+  const pessoasFiltered = computed(() => props.pessoas.filter((pessoa) => {
+      const searchByName = pessoa.nome.toLowerCase().includes(searchText.value.toLowerCase());const searchByPhone = pessoa.telefone.toLowerCase().includes(searchText.value.toLowerCase());
+      
+      return searchByName || searchByPhone;
+    }
+  ));
+  
   const searchText = ref('');
-  const pessoaWasUpdated = computed(() => pessoaStore.getWasUpdated);
-  const pessoaWasDeleted = computed(() => pessoaStore.getWasDeleted);
-  const pessoaWasCreated = computed(() => pessoaStore.getWasCreated);
   const pessoaInfoIndex = ref(-1);
 
-  const updatePessoasFiltered = (array) => {
-    pessoasFiltered.value = array;
+  const reload = reactive({
+    pessoaInfo: false,
+  });
+
+  function emitCadastrarPessoa(body){
+    emit('cadastrarPessoa', body);
   }
 
-  const requestAllPessoas = async (url=props.urlGetAllPessoas) =>{
-    try{
-      const token = authStore.getToken;
-      
-      const response = await fetchGet(url, token);
-      const responseJson = await response.json();
-
-      if(response.status === 200){
-        pessoas.value = responseJson;
-      }else{
-        snackbarStore.set(responseJson.message, 'warning');
-      }
-    }catch(e){
-      console.log(e);
-      snackbarStore.set(`Falha ao carregar ${props.tipoPessoa.toLowerCase()}`, 'warning');
-    }
+  function emitAtualizarPessoa(){
+    reload.pessoaInfo = !reload.pessoaInfo;
   }
 
-  const searchPessoa = () => {
-    updatePessoasFiltered(pessoas.value.filter((pessoa) => pessoa.nome.toLowerCase().includes(searchText.value.toLowerCase())));
+  function emitRemoverPessoa(pessoa){
+    emit('removerPessoa', pessoa);
+
+    closePessoaInfo();
   }
 
   function closePessoaInfo(){
     pessoaInfoIndex.value = -1;
   }
 
-  watch(pessoas, async (newPessoas, oldPessoas) => {
-    const pessoasOrdemAlfabetica = pessoas.value.sort((pessoaA, pessoaB) => pessoaA.nome.localeCompare(pessoaB.nome));
+  // watch(pessoas, async (newPessoas, oldPessoas) => {
+  //   const pessoasOrdemAlfabetica = pessoas.value.sort((pessoaA, pessoaB) => pessoaA.nome.localeCompare(pessoaB.nome));
     
-    updatePessoasFiltered(pessoasOrdemAlfabetica);
-  });
+  //   updatePessoasFiltered(pessoasOrdemAlfabetica);
+  // });
   
-  watch(pessoaWasUpdated, async (newValue, oldValue) => {
-    const pessoaUpdate = pessoas.value.find((pessoa) => pessoaStore.getId(pessoa) == pessoaStore.idPessoa);
-    const index = pessoas.value.indexOf(pessoaUpdate);
+  // watch(pessoaWasUpdated, async (newValue, oldValue) => {
+  //   const pessoaUpdate = pessoas.value.find((pessoa) => pessoaStore.getId(pessoa) == pessoaStore.idPessoa);
+  //   const index = pessoas.value.indexOf(pessoaUpdate);
     
-    for(let attr in pessoaStore.getInfoChange){
-      pessoas.value[index][attr] = pessoaStore.getInfoChange[attr];
-    }
-  });
+  //   for(let attr in pessoaStore.getInfoChange){
+  //     pessoas.value[index][attr] = pessoaStore.getInfoChange[attr];
+  //   }
+  // });
   
-  watch(pessoaWasDeleted, async (newId, oldId) => {
-    pessoas.value = pessoas.value.filter((pessoa) => pessoaStore.getId(pessoa) !== pessoaStore.idPessoa);
+  // watch(pessoaWasDeleted, async (newId, oldId) => {
+  //   pessoas.value = pessoas.value.filter((pessoa) => pessoaStore.getId(pessoa) !== pessoaStore.idPessoa);
 
-    closePessoaInfo();
-  });
+  //   closePessoaInfo();
+  // });
 
-  watch(pessoaWasCreated, async (newValue, oldValue) => {
-    const pessoa = {};
-    const newPessoas = [...pessoas.value];
+  // watch(pessoaWasCreated, async (newValue, oldValue) => {
+  //   const pessoa = {};
+  //   const newPessoas = [...pessoas.value];
 
-    for(let attr in pessoaStore.getPessoa){
-      pessoa[attr] = pessoaStore.getPessoa[attr];
-    }
+  //   for(let attr in pessoaStore.getPessoa){
+  //     pessoa[attr] = pessoaStore.getPessoa[attr];
+  //   }
 
-    newPessoas.push(pessoa);
+  //   newPessoas.push(pessoa);
 
-    pessoas.value = newPessoas;
+  //   pessoas.value = newPessoas;
 
-    closePessoaInfo();
-  });
-
-  requestAllPessoas();
-  
+  //   closePessoaInfo();
+  // });
 </script>
 
-<template>
-    <Snackbar/>
-    
+<template>  
     <v-toolbar color="grey-lighten-4" class="pa-4">
       <v-row align="center">
         <v-col>
           <v-toolbar-title class="text-uppercase">
-            <span class="font-weight-bold">{{ props.tipoPessoa }}</span>
+            <span class="font-weight-bold">{{ props.title }}</span>
             <span> ({{ pessoasFiltered.length }})</span>
           </v-toolbar-title>
         </v-col>
+
         <v-col>
           <v-text-field
             v-model="searchText"
@@ -116,14 +96,16 @@
             prepend-inner-icon="mdi-magnify"
             variant="solo"
             hide-details
-            @input="searchPessoa"
           ></v-text-field>
         </v-col>
+
         <v-col cols="auto">
           <CadastrarPessoa
-            :tipoPessoa="props.tipoPessoa"
-            :urlRegisterPessoa="props.urlRegisterPessoa"
-            :tooltipText="props.tooltipText"
+            :title="props.registerTitle"
+            :loadingBtn = "props.loadingBtnRegister"
+            :configs="props.configs"
+            :fixies="props.fixies"
+            @cadastrarPessoa="emitCadastrarPessoa"
           />
         </v-col>
       </v-row>
@@ -143,16 +125,18 @@
               <v-col><v-icon>mdi-cellphone</v-icon> Telefone: {{ pessoa.telefone }}</v-col>
             </v-row>
           </v-expansion-panel-title>
+
           <v-expansion-panel-text>
-            <PessoaInfo
-              :pessoa="pessoa"
-              :tipoPessoa="props.tipoPessoa"
-              :rotaUpdatePessoa="props.rotaUpdatePessoa"
-              :rotaDeletePessoa="props.rotaDeletePessoa"
-            />
+            <div :key="reload.pessoaInfo">
+              <PessoaInfo
+                :pessoa="pessoa"
+                @atualizarPessoa="emitAtualizarPessoa"
+                @removerPessoa="emitRemoverPessoa"
+              />
+            </div>
           </v-expansion-panel-text>
         </v-expansion-panel>
-      </v-expansion-panels>
+    </v-expansion-panels>
 </template>
 
 <style scoped>

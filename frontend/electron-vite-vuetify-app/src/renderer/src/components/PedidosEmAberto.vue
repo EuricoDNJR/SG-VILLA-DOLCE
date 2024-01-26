@@ -1,6 +1,6 @@
 <script setup>
-  import { ref, computed, watch, onMounted } from 'vue'
-  import { useAuthStore, useSnackbarStore, useCaixaStore, usePedidoStore } from '../utils/store';
+  import { ref, computed, onMounted } from 'vue'
+  import { useAuthStore, useSnackbarStore, useCaixaStore } from '../utils/store';
   import { fetchGet, fetchPatch, confirmDialog } from '../utils/common';
   import EditarPedido from '../components/EditarPedido.vue';
 

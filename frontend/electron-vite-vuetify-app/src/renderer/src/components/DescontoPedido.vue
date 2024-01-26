@@ -1,10 +1,8 @@
 <script setup>
-  import { ref, computed, watch, onMounted, reactive, toRef,  onBeforeUnmount } from 'vue'
-  import { fetchGet, fetchPost, fetchPatch, confirmDialog, getFormatedDate } from '../utils/common';
-  import { useAuthStore, useSnackbarStore, useCaixaStore, usePedidoStore } from '../utils/store';
+  import { computed, reactive } from 'vue'
+  import { useSnackbarStore } from '../utils/store';
 
   const props = defineProps(['pedido', 'saldoCliente']);
-  console.log(props);
   const snackbarStore = useSnackbarStore();
 
   const pedido = computed(() => props.pedido);

@@ -64,7 +64,7 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
             )
         logging.info("Product created")
         categoria = crud.get_categoria_by_id(produto.categoria)
-        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(produto.idProduto), "Nome": produto.nome, "categoria": categoria.nome, "unidadeMedida": categoria.unidadeMedida, "valorVenda": str(produto.valorVenda), "idCategoria": str(categoria.idCategoria), "quantidade": str(produto.quantidade)})
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(produto.idProduto), "nome": produto.nome, "categoria": categoria.nome, "unidadeMedida": categoria.unidadeMedida, "valorVenda": str(produto.valorVenda), "idCategoria": str(categoria.idCategoria), "quantidade": str(produto.quantidade)})
     except Exception as e:
         logging.error(e)
         return JSONResponse(

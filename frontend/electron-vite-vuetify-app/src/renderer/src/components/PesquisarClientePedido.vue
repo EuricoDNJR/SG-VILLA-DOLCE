@@ -1,14 +1,13 @@
 <script setup>
-  import { ref, reactive, watch } from 'vue'
+  import { ref, watch } from 'vue'
   import { fetchGet } from '../utils/common';
-  import { useAuthStore, useSnackbarStore, usePedidoStore } from '../utils/store';
+  import { useAuthStore, useSnackbarStore } from '../utils/store';
 
   const props = defineProps(['telefoneCliente', 'readonly'])
   const emit = defineEmits(['clienteAtualizado']);
 
   const authStore = useAuthStore();
   const snackbarStore = useSnackbarStore()
-  const pedidoStore = usePedidoStore(); 
 
   const clientes = ref([{nome:'', telefone:''}]);
   const cliente = ref(clientes.value[0]);

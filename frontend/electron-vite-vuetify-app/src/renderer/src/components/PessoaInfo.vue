@@ -1,309 +1,248 @@
 <script setup>
+import { ref } from 'vue'
+import { createCelula } from '../utils/common'
+import CardForm from './CardForm.vue'
 
-import { ref, reactive, computed, toRaw, watch } from 'vue'
-import { useAuthStore, usePessoaStore, useSnackbarStore, useCargosStore } from '../utils/store';
-import { fetchPatch, fetchDelete, isEmptyObject, confirmDialog, exist } from '../utils/common'
+const props = defineProps(['pessoa']);
+const emit = defineEmits(['atualizarPessoa', 'removerPessoa']);
 
+const eventFunctions = {
+    editar: setSalvarBtn,
+    salvar: () => {
+        emit('atualizarPessoa');
+        setEditarBtn();
+    },
+    remover: () => emit('removerPessoa', props.pessoa),
+};
 
-class EditSaveBtn {
-  constructor(btn) {
-    this._btn = reactive(btn);
-  }
+const configs = ref([
+    [createCelula({key:'nome', title:'Nome', required: true, initalValue: props.pessoa.nome}), createCelula({key:'telefone', title:'Telefone', required: true})],
+    [createCelula({key:'email', title:'Email'}), createCelula({key:'cpf', title:'CPF'})],
+]);
 
-  get btn() {
-    return this._btn;
-  }
+const customBtns = ref([
+    {text: 'Editar', variant: 'flat', icon: 'mdi-pencil', color: 'blue-darken-1', clickEvent: 'editar'},
+    {text: 'Remover', variant: 'flat', icon: 'mdi-delete', color: 'red-darken-1', clickEvent: 'remover'},
+]);
+const editSaveBtn = customBtns.value[0];
 
-  set btn(obj) {
-    for(let key in obj){
-        this._btn[key] = obj[key];
-    }
-  }
-
-  isEditarBtn() {
-    return this.btn.text === "Editar";
-  }
-
-  isSalvarBtn(){
-    return this.btn.text === "Salvar";
-  }
-
-  setSalvarBtn(){
-    this.btn = {
-        text: "Salvar",
-        color: "green",
-        icon: "mdi-content-save",
-    };
-  }
-
-  setEditarBtn(){
-    this.btn = {
-        text: "Editar",
-        color: "blue",
-        icon: "mdi-pencil",
-    };
-  }
-
-  toogle(){
-    if(this.isEditarBtn()){
-        this.setSalvarBtn();
-    }else{
-        this.setEditarBtn();
-    }
-  }
+function setSalvarBtn(){
+    editSaveBtn.text = 'Salvar';
+    editSaveBtn.icon = 'mdi-content-save';
+    editSaveBtn.color = 'green-darken-1';
+    editSaveBtn.clickEvent = 'salvar';
 }
 
-class PessoaInfoChange {
-  constructor(attrs) {
-    this._attrs = reactive(attrs);
-  }
-
-  get attrs() {
-    return this._attrs;
-  }
-
-  set attrs(obj) {
-    this._attrs = reactive(obj);
-  }
-
-  setAttr(attr, valor){
-    this._attrs[attr] = valor;
-  }
-
-  reset(){
-    for (const key of Object.keys(this._attrs)) {
-        delete this._attrs[key];
-    }
-  } 
+function setEditarBtn(){
+    editSaveBtn.text = 'Editar';
+    editSaveBtn.icon = 'mdi-pencil';
+    editSaveBtn.color = 'blue-darken-1';
+    editSaveBtn.clickEvent = 'editar';
 }
 
-const authStore = useAuthStore();
-const pessoaStore = usePessoaStore();
-const snackbarStore = useSnackbarStore();
-const cargoStore = useCargosStore();
+function btnClicked(event){
+    const func = eventFunctions[event];
 
-const props = defineProps(['pessoa',
-                        'tipoPessoa',
-                        'rotaUpdatePessoa',
-                        'rotaDeletePessoa']);
-
-console.log(props.pessoa.saldo);
-pessoaStore.setTipoPessoa(props.tipoPessoa);
-savePessoaInStore({...props.pessoa});
-
-const idPessoa = computed(() => pessoaStore.idPessoa);
-const atributosGerais = ref(getAtributosGerais());
-const atributosEspecificos = ref(getAtributosEspecificos());
-const pessoaInfoChange = new PessoaInfoChange({});
-const pageWasClosed = ref(false);
-const editSaveBtn = new EditSaveBtn({
-    text: "Editar",
-    color: "blue",
-    icon: "mdi-pencil",
-});
-const isEditable = ref(false);
-
-
-function getAtributosGerais(){
-    const atributosGerais = [];
-
-    const nome = createComputedWithGetSet("nome");
-    const telefone = createComputedWithGetSet("telefone");
-    const email = createComputedWithGetSet("email");
-    const cpf = createComputedWithGetSet("cpf");
-    const dataNascimento = createComputedWithGetSet("dataNascimento");
-    const endereco = createComputedWithGetSet("endereco");
-
-    atributosGerais.push([{
-            title: "Nome",
-            value: nome,
-            type: "text",
-        },
-        {
-            title: "Telefone",
-            value: telefone,
-            type: "text",
-        }
-    ]);
-
-    atributosGerais.push([{
-            title: "Email",
-            value: email,
-            type: "text",
-        },
-        {
-            title: "CPF",
-            value: cpf,
-            type: "text",
-        }
-    ]);
-
-    atributosGerais.push([{
-            title: "Data de Nascimento",
-            value: dataNascimento,
-            type: "date",
-        },
-        {
-            title: "Endereço",
-            value: endereco,
-            type: "text",
-        }
-    ]);
-
-    return atributosGerais;
+    func();
 }
 
-function getAtributosEspecificos(){
-    const atributosEspecificos = [];
 
-    if(props.tipoPessoa === "Clientes"){
-        const saldo = computed(() => Number(props.pessoa.saldo).toFixed(2).replace('.', ','));
-        const pontos = computed(() => Math.floor(Number(props.pessoa.saldo/15)).toFixed(2).replace('.', ','));
 
-        atributosEspecificos.push({
-            color: "green",
-            icon: "mdi-currency-brl",
-            title: "Saldo",
-            value: saldo,
-            isEditable: false,
-            isSelect: false,
-        });
+// class PessoaInfoChange {
+//   constructor(attrs) {
+//     this._attrs = reactive(attrs);
+//   }
 
-        atributosEspecificos.push({
-            color: "purple",
-            icon: "mdi-star",
-            title: "Pontos",
-            value: pontos,
-            isEditable: false,
-            isSelect: false,
-        });
-    }else if(props.tipoPessoa === "Colaboradores"){
-        const cargo = createComputedWithGetSet("cargo");
+//   get attrs() {
+//     return this._attrs;
+//   }
 
-        atributosEspecificos.push({
-            color: "black",
-            icon: "mdi-shield-crown",
-            title: "Cargo",
-            value: cargo,
-            isEditable: true,
-            isSelect: true,
-            items: cargoStore.getCargos,
-        });
-    }
+//   set attrs(obj) {
+//     this._attrs = reactive(obj);
+//   }
 
-    return atributosEspecificos;
-}
+//   setAttr(attr, valor){
+//     this._attrs[attr] = valor;
+//   }
 
-function savePessoaInStore(pessoa){
-    let isNewPessoa = undefined;
+//   reset(){
+//     for (const key of Object.keys(this._attrs)) {
+//         delete this._attrs[key];
+//     }
+//   } 
+// }
 
-    try{
-      isNewPessoa = pessoaStore.idPessoa != pessoaStore.getId(pessoa);
-    }catch{
-      isNewPessoa = true
-    }
 
-    if(isNewPessoa){
-      pessoaStore.setPessoa(pessoa);
-    }
-}
 
-function createComputedWithGetSet(attr){
-    const varComputed = computed({
-        get() {
-            let value = pessoaInfoChange.attrs[attr];
+// const atributosGerais = ref(getAtributosGerais());
+// const atributosEspecificos = ref(getAtributosEspecificos());
+// const pessoaInfoChange = new PessoaInfoChange({});
+// const pageWasClosed = ref(false);
+// const editSaveBtn = new EditSaveBtn({
+//     text: "Editar",
+//     color: "blue",
+//     icon: "mdi-pencil",
+// });
+// const isEditable = ref(false);
 
-            if(pageWasClosed.value){
-                value = pessoaStore.getOldPessoa[attr]
-            }else if(!exist(value)){
-                value = pessoaStore.getPessoa[attr];  
-            }
+
+// function getAtributosGerais(){
+//     const atributosGerais = [];
+
+//     const nome = createComputedWithGetSet("nome");
+//     const telefone = createComputedWithGetSet("telefone");
+//     const email = createComputedWithGetSet("email");
+//     const cpf = createComputedWithGetSet("cpf");
+//     const dataNascimento = createComputedWithGetSet("dataNascimento");
+//     const endereco = createComputedWithGetSet("endereco");
+
+//     atributosGerais.push([{
+//             title: "Nome",
+//             value: nome,
+//             type: "text",
+//         },
+//         {
+//             title: "Telefone",
+//             value: telefone,
+//             type: "text",
+//         }
+//     ]);
+
+//     atributosGerais.push([{
+//             title: "Email",
+//             value: email,
+//             type: "text",
+//         },
+//         {
+//             title: "CPF",
+//             value: cpf,
+//             type: "text",
+//         }
+//     ]);
+
+//     atributosGerais.push([{
+//             title: "Data de Nascimento",
+//             value: dataNascimento,
+//             type: "date",
+//         },
+//         {
+//             title: "Endereço",
+//             value: endereco,
+//             type: "text",
+//         }
+//     ]);
+
+//     return atributosGerais;
+// }
+
+// function getAtributosEspecificos(){
+//     const atributosEspecificos = [];
+
+//     if(props.tipoPessoa === "Clientes"){
+//         const saldo = computed(() => Number(props.pessoa.saldo).toFixed(2).replace('.', ','));
+//         const pontos = computed(() => Math.floor(Number(props.pessoa.saldo/15)).toFixed(2).replace('.', ','));
+
+//         atributosEspecificos.push({
+//             color: "green",
+//             icon: "mdi-currency-brl",
+//             title: "Saldo",
+//             value: saldo,
+//             isEditable: false,
+//             isSelect: false,
+//         });
+
+//         atributosEspecificos.push({
+//             color: "purple",
+//             icon: "mdi-star",
+//             title: "Pontos",
+//             value: pontos,
+//             isEditable: false,
+//             isSelect: false,
+//         });
+//     }else if(props.tipoPessoa === "Colaboradores"){
+//         const cargo = createComputedWithGetSet("cargo");
+
+//         atributosEspecificos.push({
+//             color: "black",
+//             icon: "mdi-shield-crown",
+//             title: "Cargo",
+//             value: cargo,
+//             isEditable: true,
+//             isSelect: true,
+//             items: cargoStore.getCargos,
+//         });
+//     }
+
+//     return atributosEspecificos;
+// }
+
+// function savePessoaInStore(pessoa){
+//     let isNewPessoa = undefined;
+
+//     try{
+//       isNewPessoa = pessoaStore.idPessoa != pessoaStore.getId(pessoa);
+//     }catch{
+//       isNewPessoa = true
+//     }
+
+//     if(isNewPessoa){
+//       pessoaStore.setPessoa(pessoa);
+//     }
+// }
+
+// function createComputedWithGetSet(attr){
+//     const varComputed = computed({
+//         get() {
+//             let value = pessoaInfoChange.attrs[attr];
+
+//             if(pageWasClosed.value){
+//                 value = pessoaStore.getOldPessoa[attr]
+//             }else if(!exist(value)){
+//                 value = pessoaStore.getPessoa[attr];  
+//             }
                 
-            return value;
-        },
-        set(newValue) {
-            pessoaInfoChange.setAttr(attr, newValue);
-        }
-    });
+//             return value;
+//         },
+//         set(newValue) {
+//             pessoaInfoChange.setAttr(attr, newValue);
+//         }
+//     });
 
-    return varComputed;
-}
+//     return varComputed;
+// }
 
-async function ToogleEditablePessoaInfo(){
-    if(editSaveBtn.isSalvarBtn()){
-        isEditable.value = false;
+// async function ToogleEditablePessoaInfo(){
+//     if(editSaveBtn.isSalvarBtn()){
+//         isEditable.value = false;
 
-        await updatePessoaInfo();
+//         await updatePessoaInfo();
 
-        pessoaInfoChange.reset();
-    }else{
-        isEditable.value = true;
-    }
+//         pessoaInfoChange.reset();
+//     }else{
+//         isEditable.value = true;
+//     }
 
-    editSaveBtn.toogle();
-}
+//     editSaveBtn.toogle();
+// }
 
-async function updatePessoaInfo(id=idPessoa.value, rota=props.rotaUpdatePessoa){
-    const infoChange = toRaw(pessoaInfoChange.attrs);
 
-    if(!isEmptyObject(infoChange)){
-        try{
-            const url = rota + `${id}/`;
-            const body = infoChange;
-            const token = authStore.getToken;   
-
-            const response = await fetchPatch(url, body, token);
-            const responseJson = await response.json();
-            
-            if(response.status === 200){
-                pessoaStore.update(infoChange);
-                snackbarStore.set(`As informações do ${pessoaStore.getPessoa.nome} foram atualizadas com sucesso`, "success");
-            }else{
-                snackbarStore.set(responseJson.message, "warning");
-            }
-        }catch(e){
-            console.log(e);
-            snackbarStore.set(`Falha ao atualizar informações do ${pessoaStore.getPessoa.nome}`, "warning");
-        }
-    }
-}
-
-async function deletePessoa(id=idPessoa.value, rota=props.rotaDeletePessoa){
-    try{
-        const url = rota + `${id}/`;
-        const token = authStore.getToken;
-        if(id !== authStore.getToken){
-            const response = await fetchDelete(url, token);
-            const responseJson = await response.json();
-
-            if(response.status === 200){
-                pessoaStore.delete(id);
-                
-                snackbarStore.set(`${pessoaStore.getPessoa.nome} foi removido do sistema com sucesso`, "success");
-            }else{
-                snackbarStore.set(responseJson.message, "warning");
-            }
-        }else{
-            snackbarStore.set("A ação de se remover do sistema não é permitida para usuários neste momento", "warning");
-        }
-    }catch(e){
-        console.log(e);
-        snackbarStore.set(`Falha ao remover ${pessoaStore.getPessoa.nome} do sistema`, "warning");
-    }
-}
-
-function deletePessoaConfirmation(){
-    confirmDialog(`Tem certeza que deseja remover ${pessoaStore.getPessoa.nome} do sistema?`, deletePessoa);
-}
-
-watch(idPessoa, (newId, oldId) => {
-    pageWasClosed.value = true;
-});
+// watch(idPessoa, (newId, oldId) => {
+//     pageWasClosed.value = true;
+// });
 
 </script>
 
 <template>
-    <form @submit.prevent="">
+    <CardForm
+        :configs="configs"
+        :fixies="[]"
+        :customBtns="customBtns"
+        @clicked="btnClicked"
+    />
+        <!-- :loading="props.loadingBtn"
+        @submit="emitCadastrarPessoa"
+        @close="isVisible.dialogCadastrarPessoa = false" -->
+    <!-- <form @submit.prevent="">
         
         <v-row v-for="(atributos, i) in atributosGerais" :key="i">
             <v-col v-for="(atributo, j) in atributos" :key="j">
@@ -370,7 +309,7 @@ watch(idPessoa, (newId, oldId) => {
         >
             Remover
         </v-btn> 
-    </form>
+    </form> -->
 </template>
 
 <style scoped>

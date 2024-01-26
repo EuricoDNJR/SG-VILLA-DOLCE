@@ -1,6 +1,6 @@
 <script setup>
-  import { ref, computed, watch } from 'vue'
-  import { useCaixaStore, usePedidoStore } from '../utils/store';
+  import { ref, computed } from 'vue'
+  import { useCaixaStore } from '../utils/store';
   import Snackbar from '../components/Snackbar.vue';
   import CriarPedido from '../components/CriarPedido.vue';
   import PedidosEmAberto from '../components/PedidosEmAberto.vue';

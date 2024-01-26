@@ -8,6 +8,12 @@ export function getAuthToken(){
     return authStore.getToken;
 }
 
+export function getCargoUser(){
+    const authStore = useAuthStore();
+    
+    return authStore.getCargo;
+}
+
 export function setMessageSnackbar(msg, messageType){
     const snackbarStore = useSnackbarStore();
     
@@ -146,8 +152,13 @@ export function getObjByKeys(obj, keys){
     return obj;
 }
 
-export function createCelula(key, title=key, type="text", required=false){
-    return {"key": key, "title": title, "type": type, "required": required}
+export function createCelula({key, title, type, required, initalValue}){
+    title = title ? title : key;
+    type = type ? type : 'text';
+    required = required ? required : false;
+    initalValue = initalValue ?initalValue : '';
+
+    return {"key": key, "title": title, "type": type, "required": required, 'initalValue': initalValue};
 }
 
 export function createFormFields(configs, fixies=[]){
@@ -161,7 +172,7 @@ export function createFormFields(configs, fixies=[]){
             const obj = {
                 key: celulaForm.key,
                 title: celulaForm.title,
-                obj: ref(''),
+                obj: ref(celulaForm.initalValue),
                 type: celulaForm.type,
                 error: ref(false),
                 required: celulaForm.required,
@@ -171,6 +182,7 @@ export function createFormFields(configs, fixies=[]){
             fieldsArray[i].push(obj);
         });
     });
+    
     fixies.forEach((linhaFix, i) => {
         const keysStr = linhaFix[0];
         const newValue = linhaFix[1];

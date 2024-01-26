@@ -1,8 +1,8 @@
 <script setup>
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useAuthStore, useCargosStore } from '../utils/store';
-  import { getAllRolesArray, fetchPost } from '../utils/common'
+  import { useAuthStore } from '../utils/store';
+  import { fetchPost } from '../utils/common'
   
   defineOptions({
     inheritAttrs: false
@@ -19,7 +19,6 @@
   const showHideBtnText = ref('Mostrar');
   const backgroundColorVariable = ref('');
   const authStore = useAuthStore();
-  const cargoStore = useCargosStore();
 
   function getDadosLoginForm() {
     return {
@@ -98,9 +97,6 @@
   
     if(userData){
         authStore.successfulLogin({...userData, img: null});
-
-        const cargos = await getAllRolesArray(userData.token);
-        cargoStore.saveCargos(cargos);
 
         router.push('/menu/dashboard');
 
