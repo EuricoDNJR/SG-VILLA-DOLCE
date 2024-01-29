@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, computed } from 'vue'
+  import { computed } from 'vue'
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '../utils/store';
   import Caixa from '../components/Caixa.vue';
@@ -10,8 +10,8 @@
 
   const router = useRouter();
   const authStore = useAuthStore();
-  const nome = ref(authStore.getNome);
-  const cargo = ref(authStore.getCargo);
+  const nome = computed(() => authStore.getNome);
+  const cargo = computed(() => authStore.getCargo);
 
   function resetUserInfo(){
     authStore.reset();

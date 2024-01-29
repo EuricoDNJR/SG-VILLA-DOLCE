@@ -1,7 +1,7 @@
 <script setup>
-  import { ref, computed, reactive, watchEffect, watch } from 'vue'
+  import { ref, computed, reactive, watch } from 'vue'
   import { fetchGet, getColorQuantidade } from '../utils/common';
-  import { useAuthStore, useSnackbarStore, usePedidoStore } from '../utils/store';
+  import { useAuthStore, useSnackbarStore } from '../utils/store';
   
   const props = defineProps(['produtoRemovido']);
   const emit = defineEmits(['produtoAdicionado']);

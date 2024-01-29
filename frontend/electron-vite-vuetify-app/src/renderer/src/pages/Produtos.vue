@@ -1,20 +1,14 @@
 <script setup>
-  import { ref, computed, watch, onMounted } from 'vue'
-  import { fetchGet, fetchDelete, confirmDialog, getColorQuantidade } from '../utils/common';
-  import { useAuthStore, useFormStore, useSnackbarStore } from '../utils/store';
+  import { ref, onMounted } from 'vue'
+  import { fetchGet, fetchDelete, getAuthToken, setMessageSnackbar, confirmDialog, getColorQuantidade } from '../utils/common';
   import Snackbar from '../components/Snackbar.vue';
   import CriarCategoria from '../components/CriarCategoria.vue';
-  import AdicionarProduto from '../components/AdicionarProduto.vue';
   import ApagarCategoria from '../components/ApagarCategoria.vue';
+  import AdicionarProduto from '../components/AdicionarProduto.vue';
 
   defineOptions({
     inheritAttrs: false
   });
-
-  const authStore = useAuthStore();
-  const snackbarStore = useSnackbarStore();
-  const formStore = useFormStore();
-  const recieve = computed(() => formStore.getObj);
 
   const headers = [
     { title: 'Nome', key: 'nome', width: '20%' },
@@ -25,19 +19,44 @@
     { title: 'Unidade de Medida', key: 'unidadeMedida' },
     { title: 'Ações', key: 'acoes'},
   ];
-  const searchText = ref('');
+
+  const categorias = ref([]);
   const produtos = ref([]);
   const produtosObj = {};
-  const reloadVar = ref(false);
+  const searchText = ref('');
+
+  async function requestAllCategories(){
+      try{
+        const url = "http://127.0.0.1:8000/v1/categoria/get_all_categories/";
+        const token = getAuthToken();
+
+        const response = await fetchGet(url, token);
+
+        if (response.status != 204){
+          const responseJson = await response.json();
+
+          if(response.status === 200){
+            categorias.value = responseJson;
+          }else{
+            setMessageSnackbar(responseJson.message, "warning");
+          }
+        }
+      }catch(e){
+        console.log(e);
+        setMessageSnackbar("Falha ao carregar categorias", "warning");
+      }
+  }
 
   async function requestAllProducts(){
     try{
       const url = "http://127.0.0.1:8000/v1/produto/get_all_products/"
-      const token = authStore.getToken;
+      const token = getAuthToken();
       
       const response = await fetchGet(url, token);
+      
       if (response.status != 204){
         const responseJson = await response.json();
+
         if(response.status === 200){
           produtos.value = responseJson;
 
@@ -45,32 +64,32 @@
             produtosObj[produto.idProduto] = produto;
           });
         }else{
-          snackbarStore.set(responseJson.message, 'warning');
+          setMessageSnackbar(responseJson.message, 'warning');
         }
       }
     }catch(e){
       console.log(e);
-      snackbarStore.set("Falha ao carregar produtos", 'warning');
+      setMessageSnackbar("Falha ao carregar produtos", 'warning');
     }
   }
 
   async function requestDelete(produto){
     try{
         const url = "http://127.0.0.1:8000/v1/produto/delete_product/" + `${produto.idProduto}/`;
-        const token = authStore.getToken;
+        const token = getAuthToken();
         const response = await fetchDelete(url, token);
         const responseJson = await response.json();
 
         if(response.status === 200){
           produtos.value = produtos.value.filter((prod) => prod.idProduto != produto.idProduto);
 
-          snackbarStore.set("Produto removido com sucesso", 'success');
+          setMessageSnackbar("Produto removido com sucesso", 'success');
         }else{
-          snackbarStore.set(responseJson.message, 'warning');
+          setMessageSnackbar(responseJson.message, 'warning');
         }
     }catch(e){
         console.log(e);
-        snackbarStore.set("Erro ao remover produto", 'warning');
+        setMessageSnackbar("Erro ao remover produto", 'warning');
     }        
   }
   
@@ -78,31 +97,42 @@
     confirmDialog(`Tem certeza que deseja remover ${produto.nome} do sistema?`, () => requestDelete(produto));
   }
 
-  async function reload(){
-    reloadVar.value = !reloadVar.value;
-  }
-
-  watch(recieve, async (newRecieve, oldRecieve) => {
-    if(formStore.getFrom == "Adicionar Produto"){
-      const produto = {
-        idProduto: formStore.getObj.uuid,
-        nome: formStore.getObj.nome,
-        descricao: formStore.getObj.descricao,
-        categoria: formStore.getObj.categoria,
-        unidadeMedida: formStore.getObj.unidadeMedida,
-        valorVenda: formStore.getObj.valorVenda,
-        quantidade: formStore.getObj.quantidade
+  function adicionarProduto(obj){
+    const produto = {
+        idProduto: obj.uuid,
+        nome: obj.nome,
+        descricao: obj.descricao,
+        categoria: obj.categoria,
+        unidadeMedida: obj.unidadeMedida,
+        valorVenda: obj.valorVenda,
+        quantidade: obj.quantidade
       };
 
       produtos.value.push(produto);
       produtosObj[produto.idProduto] = produto;
-    }
-  });
+  }
+
+  function criarCategoria(obj){
+    const categoria = {
+      idCategoria: obj.uuid,
+      nome: obj.nome,
+      unidadeMedida: obj.unidadeMedida,
+    };
+
+    categorias.value.push(categoria);
+  }
+
+  function apagarCategoria(obj){
+    console.log(obj);
+    const idCategoria = obj.idCategoria;
+
+    categorias.value = categorias.value.filter((categoria) => categoria.idCategoria != idCategoria);
+  }
 
   onMounted(() => {
+    requestAllCategories();
     requestAllProducts();
   });
-
 </script>
 
 <template>
@@ -114,32 +144,32 @@
       </template>
 
       <v-app-bar-title>Produtos</v-app-bar-title>
-        <AdicionarProduto />
+      <AdicionarProduto 
+        :categorias="categorias"
+        @produtoAdicionado="adicionarProduto"
+      />
 
       <CriarCategoria
-        @categoriaCriada="reload"
+        @categoriaCriada="criarCategoria"
       />
-     
+
       <ApagarCategoria
-        @categoriaApagada="reload"
+        :categorias="categorias"
+        @categoriaApagada="apagarCategoria"
       />
-  </v-app-bar>
+    </v-app-bar>
 
     <v-toolbar color="grey-lighten-4" class="pa-4">
-      <v-row align="center">
-        <v-col>
-          <v-text-field
-            v-model="searchText"
-            label="Produto"
-            prepend-inner-icon="mdi-magnify"
-            variant="solo"
-            hide-details
-          ></v-text-field>
-        </v-col>
-      </v-row>
+      <v-text-field
+        v-model="searchText"
+        label="Produto"
+        prepend-inner-icon="mdi-magnify"
+        variant="solo"
+        hide-details
+      ></v-text-field>
     </v-toolbar>
 
-    <div
+    <div id="tabela"
       class="pa-4" 
       color="grey-lighten-4"
     >
@@ -154,12 +184,12 @@
       >
         <template v-slot:item.quantidade="{ value }">
           <v-chip :color="getColorQuantidade(value)">
-            {{ value.replace('.', ',') }}
+            {{ Number(value).toFixed(3).replace('.', ',') }}
           </v-chip>
         </template>
 
         <template v-slot:item.valorVenda="{ value }">
-          R$ {{ value.replace('.', ',') }}
+          R$ {{ Number(value).toFixed(2).replace('.', ',') }}
         </template>
 
         <template v-slot:item.acoes="{ item }">

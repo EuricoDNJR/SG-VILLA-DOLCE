@@ -1,14 +1,14 @@
 import {createRouter, createWebHashHistory} from 'vue-router';
-import Login from '../pages/Login.vue'
-import Menu from '../pages/Menu.vue'
-import Dashboard from '../pages/Dashboard.vue'
-import Estoque from '../pages/Estoque.vue'
-import Clientes from '../pages/Clientes.vue'
-import Colaboradores from '../pages/Colaboradores.vue'
-import Pedidos from '../pages/Pedidos.vue'
-import Configuracoes from '../pages/Configuracoes.vue'
-import Produtos from '../pages/Produtos.vue'
 
+const Login = () => import('../pages/Login.vue');
+const Menu = () => import('../pages/Menu.vue');
+const Dashboard = () => import('../pages/Dashboard.vue');
+const Estoque = () => import('../pages/Estoque.vue');
+const Clientes = () => import('../pages/Clientes.vue');
+const Colaboradores = () => import('../pages/Colaboradores.vue');
+const Pedidos = () => import('../pages/Pedidos.vue');
+const Configuracoes = () => import('../pages/Configuracoes.vue');
+const Produtos = () => import('../pages/Produtos.vue');
 
 const routes = [
   { 

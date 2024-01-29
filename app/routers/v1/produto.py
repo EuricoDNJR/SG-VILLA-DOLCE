@@ -71,6 +71,7 @@ def create_product(data: CreateProductRequest, jwt_token: str = Header()):
                 content={"message": "Erro ao criar produto"},
             )
         logging.info("Product created")
+        
         categoria = get_categoria_by_id(produto.categoria)
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,

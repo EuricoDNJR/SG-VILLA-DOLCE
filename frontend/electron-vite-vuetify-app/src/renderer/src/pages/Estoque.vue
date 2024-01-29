@@ -1,19 +1,12 @@
 <script setup>
-  import { ref, computed, watch, onMounted } from 'vue'
-  import { fetchGet, fetchDelete, confirmDialog, getFormatedDate } from '../utils/common';
-  import { useAuthStore, useFormStore, useSnackbarStore } from '../utils/store';
+  import { ref, onMounted } from 'vue'
+  import { fetchGet, fetchDelete, getAuthToken, setMessageSnackbar, confirmDialog, getFormatedDate } from '../utils/common';
   import Snackbar from '../components/Snackbar.vue';
   import InserirEstoque from '../components/InserirEstoque.vue';
 
   defineOptions({
     inheritAttrs: false
   });
-
-  const authStore = useAuthStore();
-  const snackbarStore = useSnackbarStore();
-  const formStore = useFormStore();
-
-  const recieve = computed(() => formStore.getObj);
 
   const searchText = ref('');
   const headers = [
@@ -25,51 +18,76 @@
     { title: 'Ações', key: 'acoes'},
   ];
   const entradas = ref([]);
+  const produtos = ref([]);
  
   async function requestAllStockRegistres(){
     try{
       const url = "http://127.0.0.1:8000/v1/estoque/get_all_stock_registres/"
-      const token = authStore.getToken;
+      const token = getAuthToken();
       
       const response = await fetchGet(url, token);
-      if (response.status != 204){
+
+      if(response.status != 204){
         const responseJson = await response.json();
+
         if(response.status === 200){
           entradas.value = responseJson;
         }else{
-          snackbarStore.set(responseJson.message, 'warning');
+          setMessageSnackbar(responseJson.message, 'warning');
         }
       }
     }catch(e){
       console.log(e);
-      snackbarStore.set("Falha ao carregar estoque", 'warning');
+      setMessageSnackbar("Falha ao carregar estoque", 'warning');
+    }
+  }
+
+  async function requestAllProducts(){
+    try{
+      const url = "http://127.0.0.1:8000/v1/produto/get_all_products/"
+      const token = getAuthToken();
+      
+      const response = await fetchGet(url, token);
+      
+      if (response.status != 204){
+        const responseJson = await response.json();
+
+        if(response.status === 200){
+          produtos.value = responseJson;
+        }else{
+          setMessageSnackbar(responseJson.message, 'warning');
+        }
+      }
+    }catch(e){
+      console.log(e);
+      setMessageSnackbar("Falha ao carregar produtos", 'warning');
     }
   }
   
   async function requestDelete(estoque){
     try{
         const url = "http://127.0.0.1:8000/v1/estoque/delete_stock_registre/" + `${estoque.idEstoque}/`;
-        const token = authStore.getToken;
+        const token = getAuthToken();
+
         const response = await fetchDelete(url, token);
         const responseJson = await response.json();
 
         if(response.status === 200){
           entradas.value = entradas.value.filter((stock) => stock.idEstoque != estoque.idEstoque);
 
-          snackbarStore.set("Produto removido com sucesso", 'success');
+          setMessageSnackbar("Produto removido com sucesso", 'success');
         }else{
-          snackbarStore.set(responseJson.message, 'warning');
+          setMessageSnackbar(responseJson.message, 'warning');
         }
     }catch(e){
         console.log(e);
-        snackbarStore.set("Erro ao remover produto", 'warning');
+        setMessageSnackbar("Erro ao remover produto", 'warning');
     }        
   }
   
   function deleteConfirmation(estoque){
     confirmDialog(`Tem certeza que deseja remover esse estoque do produto ${estoque.nome} do sistema?`, () => requestDelete(estoque));
   }
-
 
   function getColorDate(date){
     let color = "white";
@@ -95,26 +113,24 @@
     return color;
   }
 
+  function inserirEstoque(obj){
+    const estoque = {
+      idEstoque: obj.uuid,
+      idProduto: obj.idProduto,
+      nome: obj.Nome,
+      observacoes: obj.observacoes,
+      dataEntrada: obj.dataEntrada,
+      dataVencimento: obj.dataVencimento,
+      quantidade: obj.quantidade
+    };
+
+    entradas.value.push(estoque);
+  }
+
   onMounted(() => {
-    requestAllStockRegistres();;
+    requestAllProducts();
+    requestAllStockRegistres();
   });
-
-  watch(recieve, (newRecieve, oldRecive) => {
-    if(formStore.getFrom == "Inserir Estoque"){
-      const estoque = {
-        idEstoque: formStore.getObj.uuid,
-        idProduto: formStore.getObj.idProduto,
-        nome: formStore.getObj.Nome,
-        observacoes: formStore.getObj.observacoes,
-        dataEntrada: formStore.getObj.dataEntrada,
-        dataVencimento: formStore.getObj.dataVencimento,
-        quantidade: formStore.getObj.quantidade
-      };
-
-      entradas.value.push(estoque);
-    }
-  });
-
 </script>
 
 <template>
@@ -127,22 +143,21 @@
         <v-icon>mdi-menu-right</v-icon>
       </template>
 
-      <InserirEstoque/>
+      <InserirEstoque
+        :produtos="produtos"
+        @estoqueInserido="inserirEstoque"
+      />
     </v-app-bar>
 
     <v-toolbar color="grey-lighten-4" class="pa-4">
-      <v-row align="center">
-        <v-col>
-          <v-text-field
-            v-model="searchText"
-            label="Produto"
-            prepend-inner-icon="mdi-magnify"
-            variant="solo"
-            hide-details
-            @input=""
-          ></v-text-field>
-        </v-col>
-      </v-row>
+      <v-text-field
+        v-model="searchText"
+        label="Produto"
+        prepend-inner-icon="mdi-magnify"
+        variant="solo"
+        hide-details
+        @input=""
+      ></v-text-field>
     </v-toolbar>
 
     <div
@@ -168,7 +183,7 @@
         </template>
 
         <template v-slot:item.quantidade="{ value }">
-          {{ value.replace(".", ",") }}
+          {{ Number(value).toFixed(3).replace(".", ",") }}
         </template>
 
         <template v-slot:item.acoes="{ item }">

@@ -1,77 +1,103 @@
 <script setup>
-  import { ref, computed, watch } from 'vue'
-  import { getAuthToken, setMessageSnackbar, fetchGet } from '../utils/common'
-  import { useFormStore } from '../utils/store';
-  import FormDelete from '../components/FormDelete.vue';
+  import { ref, reactive } from 'vue';
+  import { createCelula, getAuthToken, setMessageSnackbar, fetchDelete } from '../utils/common';
+  import CardForm from '../components/CardForm.vue';
 
+  const props = defineProps(['categorias']);
   const emit = defineEmits(['categoriaApagada']);
 
-  const formStore = useFormStore();
-  const recieve = computed(() => formStore.getObj); 
-  const categorias = ref(undefined);
-  const loading = ref(true);
+  const reloadVar = ref(false);
 
-  async function requestAllCategories(){
-    try{
-      const url = "http://127.0.0.1:8000/v1/categoria/get_all_categories/";
-      const token = getAuthToken();
+  const eventFunctions = {
+    fechar: () => isVisible.dialogCategoriaApagada = false,
+    apagar: (body) => emitCategoriaApagada(body),
+  };
 
-      const response = await fetchGet(url, token);
+  const customBtns = ref([
+    {text: 'Fechar', variant: 'text', icon: undefined, color: undefined, clickEvent: 'fechar', needFormData: false, loading: false},
+    {text: 'Apagar', variant: 'flat', icon: 'mdi-book-minus-outline', color: 'red-darken-1', clickEvent: 'apagar', needFormData: true, loading: false},
+  ]);
+  const apagarBtn = customBtns.value[1];
 
-        if (response.status != 204){
-          const responseJson = await response.json();
-          if(response.status === 200){
-            categorias.value = responseJson;
-
-            loading.value = false;
-          }else{
-            setMessageSnackbar(responseJson.message, "warning");
-          }
-        }
-      }catch(e){
-        console.log(e);
-        setMessageSnackbar("Falha ao carregar categorias", "warning");
-      }
-  }
-
-  function emitCategoriaApagada(idDeleted){
-    console.log("ID DELETED: ", idDeleted);
-
-    emit('categoriaApagada');
-  }
-  
-
-  watch(recieve, async (newRecieve, oldRecieve) => {
-    if(formStore.getFrom == "Apagar Categoria"){
-      const idCategoria = formStore.getObj.idCategoria;
-
-      categorias.value = categorias.value.filter((categoria) => categoria.idCategoria != idCategoria);
-    }else if(formStore.getFrom == "Criar Categoria"){
-      const categoria = {
-        idCategoria: formStore.getObj.uuid,
-        nome: formStore.getObj.nome,
-        unidadeMedida: formStore.getObj.unidadeMedida,
-      }
-      categorias.value.push(categoria);
-    }
+  const isVisible = reactive({
+    dialogCategoriaApagada: false,
   });
-  
-  requestAllCategories();
+
+  async function emitCategoriaApagada(body){
+    apagarBtn.loading = true;
+
+    try{
+      const url = `http://127.0.0.1:8000/v1/categoria/delete_category/${body.idCategoria}/`;
+      const token = getAuthToken();
+      
+      const response = await fetchDelete(url, token);
+      const responseJson = await response.json();
+
+      if(response.status === 200){     
+        emit('categoriaApagada', body);
+        
+        reload();
+
+        setMessageSnackbar("Categoria apagada com sucesso", 'success');
+      }else{
+        setMessageSnackbar(responseJson.message, 'warning');
+      }
+    }catch(e){
+      console.log(e);
+      setMessageSnackbar("Falha ao apagar categoria", 'warning');
+    }        
+
+    apagarBtn.loading = false;
+  }
+
+  function reload(){
+    reloadVar.value = !reloadVar.value;
+  }
+
+  function btnClicked({event, body}){
+    const func = eventFunctions[event];
+
+    if(body){
+        func(body);
+    }else{
+        func();
+    }   
+  }
 </script>
 
 <template>
-  <FormDelete
-    title="Apagar Categoria"
-    :autocompleteItems="categorias"
-    autocompleteTitle="nome"
-    autocompleteValue="idCategoria"
-    url="http://127.0.0.1:8000/v1/categoria/delete_category/"
-    btnText="Apagar"
-    btnIcon="mdi-book-minus-outline"
-    successMessage="Categoria apagada com sucesso"
-    errorMessage="Falha ao apagar categoria"
-    @deleteRequested="emitCategoriaApagada"
-  />
+  <v-dialog
+    v-model="isVisible.dialogCategoriaApagada"
+    persistent
+    width="384"
+  >
+    <template v-slot:activator="{ props }">
+      <v-btn
+        stacked
+        variant="text"
+        prepend-icon="mdi-book-minus-outline"
+        v-bind="props"
+      >
+        Apagar Categoria
+      </v-btn>
+    </template>
+    
+    <div :key="reloadVar">
+      <CardForm
+        title="Apagar Categoria"
+        :configs="[
+          [createCelula({key: 'idCategoria', title: 'Categoria', type: 'autocomplete', required: true})],
+        ]"
+        :fixies="[ 
+          ['Categoria.items', props.categorias],
+          ['Categoria.itemsTitle', 'nome'],
+          ['Categoria.itemsValue', 'idCategoria'],
+        ]"
+        :customBtns="customBtns"
+        @clicked="btnClicked"
+      />
+    </div>
+  </v-dialog>
 </template>
 <style scoped>
 </style>
