@@ -3,27 +3,42 @@ from pydantic import BaseModel
 from typing import Optional, List
 from decimal import Decimal
 from dependencies import get_token_header
-from database import crud
-from fastapi.responses import JSONResponse, Response
-from fastapi import (
-    APIRouter,
-    status,
-    Header,
-    Depends
+from database.crud.pedido import (
+    create_pedido,
+    update_balance_client_and_order,
+    update_balance_client_and_order_unique,
+    update_balance_client_and_order_cancel,
+    update_pedido_status,
+    delete_produto_pedido,
+    delete_pedido,
+    delete_replace_quantity_product,
+    get_pedido_by_id,
+    get_pedido_object_by_id,
+    get_all_pedidos,
+    get_all_pedidos_pagos_cancelados,
 )
+from database.crud.pagamento import create_pagamento, update_pagamento, delete_pagamento
+from database.crud.produto_pedido import create_produto_pedido
+from database.crud.produto import update_quantity_product
+from database.crud.caixa import update_balance_caixa_pedido
+from fastapi.responses import JSONResponse, Response
+from fastapi import APIRouter, status, Header, Depends
 
 router = APIRouter()
+
 
 class PagamentoPedido(BaseModel):
     valorRecebimento: Optional[float] = 0.0
     valorDevolvido: Optional[float] = 0.0
     tipoPagamento: Optional[str] = None
 
+
 class ProdutoPedido(BaseModel):
-    idProduto: str 
+    idProduto: str
     quantidade: float
     valorVendaUnd: float
     desconto: Optional[float] = 0.0
+
 
 class CreateOrderRequest(BaseModel):
     idCliente: str
@@ -32,7 +47,12 @@ class CreateOrderRequest(BaseModel):
     idProdutos: List[ProdutoPedido]
     status: str
 
-@router.post("/create_order/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
+
+@router.post(
+    "/create_order/",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_token_header)],
+)
 def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     """
     Criação de pedido.
@@ -62,80 +82,86 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             "status": "Pago"
         }
     """
-    
+
     logging.info("Getting user")
     logging.info("Creating order by user: " + jwt_token)
     logging.info("Creating instance of payment")
-    pagamento = crud.create_pagamento( 
-        valorRecebimento=data.Pagamento.valorRecebimento, 
-        valorDevolvido=data.Pagamento.valorDevolvido, 
-        tipoPagamento=data.Pagamento.tipoPagamento)
+    pagamento = create_pagamento(
+        valorRecebimento=data.Pagamento.valorRecebimento,
+        valorDevolvido=data.Pagamento.valorDevolvido,
+        tipoPagamento=data.Pagamento.tipoPagamento,
+    )
     if pagamento is None:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao criar pagamento"}
+            content={"message": "Erro ao criar pagamento"},
         )
     logging.info("Payment created")
     logging.info("Creating instance of order")
-    pedido = crud.create_pedido(
+    pedido = create_pedido(
         idCliente=data.idCliente,
         idPagamento=pagamento.idPagamento,
         idUsuario=jwt_token,
         idCaixa=data.idCaixa,
-        status=data.status
+        status=data.status,
     )
     if pedido is None:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao criar pedido"}
+            content={"message": "Erro ao criar pedido"},
         )
     logging.info("Order created")
     try:
         logging.info("adding products to order")
         for produto in data.idProdutos:
-            crud.create_produto_pedido(
+            create_produto_pedido(
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
                 quantidade=produto.quantidade,
                 valorVendaUnd=produto.valorVendaUnd,
-                desconto=produto.desconto
+                desconto=produto.desconto,
             )
         logging.info("Products added to order")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao adicionar produtos ao pedido"}
+            content={"message": "Erro ao adicionar produtos ao pedido"},
         )
     try:
         logging.info("Updating quantity of products")
         for produto in data.idProdutos:
-            if crud.update_quantity_product(produto.idProduto, produto.quantidade):
+            if update_quantity_product(produto.idProduto, produto.quantidade):
                 logging.info("Quantity of product {} updated".format(produto.idProduto))
             else:
-                logging.info("Quantity of product {} not updated".format(produto.idProduto))
+                logging.info(
+                    "Quantity of product {} not updated".format(produto.idProduto)
+                )
         logging.info("Quantity of products updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao atualizar quantidade de produtos"}
+            content={"message": "Erro ao atualizar quantidade de produtos"},
         )
     try:
-        if crud.update_balance_client_and_order(pedido):
+        if update_balance_client_and_order(pedido):
             logging.info("Balance of client and order updated")
         else:
             logging.info("Balance of client and order not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": str(e)}
-            )
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
+        )
     if data.status == "Pago":
         try:
             logging.info("Updating caixa balance")
-            if crud.update_balance_caixa_pedido(data.idCaixa, pedido.idPagamento.valorTotal, pedido.idPagamento.tipoPagamento):
+            if update_balance_caixa_pedido(
+                data.idCaixa,
+                pedido.idPagamento.valorTotal,
+                pedido.idPagamento.tipoPagamento,
+            ):
                 logging.info("Balance of caixa updated")
             else:
                 logging.info("Balance of caixa not updated")
@@ -143,15 +169,24 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             logging.error(e)
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao atualizar saldo do caixa"}
+                content={"message": "Erro ao atualizar saldo do caixa"},
             )
     logging.info("Order created successfully")
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(pedido.idPedido), "message": "Pedido criado com sucesso"})
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"uuid": str(pedido.idPedido), "message": "Pedido criado com sucesso"},
+    )
+
 
 class AddInOrderRequest(BaseModel):
     idProdutos: List[ProdutoPedido]
-    
-@router.patch("/add_in_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+
+@router.patch(
+    "/add_in_order/{idPedido}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def add_in_order(idPedido: str, data: AddInOrderRequest):
     """
     Adiciona produtos em um pedido.
@@ -175,16 +210,19 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
     """
     logging.info("Getting order by id")
     try:
-        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        pedido = get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Pedido não encontrado"},
+            )
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedido: " + str(e)}
+            content={"message": "Erro ao buscar pedido: " + str(e)},
         )
     try:
         logging.info("Verifying if order is pending")
@@ -192,29 +230,33 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
             logging.info("Order not pending")
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Pedido não pendente, por favor, para adicionar produtos ao pedido o mesmo deve estar em estado pendente!!"}
+                content={
+                    "message": "Pedido não pendente, por favor, para adicionar produtos ao pedido o mesmo deve estar em estado pendente!!"
+                },
             )
         logging.info("Order stats verified")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message":"Erro ao verificar status do pedido: " + str(e)}
+            content={"message": "Erro ao verificar status do pedido: " + str(e)},
         )
     try:
         for produto in data.idProdutos:
-            produto_instance = crud.create_produto_pedido(
+            produto_instance = create_produto_pedido(
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
                 quantidade=produto.quantidade,
                 valorVendaUnd=produto.valorVendaUnd,
-                desconto=produto.desconto
+                desconto=produto.desconto,
             )
-            if crud.update_quantity_product(produto.idProduto, produto.quantidade):
+            if update_quantity_product(produto.idProduto, produto.quantidade):
                 logging.info("Quantity of product {} updated".format(produto.idProduto))
             else:
-                logging.info("Quantity of product {} not updated".format(produto.idProduto))
-            if crud.update_balance_client_and_order_unique(pedido, produto_instance):
+                logging.info(
+                    "Quantity of product {} not updated".format(produto.idProduto)
+                )
+            if update_balance_client_and_order_unique(pedido, produto_instance):
                 logging.info("Balance of client and order updated")
             else:
                 logging.info("Balance of client and order not updated")
@@ -223,21 +265,31 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao adicionar produto(s) ao pedido: " + str(e)}
+            content={"message": "Erro ao adicionar produto(s) ao pedido: " + str(e)},
         )
     logging.info("Product(s) added to order successfully")
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto(s) adicionado(s) ao pedido com sucesso"})
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Produto(s) adicionado(s) ao pedido com sucesso"},
+    )
+
+
 class FinishOrderRequest(BaseModel):
     valorRecebimento: float
     valorDevolvido: Optional[float] = 0.0
     tipoPagamento: str
 
-@router.patch("/finish_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.patch(
+    "/finish_order/{idPedido}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def finish_order(idPedido: str, data: FinishOrderRequest):
     """
     Finaliza um pedido.
     exemplo de entrada:
-    
+
         {
             "valorRecebimento": 50.00,
             "valorDevolvido": 29.20,
@@ -246,16 +298,19 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
     """
     logging.info("Getting order by id")
     try:
-        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        pedido = get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Pedido não encontrado"},
+            )
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedido: " + str(e)}
+            content={"message": "Erro ao buscar pedido: " + str(e)},
         )
     try:
         logging.info("Verifying if order is already finished")
@@ -263,86 +318,118 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
             logging.info("Order already finished")
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Pedido já finalizado"}
+                content={"message": "Pedido já finalizado"},
             )
         logging.info("Order not finished")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message":"Erro ao verificar status do pedido: " + str(e)}
+            content={"message": "Erro ao verificar status do pedido: " + str(e)},
         )
     try:
         logging.info("Checking if the values ​​match")
-        if Decimal((Decimal(data.valorRecebimento) - Decimal(data.valorDevolvido)).__format__('.2f')) != pedido.idPagamento.valorTotal:
+        if (
+            Decimal(
+                (
+                    Decimal(data.valorRecebimento) - Decimal(data.valorDevolvido)
+                ).__format__(".2f")
+            )
+            != pedido.idPagamento.valorTotal
+        ):
             logging.info("Values don't match")
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "O valor recebido menos o troco não é igual ao valor total do pedido"}
+                content={
+                    "message": "O valor recebido menos o troco não é igual ao valor total do pedido"
+                },
             )
         logging.info("Values match")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message":"Erro ao verificar se o valor recebido menos o troco é igual ao valor total do pedido: " + str(e)}
+            content={
+                "message": "Erro ao verificar se o valor recebido menos o troco é igual ao valor total do pedido: "
+                + str(e)
+            },
         )
     try:
         logging.info("Updating payment of order")
-        if crud.update_pagamento(pedido=pedido, valorRecebimento=data.valorRecebimento, valorDevolvido=data.valorDevolvido, tipoPagamento=data.tipoPagamento):
+        if update_pagamento(
+            pedido=pedido,
+            valorRecebimento=data.valorRecebimento,
+            valorDevolvido=data.valorDevolvido,
+            tipoPagamento=data.tipoPagamento,
+        ):
             logging.info("Payment of order updated")
         else:
             logging.info("Payment of order not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     try:
         logging.info("Updating caixa balance")
-        if crud.update_balance_caixa_pedido(pedido.idCaixa, pedido.idPagamento.valorTotal, pedido.idPagamento.tipoPagamento):
+        if update_balance_caixa_pedido(
+            pedido.idCaixa,
+            pedido.idPagamento.valorTotal,
+            pedido.idPagamento.tipoPagamento,
+        ):
             logging.info("Balance of caixa updated")
         else:
             logging.info("Balance of caixa not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     try:
         logging.info("Updating status of order")
-        if crud.update_pedido_status(pedido, "Pago"):
+        if update_pedido_status(pedido, "Pago"):
             logging.info("Status of order updated")
         else:
             logging.info("Status of order not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     logging.info("Order finished successfully")
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido finalizado com sucesso", "saldo_cliente": str(pedido.idCliente.saldo)})
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "message": "Pedido finalizado com sucesso",
+            "saldo_cliente": str(pedido.idCliente.saldo),
+        },
+    )
 
-@router.patch("/cancel_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.patch(
+    "/cancel_order/{idPedido}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def cancel_order(idPedido: str):
     """
     Cancela um pedido.
     """
     logging.info("Getting order by id")
     try:
-        pedido = crud.get_pedido_object_by_id(idPedido=idPedido)
+        pedido = get_pedido_object_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Pedido não encontrado"},
+            )
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedido: " + str(e)}
+            content={"message": "Erro ao buscar pedido: " + str(e)},
         )
     try:
         logging.info("Verifying if order is already canceled")
@@ -350,54 +437,60 @@ def cancel_order(idPedido: str):
             logging.info("Order already canceled")
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Pedido já cancelado"}
+                content={"message": "Pedido já cancelado"},
             )
         logging.info("Order not canceled")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message":"Erro ao verificar status do pedido: " + str(e)}
+            content={"message": "Erro ao verificar status do pedido: " + str(e)},
         )
     try:
         logging.info("Updating caixa balance")
-        if crud.update_balance_caixa_pedido(pedido.idCaixa, -abs(pedido.idPagamento.valorTotal), pedido.idPagamento.tipoPagamento):
+        if update_balance_caixa_pedido(
+            pedido.idCaixa,
+            -abs(pedido.idPagamento.valorTotal),
+            pedido.idPagamento.tipoPagamento,
+        ):
             logging.info("Balance of caixa updated")
         else:
             logging.info("Balance of caixa not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     try:
         logging.info("Updating payment of order")
-        if crud.update_pagamento(pedido=pedido, valorRecebimento=0.0, valorDevolvido=0.0, tipoPagamento="Cancelado"):
+        if update_pagamento(
+            pedido=pedido,
+            valorRecebimento=0.0,
+            valorDevolvido=0.0,
+            tipoPagamento="Cancelado",
+        ):
             logging.info("Payment of order updated")
         else:
             logging.info("Payment of order not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     try:
         logging.info("Updating balance of client")
-        if crud.update_balance_client_and_order_cancel(pedido):
+        if update_balance_client_and_order_cancel(pedido):
             logging.info("Balance of client and order updated")
         else:
             logging.info("Balance of client and order not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
-    try: 
+    try:
         logging.info("getting products of order and replacing quantity")
-        if crud.delete_replace_quantity_product(pedido.idPedido):
+        if delete_replace_quantity_product(pedido.idPedido):
             logging.info("Quantity of products replaced")
         else:
             logging.info("Quantity of products not replaced")
@@ -405,24 +498,31 @@ def cancel_order(idPedido: str):
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message":"Erro ao recolocar produtos do pedido: " + str(e)}
+            content={"message": "Erro ao recolocar produtos do pedido: " + str(e)},
         )
     try:
         logging.info("Updating status of order")
-        if crud.update_pedido_status(pedido, "Cancelado"):
+        if update_pedido_status(pedido, "Cancelado"):
             logging.info("Status of order updated")
         else:
             logging.info("Status of order not updated")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": str(e)}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     logging.info("Order canceled successfully")
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido cancelado com sucesso"})
-    
-@router.delete("/delete_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Pedido cancelado com sucesso"},
+    )
+
+
+@router.delete(
+    "/delete_order/{idPedido}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def delete_order(idPedido: str, jwt_token: str = Header()):
     """
     Deleta um pedido.
@@ -431,16 +531,19 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
     logging.info("Deleting products of order {} by {}".format(idPedido, jwt_token))
     logging.info("Getting order")
     try:
-        pedido = crud.get_pedido_by_id(idPedido=idPedido)
+        pedido = get_pedido_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Pedido não encontrado"},
+            )
         logging.info("Order found")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedido: " + str(e)}
+            content={"message": "Erro ao buscar pedido: " + str(e)},
         )
     try:
         logging.info("Verifying if order is not canceled")
@@ -448,18 +551,20 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
             logging.info("Order not canceled")
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Pedido não cancelado, por favor, cancele o pedido antes de excluí-lo!!"}
+                content={
+                    "message": "Pedido não cancelado, por favor, cancele o pedido antes de excluí-lo!!"
+                },
             )
         logging.info("Order canceled")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message":"Erro ao verificar status do pedido: " + str(e)}
+            content={"message": "Erro ao verificar status do pedido: " + str(e)},
         )
     try:
         logging.info("Deleting products of order")
-        if crud.delete_produto_pedido(pedido["idPedido"]):
+        if delete_produto_pedido(pedido["idPedido"]):
             logging.info("Products of order deleted")
         else:
             logging.info("Products of order not deleted")
@@ -467,11 +572,11 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao deletar produtos do pedido: " + str(e)}
+            content={"message": "Erro ao deletar produtos do pedido: " + str(e)},
         )
     try:
         logging.info("Deleting order")
-        if crud.delete_pedido(pedido["idPedido"]):
+        if delete_pedido(pedido["idPedido"]):
             logging.info("Order deleted")
         else:
             logging.info("Order not deleted")
@@ -479,11 +584,11 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro deletar pedido: " + str(e)}
+            content={"message": "Erro deletar pedido: " + str(e)},
         )
     try:
         logging.info("Deleting payment of order")
-        if crud.delete_pagamento(pedido["idPagamento"]):
+        if delete_pagamento(pedido["idPagamento"]):
             logging.info("Payment of order deleted")
         else:
             logging.info("Payment of order not deleted")
@@ -491,19 +596,27 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao deletar pagamento do pedido: " + str(e)}
+            content={"message": "Erro ao deletar pagamento do pedido: " + str(e)},
         )
     logging.info("Order deleted successfully")
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Pedido deletado com sucesso"})
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Pedido deletado com sucesso"},
+    )
 
-@router.get("/get_all_orders/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.get(
+    "/get_all_orders/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def get_all_orders():
     """
     Retorna todos os pedidos.
     """
     try:
         logging.info("Getting all orders")
-        pedidos = crud.get_all_pedidos()
+        pedidos = get_all_pedidos()
         if pedidos is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Orders found")
@@ -512,17 +625,22 @@ def get_all_orders():
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedidos: " + str(e)}
+            content={"message": "Erro ao buscar pedidos: " + str(e)},
         )
 
-@router.get("/get_all_paid_and_canceled_orders/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.get(
+    "/get_all_paid_and_canceled_orders/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def get_all_paid_and_canceled_orders():
     """
     Retorna todos os pedidos pagos e cancelados.
     """
     try:
         logging.info("Getting all paid and canceled orders")
-        pedidos = crud.get_all_pedidos_pagos_cancelados()
+        pedidos = get_all_pedidos_pagos_cancelados()
         if pedidos is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Paid and canceled orders found")
@@ -531,25 +649,33 @@ def get_all_paid_and_canceled_orders():
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedidos pagos e cancelados: " + str(e)}
+            content={"message": "Erro ao buscar pedidos pagos e cancelados: " + str(e)},
         )
 
-@router.get("/get_order/{idPedido}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.get(
+    "/get_order/{idPedido}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def get_order(idPedido: str):
     """
     Retorna um pedido.
     """
     try:
         logging.info("Getting order")
-        pedido = crud.get_pedido_by_id(idPedido=idPedido)
+        pedido = get_pedido_by_id(idPedido=idPedido)
         if pedido is None:
             logging.error("Order not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Pedido não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Pedido não encontrado"},
+            )
         logging.info("Order found")
         return JSONResponse(status_code=status.HTTP_200_OK, content=pedido)
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar pedido: " + str(e)}
+            content={"message": "Erro ao buscar pedido: " + str(e)},
         )

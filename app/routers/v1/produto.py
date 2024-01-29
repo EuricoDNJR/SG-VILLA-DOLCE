@@ -2,16 +2,20 @@ import logging
 from pydantic import BaseModel
 from typing import Optional
 from dependencies import get_token_header
-from database import crud
-from fastapi.responses import JSONResponse, Response
-from fastapi import (
-    APIRouter,
-    status,
-    Header,
-    Depends
+from database.crud.usuario import get_usuario_by_id
+from database.crud.produto import (
+    create_produto,
+    get_product_by_id,
+    get_all_produtos,
+    update_product,
+    delete_product,
 )
+from database.crud.categoria import get_categoria_by_id
+from fastapi.responses import JSONResponse, Response
+from fastapi import APIRouter, status, Header, Depends
 
 router = APIRouter()
+
 
 class CreateProductRequest(BaseModel):
     nome: str
@@ -19,8 +23,13 @@ class CreateProductRequest(BaseModel):
     categoria: str
     valorVenda: float
 
-@router.post("/create_product/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_token_header)])
-def create_product(data:CreateProductRequest, jwt_token: str = Header()):
+
+@router.post(
+    "/create_product/",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_token_header)],
+)
+def create_product(data: CreateProductRequest, jwt_token: str = Header()):
     """
     Criação de produto.
     exemplo de entrada:
@@ -31,7 +40,7 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
             "categoria": "59a4b512-a866-49d5-8103-3bebc632b892",
             "valorVenda": 4.99
         }
-        
+
     exemplo de entrada 2:
 
         {
@@ -42,37 +51,53 @@ def create_product(data:CreateProductRequest, jwt_token: str = Header()):
         }
     """
     try:
-        
         logging.info("Getting user")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
-            
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
+
         logging.info("Creating product by user: " + jwt_token)
-        produto = crud.create_produto(
-            data.nome,
-            data.descricao,
-            data.categoria,
-            data.valorVenda
+        produto = create_produto(
+            data.nome, data.descricao, data.categoria, data.valorVenda
         )
         if produto is None:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao criar produto"}
+                content={"message": "Erro ao criar produto"},
             )
         logging.info("Product created")
-        categoria = crud.get_categoria_by_id(produto.categoria)
-        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"uuid": str(produto.idProduto), "nome": produto.nome, "categoria": categoria.nome, "unidadeMedida": categoria.unidadeMedida, "valorVenda": str(produto.valorVenda), "idCategoria": str(categoria.idCategoria), "quantidade": str(produto.quantidade)})
+        
+        categoria = get_categoria_by_id(produto.categoria)
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "uuid": str(produto.idProduto),
+                "Nome": produto.nome,
+                "categoria": categoria.nome,
+                "unidadeMedida": categoria.unidadeMedida,
+                "valorVenda": str(produto.valorVenda),
+                "idCategoria": str(categoria.idCategoria),
+                "quantidade": str(produto.quantidade),
+            },
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao criar produto: " + str(e)}
+            content={"message": "Erro ao criar produto: " + str(e)},
         )
 
-@router.get("/get_all_products/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.get(
+    "/get_all_products/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def get_all_products():
     """
     Retorna todos os produtos.
@@ -80,7 +105,7 @@ def get_all_products():
     try:
         logging.info("Getting user")
         logging.info("Getting all products")
-        produtos = crud.get_all_produtos()
+        produtos = get_all_produtos()
         if produtos is None:
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         logging.info("Products found")
@@ -89,35 +114,50 @@ def get_all_products():
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar produtos: " + str(e)}
+            content={"message": "Erro ao buscar produtos: " + str(e)},
         )
 
-@router.get("/get_product/{uuid}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+
+@router.get(
+    "/get_product/{uuid}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
 def get_product(uuid: str):
     """
     Retorna um produto.
     """
     try:
         logging.info("Getting product")
-        produto = crud.get_product_by_id(uuid=uuid)
+        produto = get_product_by_id(uuid=uuid)
         if produto is None:
             logging.error("Product not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Produto não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Produto não encontrado"},
+            )
         logging.info("Product found")
-        return JSONResponse(status_code=status.HTTP_200_OK, content={
-            "uuid": str(produto.idProduto), 
-            "Nome": produto.nome, 
-            "Descrição": produto.descricao if produto.descricao is not None else None, 
-            "Categoria": produto.categoria.nome,
-            "Valor de Venda": str(produto.valorVenda), 
-            "Unidade de Medida": produto.categoria.unidadeMedida,
-            "Quantidade em Estoque": str(produto.quantidade)})
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "uuid": str(produto.idProduto),
+                "Nome": produto.nome,
+                "Descrição": produto.descricao
+                if produto.descricao is not None
+                else None,
+                "Categoria": produto.categoria.nome,
+                "Valor de Venda": str(produto.valorVenda),
+                "Unidade de Medida": produto.categoria.unidadeMedida,
+                "Quantidade em Estoque": str(produto.quantidade),
+            },
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao buscar produto: " + str(e)}
+            content={"message": "Erro ao buscar produto: " + str(e)},
         )
+
 
 class UpdateProductRequest(BaseModel):
     nome: Optional[str]
@@ -125,9 +165,16 @@ class UpdateProductRequest(BaseModel):
     categoria: Optional[str]
     valorVenda: Optional[float]
     unidadeMedida: Optional[str]
-   
-@router.patch("/update_product/", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Header()):
+
+
+@router.patch(
+    "/update_product/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def update_product_by_id(
+    data: UpdateProductRequest, uuid: str, jwt_token: str = Header()
+):
     """
     Atualização de produto.
     exemplo de entrada:
@@ -143,55 +190,75 @@ def update_product(data: UpdateProductRequest, uuid: str, jwt_token: str = Heade
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
         logging.info("Updating product")
-        produto = crud.update_product(
+        produto = update_product(
             uuid=uuid,
             nome=data.nome,
             descricao=data.descricao,
             categoria=data.categoria,
             valorVenda=data.valorVenda,
-            unidadeMedida=data.unidadeMedida
+            unidadeMedida=data.unidadeMedida,
         )
         if produto is None:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": "Erro ao atualizar produto"}
+                content={"message": "Erro ao atualizar produto"},
             )
         logging.info("Product updated")
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto atualizado com sucesso"})
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"message": "Produto atualizado com sucesso"},
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao atualizar produto: " + str(e)}
+            content={"message": "Erro ao atualizar produto: " + str(e)},
         )
 
-@router.delete("/delete_product/{uuid}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
-def delete_product(uuid: str, jwt_token: str = Header()):
+
+@router.delete(
+    "/delete_product/{uuid}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def delete_product_by_id(uuid: str, jwt_token: str = Header()):
     """
     Deleção de produto.
     """
     try:
         logging.info("Verifying permission")
         if jwt_token != "test":
-            user = crud.get_usuario_by_id(jwt_token)
+            user = get_usuario_by_id(jwt_token)
             if user["cargo"] != "Admin":
                 logging.error("No Permission")
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "No Permission"})
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No Permission"},
+                )
         logging.info("Deleting product")
-        produto = crud.delete_product(uuid)
+        produto = delete_product(uuid)
         if produto is None:
             logging.error("Product not found")
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "Produto não encontrado"})
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Produto não encontrado"},
+            )
         logging.info("Product deleted")
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Produto deletado com sucesso"})
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"message": "Produto deletado com sucesso"},
+        )
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao deletar produto: " + str(e)}
+            content={"message": "Erro ao deletar produto: " + str(e)},
         )

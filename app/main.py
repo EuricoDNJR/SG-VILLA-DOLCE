@@ -1,6 +1,11 @@
 import logging
 
-logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w', format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    filename="app.log",
+    filemode="w",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 if __name__ == "__main__":
     import uvicorn
@@ -8,9 +13,31 @@ if __name__ == "__main__":
     from fastapi.middleware.cors import CORSMiddleware
     from contextlib import asynccontextmanager
     from database.dbmain import db
-    from database.models import Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo, TipoPagamento, Categoria
+    from database.models import (
+        Usuario,
+        Pagamento,
+        Cliente,
+        Caixa,
+        Produto,
+        Pedido,
+        Estoque,
+        ProdutoPedido,
+        Cargo,
+        TipoPagamento,
+        Categoria,
+    )
     from database.initial_data import create_initial_values
-    from routers.v1 import cliente, usuario, produto, estoque, caixa, pedido, cargo, tipo_pagamento, categoria
+    from routers.v1 import (
+        cliente,
+        usuario,
+        produto,
+        estoque,
+        caixa,
+        pedido,
+        cargo,
+        tipo_pagamento,
+        categoria,
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -18,7 +45,22 @@ if __name__ == "__main__":
         logging.info("Connecting Database")
         db.connect()
         logging.info("Creating Tables")
-        db.create_tables([Usuario, Pagamento, Cliente, Caixa, Produto, Pedido, Estoque, ProdutoPedido, Cargo, TipoPagamento, Categoria], safe=True)
+        db.create_tables(
+            [
+                Usuario,
+                Pagamento,
+                Cliente,
+                Caixa,
+                Produto,
+                Pedido,
+                Estoque,
+                ProdutoPedido,
+                Cargo,
+                TipoPagamento,
+                Categoria,
+            ],
+            safe=True,
+        )
         logging.info("Tables Created")
         logging.info("Creating Initial Values")
         create_initial_values()
@@ -49,7 +91,9 @@ if __name__ == "__main__":
     app.include_router(caixa.router, prefix="/v1/caixa", tags=["Caixa"])
     app.include_router(pedido.router, prefix="/v1/pedido", tags=["Pedido"])
     app.include_router(cargo.router, prefix="/v1/cargo", tags=["Cargo"])
-    app.include_router(tipo_pagamento.router, prefix="/v1/tipo_pagamento", tags=["Tipo Pagamento"])
+    app.include_router(
+        tipo_pagamento.router, prefix="/v1/tipo_pagamento", tags=["Tipo Pagamento"]
+    )
 
     # Adicione qualquer configuração adicional que você precise
     uvicorn.run(app, host="0.0.0.0", port=8000)

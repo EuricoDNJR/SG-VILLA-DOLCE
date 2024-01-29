@@ -1,4 +1,4 @@
-![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)
+![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)![Electron.js](https://img.shields.io/badge/Electron-191970?style=for-the-badge&logo=Electron&logoColor=white)![Vuetify](https://img.shields.io/badge/Vuetify-1867C0?style=for-the-badge&logo=vuetify&logoColor=AEDDFF)![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)![Poetry](https://img.shields.io/badge/Poetry-%233B82F6.svg?style=for-the-badge&logo=poetry&logoColor=0B3D8D)![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white)![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 
 # Sistema para Gerenciamento VILLA DOLCE
 
@@ -19,8 +19,12 @@ TEST = "OFF"
 ADMIN_PASSWORD = "123"
 ```
 
-A instalação de tais requisitos(pip install ...):
+### :heavy_check_mark: Instalação dos requisitos 
+A instalação de tais requisitos pode ser feita de duas maneiras:
 
+#### :memo: Utilizando pip e requirements.txt
+
+Crie um arquivo `requirements.txt` e coloque esses packages abaixo:
 ```
 fastapi==0.104.1
 uvicorn==0.20.0
@@ -28,9 +32,36 @@ peewee==3.16.3
 passlib==1.7.4
 pydantic==1.10.13
 python-dotenv==1.0.0
-psycopg2==2.9.9
+psycopg2-binary==2.9.9
 ```
 
+Em seguida execute no terminal:
+
+```
+pip install -r requirements.txt
+```
+
+#### :gear: Utilizando Poetry
+
+O [Poetry](https://python-poetry.org/) é uma ferramenta de gerenciamento de dependências e empacotamento para projetos Python. Ele simplifica o processo de gerenciamento de dependências, permitindo que você especifique as bibliotecas necessárias para o seu projeto em um arquivo `pyproject.toml` e, em seguida, instale todas as dependências com um único comando.
+
+Dito isso, é bem simples, primeiro instale o Poetry, uma das formas é com o próprio pip, por exemplo:
+
+`pip install poetry`
+
+Vá ao diretório raiz do projeto e em seguida configure o Poetry para criar e gerenciar ambientes virtuais dentro do próprio diretório do projeto:
+
+`poetry config virtualenvs.in-project true`
+
+Depois instale as dependências do projeto listadas no arquivo `pyproject.toml`:
+
+`poetry install`
+
+Por fim, ative o shell dentro do ambiente virtual gerenciado pelo Poetry:
+
+`poetry shell`
+
+### :card_index_dividers: Subindo o banco de dados
 Caso queira rodar em um docker-compose:
 
 ```
