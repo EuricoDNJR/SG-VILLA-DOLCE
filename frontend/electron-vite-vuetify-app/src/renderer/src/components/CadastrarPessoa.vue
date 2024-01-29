@@ -1,22 +1,46 @@
 <script setup>
-import { ref, reactive } from 'vue'
-import CardForm from './CardForm.vue'
+    import { ref, reactive, computed, watch } from 'vue'
+    import CardForm from './CardForm.vue'
 
-const props = defineProps(['title', 'loadingBtn', 'configs', 'fixies']);
-const emit = defineEmits(['cadastrarPessoa']);
+    const props = defineProps(['title', 'loadingBtn', 'configs', 'fixies']);
+    const emit = defineEmits(['cadastrarPessoa']);
 
-const isVisible = reactive({
-    dialogCadastrarPessoa: false,
-});
+    const loadingBtn = computed(() => props.loadingBtn);
 
-function emitCadastrarPessoa(body){
-    emit('cadastrarPessoa', body);
-}
+    const eventFunctions = {
+        fechar: () => isVisible.dialogCadastrarPessoa = false,
+        cadastrar: (body) => {
+            emit('cadastrarPessoa', body);
+        },
+    };
+    const customBtns = ref([
+        {text: 'Fechar', variant: 'text', icon: undefined, color: undefined, clickEvent: 'fechar', needFormData: false, loading: false},
+        {text: 'Cadastrar', variant: 'flat', icon: 'mdi-account-plus', color: 'blue-darken-1', clickEvent: 'cadastrar', needFormData: true, loading: false},
+    ]);
 
-function openDialog(){
-    isVisible.dialogCadastrarPessoa = true;
-}
+    const btnCadastrar = customBtns.value[1];
 
+    const isVisible = reactive({
+        dialogCadastrarPessoa: false,
+    });
+
+    function btnClicked({event, body}){
+        const func = eventFunctions[event];
+
+        if(body){
+            func(body);
+        }else{
+            func();
+        }   
+    }
+
+    function openDialog(){
+        isVisible.dialogCadastrarPessoa = true;
+    }
+
+    watch(loadingBtn, (newValue, oldValue) => {
+        btnCadastrar.loading = newValue;
+    });
 </script>
 
 <template>
@@ -41,16 +65,12 @@ function openDialog(){
         persistent
         width="1024"
     >
-        <CardForm
+        <CardForm 
             :title="props.title"
             :configs="props.configs"
             :fixies="props.fixies"
-            btnText="Cadastrar"
-            btnIcon="mdi-account-plus"
-            btnColor="blue-darken-1"
-            :loading="props.loadingBtn"
-            @submit="emitCadastrarPessoa"
-            @close="isVisible.dialogCadastrarPessoa = false"
+            :customBtns="customBtns"
+            @clicked="btnClicked"
         />
     </v-dialog>
 </template>

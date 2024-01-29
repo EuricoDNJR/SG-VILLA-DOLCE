@@ -26,6 +26,12 @@ export const useAuthStore = defineStore('auth', {
         this.nome = nome;
         this.cargo = cargo;
       },
+      setNome(nome){
+        this.nome = nome;
+      },
+      setCargo(cargo){
+        this.cargo = cargo;
+      },
       reset() {
         this.token = null;
         this.img = null;

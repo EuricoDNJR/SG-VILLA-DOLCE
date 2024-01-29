@@ -183,7 +183,7 @@
         </template>
 
         <template v-slot:item.quantidade="{ value }">
-          {{ value.replace(".", ",") }}
+          {{ Number(value).toFixed(3).replace(".", ",") }}
         </template>
 
         <template v-slot:item.acoes="{ item }">

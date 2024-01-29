@@ -1,6 +1,6 @@
 <script setup>
-  import { ref, reactive, computed, toRaw, watch, onMounted } from 'vue'
-  import { fetchGet, fetchPost, fetchPatch, fetchDelete, getAuthToken, getCargoUser, setMessageSnackbar, createCelula, isEmptyObject, confirmDialog, exist } from '../utils/common'
+  import { ref, reactive, onMounted } from 'vue'
+  import { fetchGet, fetchPost, fetchPatch, fetchDelete, getAuthToken, getCargoUser, setMessageSnackbar, createCelula, confirmDialog } from '../utils/common'
   import Snackbar from '../components/Snackbar.vue';
   import Pessoas from '../components/Pessoas.vue';
   
@@ -9,16 +9,28 @@
   });
 
   const clientes = ref([]);
-  const configs = ref([
-    [createCelula('nome', 'Nome', 'text', true), createCelula('telefone', 'Telefone', 'text', true)],
-    [createCelula('email', 'Email', 'text'), createCelula('cpf', 'CPF', 'text')],
+  const configsRegister = ref([
+    [createCelula({key:'nome', title:'Nome', required:true}), createCelula({key:'telefone', title:'Telefone', required:true})],
+    [createCelula({key:'email', title:'Email'}), createCelula({key:'cpf', title:'CPF'})],
+  ]);
+  const configsPessoasInfo = ref([
+    [createCelula({key:'nome', title:'Nome', readonly:true, variant:'underlined'}), createCelula({key:'telefone', title:'Telefone', readonly:true, variant:'underlined'})],
+    [createCelula({key:'email', title:'Email', readonly:true, variant:'underlined'}), createCelula({key:'cpf', title:'CPF', readonly:true, variant:'underlined'})],
+    [createCelula({key:'dataNascimento', title:'Data de Nascimento', type: 'date', readonly:true, variant:'underlined'}), createCelula({key:'endereco', title:'Endereço', readonly:true, variant:'underlined'})],
   ]);
 
+  const reloadPessoaInfo = ref(false);
+  const loadingCardUpdate = ref(false);
+  
   if(getCargoUser() == "Admin"){
-    configs.value.push([createCelula('dataNascimento', 'Data de Nascimento', 'date'), createCelula('saldo', 'Saldo', 'number', true)])
-    configs.value.push([createCelula('endereco', 'Endereço', 'text')]);
+    configsRegister.value.push([createCelula({key:'dataNascimento', title:'Data de Nascimento', type: 'date'}), createCelula({key:'saldo', title:'Saldo', type: 'number', required:true})]);
+    configsRegister.value.push([createCelula({key:'endereco', title:'Endereço'})]);
+
+    configsPessoasInfo.value.push([createCelula({key:'saldo', title:'Saldo', type: 'number', card: {color: 'green-darken-1', icon: 'mdi-currency-brl'}, readonly:true, variant:'underlined'})]);
   }else{
-    configs.value.push([createCelula('dataNascimento', 'Data de Nascimento', 'date'), createCelula('endereco', 'Endereço', 'text')])
+    configsRegister.value.push([createCelula({key:'dataNascimento', title:'Data de Nascimento', type: 'date'}), createCelula({key:'endereco', title:'Endereço'})]);
+
+    configsPessoasInfo.value.push([createCelula({key:'saldo', title:'Saldo', type: 'number', isEditable: false, card: {color: 'green-darken-1', icon: 'mdi-currency-brl'}, readonly:true, variant:'underlined'})]);
   }
 
   const loadingBtn = reactive({
@@ -79,29 +91,34 @@
     loadingBtn.cadastrarCliente = false;
   }
 
-  async function updatePessoaInfo(id=idPessoa.value, rota=props.rotaUpdatePessoa){
-    const infoChange = toRaw(pessoaInfoChange.attrs);
+  async function requestAtualizarCliente(cliente, infosChange){
+    loadingCardUpdate.value = true;
 
-    if(!isEmptyObject(infoChange)){
-        try{
-            const url = rota + `${id}/`;
-            const body = infoChange;
-            const token = authStore.getToken;   
+    try{
+      const url = `http://127.0.0.1:8000/v1/cliente/update_cliente/${cliente.idCliente}/`;
+      const body = infosChange;
+      const token = getAuthToken();   
 
-            const response = await fetchPatch(url, body, token);
-            const responseJson = await response.json();
-            
-            if(response.status === 200){
-                pessoaStore.update(infoChange);
-                snackbarStore.set(`As informações do ${pessoaStore.getPessoa.nome} foram atualizadas com sucesso`, "success");
-            }else{
-                snackbarStore.set(responseJson.message, "warning");
-            }
-        }catch(e){
-            console.log(e);
-            snackbarStore.set(`Falha ao atualizar informações do ${pessoaStore.getPessoa.nome}`, "warning");
+      const response = await fetchPatch(url, body, token);
+      const responseJson = await response.json();
+      
+      if(response.status === 200){
+        for(let key in infosChange){
+          cliente[key] = infosChange[key];
         }
+
+        reloadPessoaInfo.value = !reloadPessoaInfo.value;
+
+        setMessageSnackbar(`As informações do ${cliente.nome} foram atualizadas com sucesso`, "success");
+      }else{
+        setMessageSnackbar(responseJson.message, "warning");
+      }
+    }catch(e){
+      console.log(e);
+      setMessageSnackbar(`Falha ao atualizar informações do ${cliente.nome}`, "warning");
     }
+
+    loadingCardUpdate.value = false;
   }
 
   async function requestRemoverCliente(cliente){
@@ -161,12 +178,16 @@
       :pessoas="clientes"
       registerTitle="Cadastrar Cliente"
       :loadingBtnRegister="loadingBtn.cadastrarCliente"
-      :configs="configs"
-      :fixies="[]"
+      :configsRegister="configsRegister"
+      :fixiesRegister="[]"
+      :configsPessoaInfo="configsPessoasInfo"
+      :fixiesPessoaInfo="[]"
       @cadastrarPessoa="requestCadastrarCliente"
       @removerPessoa="removerClienteConfirmation"
+      @atualizarPessoa="requestAtualizarCliente"
+      :reloadPessoaInfo="reloadPessoaInfo"
+      :loadingCardUpdate="loadingCardUpdate"
     />
-    <!-- rotaUpdatePessoa="http://127.0.0.1:8000/v1/cliente/update_cliente/" -->
 </template>
 
 <style scoped>

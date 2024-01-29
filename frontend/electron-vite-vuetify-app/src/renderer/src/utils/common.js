@@ -14,6 +14,17 @@ export function getCargoUser(){
     return authStore.getCargo;
 }
 
+export function setAuthNomeECargo(nome, cargo){
+    const authStore = useAuthStore();
+    
+    if(nome){
+        authStore.setNome(nome);
+    }
+    if(cargo){
+        authStore.setCargo(cargo);
+    }
+}
+
 export function setMessageSnackbar(msg, messageType){
     const snackbarStore = useSnackbarStore();
     
@@ -152,13 +163,15 @@ export function getObjByKeys(obj, keys){
     return obj;
 }
 
-export function createCelula({key, title, type, required, initalValue}){
-    title = title ? title : key;
-    type = type ? type : 'text';
-    required = required ? required : false;
-    initalValue = initalValue ?initalValue : '';
+export function createCelula({key, title, type, required, initialValue, isEditable, card, readonly, variant}){
+    title = (title != undefined) ? title : key;
+    type = (type != undefined) ? type : 'text';
+    required = (required != undefined) ? required : false;
+    initialValue = (initialValue != undefined) ? initialValue : '';
+    isEditable = (isEditable != undefined) ? isEditable : true;
+    readonly = (readonly != undefined) ? readonly : false;
 
-    return {"key": key, "title": title, "type": type, "required": required, 'initalValue': initalValue};
+    return {'key': key, 'title': title, 'type': type, 'required': required, 'initialValue': initialValue, 'isEditable': isEditable, 'card': card, 'readonly': readonly, 'variant': variant};
 }
 
 export function createFormFields(configs, fixies=[]){
@@ -172,10 +185,14 @@ export function createFormFields(configs, fixies=[]){
             const obj = {
                 key: celulaForm.key,
                 title: celulaForm.title,
-                obj: ref(celulaForm.initalValue),
+                obj: ref(celulaForm.initialValue),
                 type: celulaForm.type,
                 error: ref(false),
                 required: celulaForm.required,
+                isEditable: celulaForm.isEditable,
+                card: celulaForm.card,
+                readonly: celulaForm.readonly,
+                variant: celulaForm.variant,
             };
 
             fieldsObj[celulaForm.title] = obj;

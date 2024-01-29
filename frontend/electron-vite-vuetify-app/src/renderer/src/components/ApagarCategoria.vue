@@ -8,15 +8,23 @@
 
   const reloadVar = ref(false);
 
+  const eventFunctions = {
+    fechar: () => isVisible.dialogCategoriaApagada = false,
+    apagar: (body) => emitCategoriaApagada(body),
+  };
+
+  const customBtns = ref([
+    {text: 'Fechar', variant: 'text', icon: undefined, color: undefined, clickEvent: 'fechar', needFormData: false, loading: false},
+    {text: 'Apagar', variant: 'flat', icon: 'mdi-book-minus-outline', color: 'red-darken-1', clickEvent: 'apagar', needFormData: true, loading: false},
+  ]);
+  const apagarBtn = customBtns.value[1];
+
   const isVisible = reactive({
     dialogCategoriaApagada: false,
   });
-  const loadingBtn = reactive({
-    categoriaApagada: false,
-  });
 
   async function emitCategoriaApagada(body){
-    loadingBtn.categoriaApagada = true;
+    apagarBtn.loading = true;
 
     try{
       const url = `http://127.0.0.1:8000/v1/categoria/delete_category/${body.idCategoria}/`;
@@ -39,11 +47,21 @@
       setMessageSnackbar("Falha ao apagar categoria", 'warning');
     }        
 
-    loadingBtn.categoriaApagada = false;
+    apagarBtn.loading = false;
   }
 
   function reload(){
     reloadVar.value = !reloadVar.value;
+  }
+
+  function btnClicked({event, body}){
+    const func = eventFunctions[event];
+
+    if(body){
+        func(body);
+    }else{
+        func();
+    }   
   }
 </script>
 
@@ -64,24 +82,21 @@
       </v-btn>
     </template>
     
-    <CardForm :key="reloadVar"
-      title="Apagar Categoria"
-      :configs="[
-          [createCelula('idCategoria', 'Categoria', 'autocomplete', true)],
-      ]"
-      :fixies="[ 
+    <div :key="reloadVar">
+      <CardForm
+        title="Apagar Categoria"
+        :configs="[
+          [createCelula({key: 'idCategoria', title: 'Categoria', type: 'autocomplete', required: true})],
+        ]"
+        :fixies="[ 
           ['Categoria.items', props.categorias],
           ['Categoria.itemsTitle', 'nome'],
           ['Categoria.itemsValue', 'idCategoria'],
-          ['Categoria.obj.value', ''],
-      ]"
-      btnText="Apagar"
-      btnIcon="mdi-book-minus-outline"
-      btnColor="red-darken-1"
-      :loading="loadingBtn.categoriaApagada"
-      @submit="emitCategoriaApagada"
-      @close="isVisible.dialogCategoriaApagada = false"
-    />
+        ]"
+        :customBtns="customBtns"
+        @clicked="btnClicked"
+      />
+    </div>
   </v-dialog>
 </template>
 <style scoped>

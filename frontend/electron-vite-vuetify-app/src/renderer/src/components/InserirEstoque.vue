@@ -1,5 +1,5 @@
 <script setup>
-  import { reactive } from 'vue';
+  import { ref, reactive } from 'vue';
   import { createCelula, getAuthToken, setMessageSnackbar, fetchPost } from '../utils/common';
   import CardForm from '../components/CardForm.vue';
 
@@ -9,12 +9,20 @@
   const isVisible = reactive({
     dialogInserirEstoque: false,
   });
-  const loadingBtn = reactive({
-    inserirEstoque: false,
-  });
+
+  const eventFunctions = {
+    fechar: () => isVisible.dialogInserirEstoque = false,
+    inserir: (body) => emitEstoqueInserido(body),
+  };
+
+  const customBtns = ref([
+    {text: 'Fechar', variant: 'text', icon: undefined, color: undefined, clickEvent: 'fechar', needFormData: false, loading: false},
+    {text: 'Inserir', variant: 'flat', icon: 'mdi-plus-minus-box', color: 'blue-darken-1', clickEvent: 'inserir', needFormData: true, loading: false},
+  ]);
+  const inserirBtn = customBtns.value[1];
 
   async function emitEstoqueInserido(body){
-    loadingBtn.inserirEstoque = true;
+    inserirBtn.loading = true;
 
     try{
       const url = "http://127.0.0.1:8000/v1/estoque/create_stock_registre/";
@@ -37,7 +45,17 @@
       setMessageSnackbar("Falha ao inserir estoque", 'warning');
     }        
 
-    loadingBtn.inserirEstoque = false;
+    inserirBtn.loading = false;
+  }
+
+  function btnClicked({event, body}){
+    const func = eventFunctions[event];
+
+    if(body){
+      func(body);
+    }else{
+      func();
+    }   
   }
 </script>
 
@@ -57,27 +75,21 @@
         Inserir Estoque
       </v-btn>
     </template>
-
     <CardForm
-      title="Inserir Estoque"
-      :configs="[
-          [createCelula('idProduto', 'Produto', 'select', true), createCelula('quantidade', 'Quantidade', 'number', true)],
-          [createCelula('dataEntrada', 'Data de Entrada', 'date', true), createCelula('dataVencimento', 'Data de Vencimento', 'date')],
-          [createCelula('observacoes', 'Observações', 'text')],
-      ]"
-      :fixies="[
-          ['Produto.items', props.produtos],
-          ['Produto.itemsTitle', 'nome'],
-          ['Produto.itemsValue', 'idProduto'],
-          ['Produto.obj.value', props.produtos.length > 0 ? props.produtos[0].idProduto : ''],
-      ]"
-      btnText="Inserir"
-      btnIcon="mdi-plus-minus-box"
-      btnColor="blue-darken-1"
-      :loading="loadingBtn.inserirEstoque"
-      @submit="emitEstoqueInserido"
-      @close="isVisible.dialogInserirEstoque = false"
-    />
+        title="Inserir Estoque"
+        :configs="[
+          [createCelula({key: 'idProduto', title: 'Produto', type: 'select', required: true, initialValue: props.produtos.length > 0 ? props.produtos[0].idProduto : ''}), createCelula({key: 'quantidade', title: 'Quantidade', type: 'number', required: true})],
+          [createCelula({key: 'dataEntrada', title: 'Data de Entrada', type: 'date', required: true}), createCelula({key: 'dataVencimento', title: 'Data de Vencimento', type: 'date'})],
+          [createCelula({key: 'observacoes', title: 'Observações'})],
+        ]"
+        :fixies="[
+            ['Produto.items', props.produtos],
+            ['Produto.itemsTitle', 'nome'],
+            ['Produto.itemsValue', 'idProduto'],
+        ]"
+        :customBtns="customBtns"
+        @clicked="btnClicked"
+      />
   </v-dialog>
 </template>
 

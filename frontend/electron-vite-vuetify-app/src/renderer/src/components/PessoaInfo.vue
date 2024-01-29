@@ -1,28 +1,59 @@
 <script setup>
 import { ref } from 'vue'
-import { createCelula } from '../utils/common'
+import { isEmptyObject } from '../utils/common'
 import CardForm from './CardForm.vue'
 
-const props = defineProps(['pessoa']);
+const props = defineProps(['pessoa', 'configs', 'fixies', 'loadingCardUpdate']);
 const emit = defineEmits(['atualizarPessoa', 'removerPessoa']);
 
+const reloadVar = ref(false);
+
+const configs = props.configs;
+configs.forEach(configArray => {
+    configArray.forEach(celula => {
+        const initialValue = props.pessoa[celula.key];
+        
+        celula.initialValue = initialValue ? initialValue : '';
+    });
+});
+
 const eventFunctions = {
-    editar: setSalvarBtn,
-    salvar: () => {
-        emit('atualizarPessoa');
+    editar: () => {
+        configs.forEach(configArray => {
+            configArray.forEach(celula => {
+                if(celula.isEditable){
+                    celula.readonly = false;
+                }
+            });
+        });
+
+        setSalvarBtn();
+
+        reload();
+    },
+    salvar: (body) => {
+        const pessoaInfosChange = infosChangesPessoa(body);
+
+        if(!isEmptyObject(pessoaInfosChange)){
+            emit('atualizarPessoa', props.pessoa, pessoaInfosChange);
+        }
+
+        configs.forEach(configArray => {
+            configArray.forEach(celula => {               
+                celula.readonly = true;
+            });
+        });
+        
         setEditarBtn();
+        
+        reload();
     },
     remover: () => emit('removerPessoa', props.pessoa),
 };
 
-const configs = ref([
-    [createCelula({key:'nome', title:'Nome', required: true, initalValue: props.pessoa.nome}), createCelula({key:'telefone', title:'Telefone', required: true})],
-    [createCelula({key:'email', title:'Email'}), createCelula({key:'cpf', title:'CPF'})],
-]);
-
 const customBtns = ref([
-    {text: 'Editar', variant: 'flat', icon: 'mdi-pencil', color: 'blue-darken-1', clickEvent: 'editar'},
-    {text: 'Remover', variant: 'flat', icon: 'mdi-delete', color: 'red-darken-1', clickEvent: 'remover'},
+    {text: 'Editar', variant: 'flat', icon: 'mdi-pencil', color: 'blue-darken-1', clickEvent: 'editar', needFormData: false},
+    {text: 'Remover', variant: 'flat', icon: 'mdi-delete', color: 'red-darken-1', clickEvent: 'remover', needFormData: false},
 ]);
 const editSaveBtn = customBtns.value[0];
 
@@ -31,6 +62,7 @@ function setSalvarBtn(){
     editSaveBtn.icon = 'mdi-content-save';
     editSaveBtn.color = 'green-darken-1';
     editSaveBtn.clickEvent = 'salvar';
+    editSaveBtn.needFormData = true;
 }
 
 function setEditarBtn(){
@@ -38,278 +70,46 @@ function setEditarBtn(){
     editSaveBtn.icon = 'mdi-pencil';
     editSaveBtn.color = 'blue-darken-1';
     editSaveBtn.clickEvent = 'editar';
+    editSaveBtn.needFormData = false;
 }
 
-function btnClicked(event){
+function btnClicked({event, body}){
     const func = eventFunctions[event];
 
-    func();
+    if(body){
+        func(body);
+    }else{
+        func();
+    }   
 }
 
+function infosChangesPessoa(body){
+    const pessoa = {};
 
+    for(let key in body){
+        if(props.pessoa[key] != body[key]){
+            pessoa[key] = body[key];
+        }
+    }
 
-// class PessoaInfoChange {
-//   constructor(attrs) {
-//     this._attrs = reactive(attrs);
-//   }
+    return pessoa;
+}
 
-//   get attrs() {
-//     return this._attrs;
-//   }
-
-//   set attrs(obj) {
-//     this._attrs = reactive(obj);
-//   }
-
-//   setAttr(attr, valor){
-//     this._attrs[attr] = valor;
-//   }
-
-//   reset(){
-//     for (const key of Object.keys(this._attrs)) {
-//         delete this._attrs[key];
-//     }
-//   } 
-// }
-
-
-
-// const atributosGerais = ref(getAtributosGerais());
-// const atributosEspecificos = ref(getAtributosEspecificos());
-// const pessoaInfoChange = new PessoaInfoChange({});
-// const pageWasClosed = ref(false);
-// const editSaveBtn = new EditSaveBtn({
-//     text: "Editar",
-//     color: "blue",
-//     icon: "mdi-pencil",
-// });
-// const isEditable = ref(false);
-
-
-// function getAtributosGerais(){
-//     const atributosGerais = [];
-
-//     const nome = createComputedWithGetSet("nome");
-//     const telefone = createComputedWithGetSet("telefone");
-//     const email = createComputedWithGetSet("email");
-//     const cpf = createComputedWithGetSet("cpf");
-//     const dataNascimento = createComputedWithGetSet("dataNascimento");
-//     const endereco = createComputedWithGetSet("endereco");
-
-//     atributosGerais.push([{
-//             title: "Nome",
-//             value: nome,
-//             type: "text",
-//         },
-//         {
-//             title: "Telefone",
-//             value: telefone,
-//             type: "text",
-//         }
-//     ]);
-
-//     atributosGerais.push([{
-//             title: "Email",
-//             value: email,
-//             type: "text",
-//         },
-//         {
-//             title: "CPF",
-//             value: cpf,
-//             type: "text",
-//         }
-//     ]);
-
-//     atributosGerais.push([{
-//             title: "Data de Nascimento",
-//             value: dataNascimento,
-//             type: "date",
-//         },
-//         {
-//             title: "Endereço",
-//             value: endereco,
-//             type: "text",
-//         }
-//     ]);
-
-//     return atributosGerais;
-// }
-
-// function getAtributosEspecificos(){
-//     const atributosEspecificos = [];
-
-//     if(props.tipoPessoa === "Clientes"){
-//         const saldo = computed(() => Number(props.pessoa.saldo).toFixed(2).replace('.', ','));
-//         const pontos = computed(() => Math.floor(Number(props.pessoa.saldo/15)).toFixed(2).replace('.', ','));
-
-//         atributosEspecificos.push({
-//             color: "green",
-//             icon: "mdi-currency-brl",
-//             title: "Saldo",
-//             value: saldo,
-//             isEditable: false,
-//             isSelect: false,
-//         });
-
-//         atributosEspecificos.push({
-//             color: "purple",
-//             icon: "mdi-star",
-//             title: "Pontos",
-//             value: pontos,
-//             isEditable: false,
-//             isSelect: false,
-//         });
-//     }else if(props.tipoPessoa === "Colaboradores"){
-//         const cargo = createComputedWithGetSet("cargo");
-
-//         atributosEspecificos.push({
-//             color: "black",
-//             icon: "mdi-shield-crown",
-//             title: "Cargo",
-//             value: cargo,
-//             isEditable: true,
-//             isSelect: true,
-//             items: cargoStore.getCargos,
-//         });
-//     }
-
-//     return atributosEspecificos;
-// }
-
-// function savePessoaInStore(pessoa){
-//     let isNewPessoa = undefined;
-
-//     try{
-//       isNewPessoa = pessoaStore.idPessoa != pessoaStore.getId(pessoa);
-//     }catch{
-//       isNewPessoa = true
-//     }
-
-//     if(isNewPessoa){
-//       pessoaStore.setPessoa(pessoa);
-//     }
-// }
-
-// function createComputedWithGetSet(attr){
-//     const varComputed = computed({
-//         get() {
-//             let value = pessoaInfoChange.attrs[attr];
-
-//             if(pageWasClosed.value){
-//                 value = pessoaStore.getOldPessoa[attr]
-//             }else if(!exist(value)){
-//                 value = pessoaStore.getPessoa[attr];  
-//             }
-                
-//             return value;
-//         },
-//         set(newValue) {
-//             pessoaInfoChange.setAttr(attr, newValue);
-//         }
-//     });
-
-//     return varComputed;
-// }
-
-// async function ToogleEditablePessoaInfo(){
-//     if(editSaveBtn.isSalvarBtn()){
-//         isEditable.value = false;
-
-//         await updatePessoaInfo();
-
-//         pessoaInfoChange.reset();
-//     }else{
-//         isEditable.value = true;
-//     }
-
-//     editSaveBtn.toogle();
-// }
-
-
-// watch(idPessoa, (newId, oldId) => {
-//     pageWasClosed.value = true;
-// });
-
+function reload(){
+    reloadVar.value = !reloadVar.value;
+}
 </script>
 
 <template>
-    <CardForm
-        :configs="configs"
-        :fixies="[]"
-        :customBtns="customBtns"
-        @clicked="btnClicked"
-    />
-        <!-- :loading="props.loadingBtn"
-        @submit="emitCadastrarPessoa"
-        @close="isVisible.dialogCadastrarPessoa = false" -->
-    <!-- <form @submit.prevent="">
-        
-        <v-row v-for="(atributos, i) in atributosGerais" :key="i">
-            <v-col v-for="(atributo, j) in atributos" :key="j">
-                <v-text-field
-                    variant="underlined"
-                    v-model="atributo.value"
-                    :label="atributo.title"
-                    :type="atributo.type"
-                    hide-details="auto"
-                    :readonly="!isEditable"
-                ></v-text-field>
-            </v-col>
-        </v-row>
-        
-        <v-row class="mb-4"> 
-            <v-col v-for="(atributo, i) in atributosEspecificos" :key="i">
-                <div v-if="isEditable && atributo.isEditable">
-                    <v-select v-if="atributo.isSelect"
-                        v-model="atributo.value"
-                        :label="atributo.title"
-                        :items="atributo.items"
-                        variant="underlined"
-                    ></v-select>
-
-                    <v-text-field v-else
-                        v-model="atributo.value"
-                        :label="atributo.title"
-                        hide-details="auto"
-                        variant="underlined"
-                    ></v-text-field>
-                </div>
-
-                <v-card variant="tonal" :color="atributo.color" v-else>
-                    <v-card-title>
-                        {{ atributo.title }}
-                    </v-card-title>
-                    <v-card-text>
-                        <v-row>
-                            <v-col cols="auto">
-                                <v-icon >{{ atributo.icon }}</v-icon>
-                            </v-col>
-                            <v-col>
-                                <h2>{{ atributo.value }}</h2>
-                            </v-col>
-                        </v-row>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
-
-        <v-btn
-            class="me-4"
-            :color="editSaveBtn.btn.color"
-            @click="ToogleEditablePessoaInfo"
-            :prepend-icon="editSaveBtn.btn.icon"
-        >
-            {{ editSaveBtn.btn.text }}
-        </v-btn>
-
-        <v-btn
-            color="red"
-            @click="deletePessoaConfirmation"
-            prepend-icon="mdi-delete"
-        >
-            Remover
-        </v-btn> 
-    </form> -->
+    <div :key="reloadVar">
+        <CardForm 
+            :configs="configs"
+            :fixies="props.fixies"
+            :customBtns="customBtns"
+            @clicked="btnClicked"
+            :loadingCard="props.loadingCardUpdate"
+        />
+    </div>
 </template>
 
 <style scoped>
