@@ -8,7 +8,10 @@ logging.basicConfig(
 )
 
 if __name__ == "__main__":
+    import os
+    import dotenv
     import uvicorn
+
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
     from contextlib import asynccontextmanager
@@ -38,6 +41,17 @@ if __name__ == "__main__":
         tipo_pagamento,
         categoria,
     )
+
+    dotenv.load_dotenv()
+
+    ENV = os.getenv("ENV")
+    api_version = "v0.1.0"
+
+    api_metadata = {
+        "title": "Villa Dolce API",
+        "description": "API para o sistema de gerenciamento do Açaí Villa Dolce.",
+        "version": api_version,
+    }
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -73,7 +87,23 @@ if __name__ == "__main__":
         db.close()
         logging.info("Database Disconnected")
 
-    app = FastAPI(lifespan=lifespan)
+    if ENV == "development":
+        print("Development")
+        app = FastAPI(
+            title=api_metadata["title"],
+            description=api_metadata["description"],
+            version=api_metadata["version"],
+            lifespan=lifespan,
+        )
+    else:
+        app = FastAPI(
+            title=api_metadata["title"],
+            description=api_metadata["description"],
+            version=api_metadata["version"],
+            docs_url=None,
+            redoc_url=None,
+            lifespan=lifespan,
+        )
 
     app.add_middleware(
         CORSMiddleware,
@@ -94,6 +124,10 @@ if __name__ == "__main__":
     app.include_router(
         tipo_pagamento.router, prefix="/v1/tipo_pagamento", tags=["Tipo Pagamento"]
     )
+
+    @app.get("/")
+    async def root():
+        return {"api-version": api_version}
 
     # Adicione qualquer configuração adicional que você precise
     uvicorn.run(app, host="0.0.0.0", port=8000)

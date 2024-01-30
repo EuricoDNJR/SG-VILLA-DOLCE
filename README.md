@@ -17,6 +17,7 @@ DB_HOST = "localhost"
 DB_PORT = 5432
 TEST = "OFF"
 ADMIN_PASSWORD = "123"
+ENV = "development"
 ```
 
 ### :heavy_check_mark: Instalação dos requisitos 
