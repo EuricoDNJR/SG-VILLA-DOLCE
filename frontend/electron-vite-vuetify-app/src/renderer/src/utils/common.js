@@ -134,7 +134,6 @@ export function isEmptyObject(obj) {
 
 export function confirmDialog(msg, callback){
     window.ipcRenderer.confirmDialog(msg).then((isYes) => {
-        console.log(isYes);
         if(isYes){
             callback();
         }
