@@ -108,6 +108,7 @@ class Pedido(BaseModel):
     idUsuario = ForeignKeyField(Usuario, backref="pedido")
     idCaixa = ForeignKeyField(Caixa, backref="pedido")
     status = CharField()
+    data_criacao = DateField()
 
     class Meta:
         table_name = "Pedido"
