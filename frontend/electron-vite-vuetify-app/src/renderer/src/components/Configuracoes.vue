@@ -1,25 +1,17 @@
 <script setup>
-    import { ref, computed, watch, toRaw } from 'vue'
+    // import { computed } from 'vue'
 
-    const dialog = ref(false); 
+    const props = defineProps(['isVisible']);
+    const emit = defineEmits(['close']);
 </script>
 
 <template>
    <v-dialog
-      v-model="dialog"
+      v-model="props.isVisible"
       fullscreen
       :scrim="false"
       transition="dialog-bottom-transition"
     >
-      <template v-slot:activator="{ props }">
-        <v-btn
-          color="deep-purple"
-          dark
-          v-bind="props"
-        >
-          Open Dialog
-        </v-btn>
-      </template>
       <v-card>
         <v-toolbar
           dark
@@ -28,7 +20,7 @@
           <v-btn
             icon
             dark
-            @click="dialog = false"
+            @click="emit('close')"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>

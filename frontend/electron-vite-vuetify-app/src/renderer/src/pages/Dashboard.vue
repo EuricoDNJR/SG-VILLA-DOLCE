@@ -1,4 +1,3 @@
-
 <script setup>
   import { onMounted, reactive } from 'vue';
   import { fetchGet, getAuthToken, setMessageSnackbar } from '../utils/common';
@@ -26,6 +25,7 @@
 
   const isVisible = reactive({
     pieChart: false,
+    lineChart: false,
   });
     
   async function requestBestSellingCategories(){
@@ -183,9 +183,8 @@
                 return `R$ ${context.parsed.y.toFixed(2).replace('.', ',')}`;
               },
               title: function(context){
-                console.log(context);
                 const datetime = context[0].label;
-                console.log(datetime.split(' '));
+
                 let [mes, dia, ano, hora] = datetime.split(' ');
 
                 return `${dia} de ${mes} de ${ano}`.replaceAll(',', '');
@@ -203,7 +202,7 @@
         options: options,
       });
 
-      isVisible.pieChart = true;
+      isVisible.lineChart = true;
     }
   }
 
@@ -212,16 +211,15 @@
 
     createPieChart();
   });
-
-  
-  </script>
+</script>
 
 <template>
   <Snackbar/>
 
-  <div
+  <div id="line-chart"
     class="pa-4" 
     color="grey-lighten-4"
+    v-show="isVisible.lineChart"
   >
     <canvas  
       id="myLineChart"
@@ -230,7 +228,7 @@
       class="elevation-2 rounded"></canvas>
   </div>
 
-  <div
+  <div id="clientes-mais-compraram-e-produtos-mais-vendidos"
     class="pa-4" 
     color="grey-lighten-4"
   >
@@ -332,7 +330,7 @@
     </v-row>
   </div>
 
-  <div
+  <div id="pie-chart"
     class="pa-4" 
     color="grey-lighten-4"
     style="height: 450px;"
@@ -343,10 +341,8 @@
       width="50"
       height="50"
       class="elevation-2 rounded"></canvas>
-  </div>
-  
+  </div> 
 </template>
 
 <style scoped>
-/* Adicione estilos específicos, se necessário */
 </style>
