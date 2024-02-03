@@ -31,6 +31,7 @@ if __name__ == "__main__":
     )
     from database.initial_data import create_initial_values
     from routers.v1 import (
+        dashboard,
         cliente,
         usuario,
         produto,
@@ -113,6 +114,7 @@ if __name__ == "__main__":
         allow_headers=["*"],
     )
 
+    app.include_router(dashboard.router, prefix="/v1/dashboard", tags=["Dashboard"])
     app.include_router(cliente.router, prefix="/v1/cliente", tags=["Cliente"])
     app.include_router(usuario.router, prefix="/v1/usuario", tags=["Usuario"])
     app.include_router(produto.router, prefix="/v1/produto", tags=["Produto"])
