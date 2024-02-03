@@ -1,5 +1,6 @@
 <script setup>
-  import { ref, computed, reactive } from 'vue'
+  import { ref, computed } from 'vue'
+  import scrollIntoView from 'scroll-into-view-if-needed'
   import PessoaInfo from '../components/PessoaInfo.vue';
   import CadastrarPessoa from '../components/CadastrarPessoa.vue';
   
@@ -20,7 +21,7 @@
   
   const searchText = ref('');
   const pessoaInfoIndex = ref(-1);
-  
+
 
   function emitCadastrarPessoa(body){
     emit('cadastrarPessoa', body);
@@ -38,6 +39,19 @@
 
   function closePessoaInfo(){
     pessoaInfoIndex.value = -1;
+  }
+
+  function scrollTo(id){
+    const node = document.getElementById(id);
+
+    setTimeout(() => {
+      scrollIntoView(node, {
+        scrollMode: 'if-needed',
+        behavior: 'smooth',
+        block: 'center',
+        
+      })
+    }, 140); 
   }
 </script>
 
@@ -79,7 +93,7 @@
         v-model="pessoaInfoIndex"
       >
         <v-expansion-panel 
-          v-for="(pessoa, i) in pessoasFiltered" :key="i"
+          v-for="(pessoa, i) in pessoasFiltered" :key="i" :id="i" @click="() => scrollTo(i)"
         >
           <v-expansion-panel-title expand-icon="mdi-menu-down">
             <v-row>

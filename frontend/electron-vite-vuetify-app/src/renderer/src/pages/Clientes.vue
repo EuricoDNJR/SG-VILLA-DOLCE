@@ -63,18 +63,20 @@
   async function requestCadastrarCliente(body){
     loadingBtn.cadastrarCliente = true;
 
+    if(body.saldo){
+      body.saldo = Number(body.saldo).toFixed(2);
+    }else{
+      body.saldo = "0.00"; 
+    }
+
     try{
         const url = "http://127.0.0.1:8000/v1/cliente/create_client/";
         const token = getAuthToken();
 
-        if(getCargoUser() != "Admin"){
-          body.saldo = "0.00";
-        }
-        
         const response = await fetchPost(url, body, token);
         const responseJson = await response.json();
         
-        if(response.status === 201){       
+        if(response.status === 201){    
             Object.assign(body, responseJson);    
 
             adicionarCliente(body);
