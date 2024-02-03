@@ -1,7 +1,10 @@
 
 <script setup>
-  import { onMounted } from 'vue';
+  import { onMounted, reactive } from 'vue';
+  import { fetchGet, getAuthToken, setMessageSnackbar } from '../utils/common';
   import { Chart, registerables } from 'chart.js';
+  import 'chartjs-adapter-date-fns';
+  import Snackbar from '../components/Snackbar.vue';
 
   defineOptions({
     inheritAttrs: false
@@ -21,87 +24,138 @@
     }
   };
 
-  function pie(){
-    const data = {
-      labels: ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'],
-      datasets: [{
-        data: [20, 20, 15, 25, 15, 30], // Substitua esses valores pelos seus próprios dados
-        backgroundColor: [
-          'rgba(25, 118, 210, 0.7)',
-          'rgba(139, 195, 74, 0.7)',
-          'rgba(255, 193, 7, 0.7)',
-          'rgba(248, 121, 121, 0.7)',
-          'rgba(103, 58, 183, 0.7)',
-          'rgba(255, 165, 0, 0.7)',
-        ],
-      }]
-  };
+  const isVisible = reactive({
+    pieChart: false,
+  });
+    
+  async function requestBestSellingCategories(){
+    let bestSellingCategories = undefined;
 
-    // Opções do gráfico
-    const options = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        title: {
-          display: true,
-          text: 'Categorias mais vendidas',
-          font: {
-            size: 18
-          },
-        },
-        customCanvasBackgroundColor: {
-          color: 'white',
-        },
-      },
-      devicePixelRatio: 4,
-    };
+    try{
+      const url = "http://127.0.0.1:8000/v1/dashboard/best-selling-categories/"
+      const token = getAuthToken();
+      
+      const response = await fetchGet(url, token);
 
-    // Criar o gráfico
-    const ctx = document.getElementById('myPieChart').getContext('2d');
-    const myPieChart = new Chart(ctx, {
-      type: 'pie',
+      if(response.status != 204){
+        const responseJson = await response.json();
+
+        if(response.status === 200){
+          bestSellingCategories = responseJson;
+        }else{
+          setMessageSnackbar(responseJson.message, 'warning');
+        }
+      }
+    }catch(e){
+      console.log(e);
+      setMessageSnackbar("Falha ao carregar categorias mais vendidas", 'warning');
+    }
+
+    return bestSellingCategories;
+  } 
+
+  function createChart({id, type, data, options}){
+    const ctx = document.getElementById(id).getContext('2d');
+
+    new Chart(ctx, {
+      type: type,
       data: data,
       options: options,
       plugins: [plugin],
     });
   }
-  
 
-  onMounted(() => {
-    pie();
-    const ctx = document.getElementById('chartCanvas').getContext('2d');
+  async function createPieChart(){
+    const bestSellingCategories = await requestBestSellingCategories();
 
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio'],
-        datasets: [
-          {
-            
-            label: 'Vendas Semestrais',
-            data: [20, 65, 60, 100, 75],
-            lineTension: 0.2,
-            borderColor: '#1976D2',
-            backgroundColor: 'rgba(25, 118, 210, 0.3)', // Preenchimento de fundo
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: '#1976D2',
-            fill: true,
+    if(bestSellingCategories){
+      const data = {
+        labels: [],
+        datasets: [{
+          data: [],
+        }]
+      };
+      bestSellingCategories.forEach((sellingCategorie) => {
+        data.labels.push(sellingCategorie.categoria);
+        data.datasets[0].data.push(Number(sellingCategorie.total_vendido));
+      });
+
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
           },
-        ],
-      },
-      options: {
+          title: {
+            display: true,
+            text: 'Categorias mais vendidas no semestre',
+            font: {
+              size: 18
+            },
+          },
+          customCanvasBackgroundColor: {
+            color: 'white',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context){
+                return `R$ ${context.parsed.toFixed(2).replace('.', ',')}`;
+              },
+            }
+          },
+        },
+        devicePixelRatio: 4,
+      };
+
+      createChart({
+        id: 'myPieChart', 
+        type: 'pie', 
+        data: data, 
+        options: options,
+      });
+
+      isVisible.pieChart = true;
+    }
+  }
+  
+  async function createLineChart(){
+    const bestSellingCategories = await requestBestSellingCategories();
+
+    if(bestSellingCategories){
+      const data = {
+        labels: [],
+        datasets: [{
+          label: 'Vendas Semestrais',
+          data: [],
+          lineTension: 0.2,
+          borderColor: '#1976D2',
+          backgroundColor: 'rgba(25, 118, 210, 0.3)', // Preenchimento de fundo
+          borderWidth: 1,
+          pointRadius: 3,
+          pointBackgroundColor: '#1976D2',
+          fill: true,
+        }]
+      };
+      
+      const hoje = new Date;
+      bestSellingCategories.forEach((sellingCategorie) => {
+        // data.labels.push(sellingCategorie.categoria);
+        data.labels.push(hoje.setDate(hoje.getDate() - 50));
+        data.datasets[0].data.push(Number(sellingCategorie.total_vendido));
+      });
+
+      const options = {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
           x: {
-            type: 'category',
-            labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio'],
+            type: 'time',
+            time: {
+              unit: 'month',
+            },
             grid: {
-              display: false
+              display: false,
             }
           },
           y: {
@@ -122,25 +176,55 @@
           },
           customCanvasBackgroundColor: {
             color: 'white',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context){
+                return `R$ ${context.parsed.y.toFixed(2).replace('.', ',')}`;
+              },
+              title: function(context){
+                console.log(context);
+                const datetime = context[0].label;
+                console.log(datetime.split(' '));
+                let [mes, dia, ano, hora] = datetime.split(' ');
+
+                return `${dia} de ${mes} de ${ano}`.replaceAll(',', '');
+              }
+            }
           }
         },
         devicePixelRatio: 4,
-      },
-      plugins: [plugin],
-      
-    });
+      };
+
+      createChart({
+        id: 'myLineChart', 
+        type: 'line', 
+        data: data, 
+        options: options,
+      });
+
+      isVisible.pieChart = true;
+    }
+  }
+
+  onMounted(() => {
+    createLineChart();
+
+    createPieChart();
   });
 
   
   </script>
 
 <template>
+  <Snackbar/>
+
   <div
     class="pa-4" 
     color="grey-lighten-4"
   >
     <canvas  
-      id="chartCanvas"
+      id="myLineChart"
       width="400"
       height="400"
       class="elevation-2 rounded"></canvas>
@@ -252,6 +336,7 @@
     class="pa-4" 
     color="grey-lighten-4"
     style="height: 450px;"
+    v-show="isVisible.pieChart"
   >
     <canvas  
       id="myPieChart"
