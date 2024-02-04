@@ -50,7 +50,7 @@ def create_open_caixa(data: CaixaRequest, jwt_token: str = Header()):
         logging.info("recording cash start:" + jwt_token)
 
         agora = datetime.now()
-        dataAbertura = agora.strftime("%Y-%m-%d")
+        dataAbertura = agora.strftime("%d-%m-%Y")
         horaAbertura = agora.strftime("%H:%M:%S")
 
         caixa = open_caixa(

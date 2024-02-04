@@ -108,7 +108,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
         idUsuario=jwt_token,
         idCaixa=data.idCaixa,
         status=data.status,
-        data_criacao=data_criacao,
+        data_criacao=data_criacao.strftime("%d/%m/%Y"),
     )
     if pedido is None:
         return JSONResponse(
