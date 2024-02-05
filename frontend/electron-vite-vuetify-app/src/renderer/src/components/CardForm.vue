@@ -32,6 +32,7 @@
         const something = {};
         
         for(let title in fieldsObj){
+            console.log(fieldsObj[title].obj.value);
             something[fieldsObj[title].key] = fieldsObj[title].obj.value.trim();
         }
 

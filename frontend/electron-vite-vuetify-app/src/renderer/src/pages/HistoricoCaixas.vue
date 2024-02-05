@@ -2,12 +2,14 @@
   import { ref, computed, reactive, onMounted } from 'vue'
   import { fetchGet, getAuthToken, setMessageSnackbar, getFormatedDatetime } from '../utils/common';
   import Snackbar from '../components/Snackbar.vue';
+  import CaixaInfos from '../components/CaixaInfos.vue';
 
   defineOptions({
     inheritAttrs: false
   });
 
   const caixas = ref([]);
+  let caixaProps = undefined;
   const calculatedRows = computed(() => {
     const matrix = [[]];
 
@@ -28,6 +30,7 @@
 
     return matrix;
   });
+  const isCaixasList = ref(true);
 
   async function requestAllCaixas(){
     try{
@@ -40,8 +43,7 @@
         const responseJson = await response.json();
 
         if(response.status === 200){
-          caixas.value = responseJson;
-          console.log(responseJson);
+          caixas.value = responseJson.reverse();
         }else{
           setMessageSnackbar(responseJson.message, 'warning');
         }
@@ -51,6 +53,16 @@
       setMessageSnackbar("Falha ao carregar caixas", 'warning');
     }
   }
+
+  function toCaixaInfos(caixa){
+    isCaixasList.value = false;
+
+    caixaProps = caixa;
+  } 
+
+  function toCaixaList(){
+    isCaixasList.value = true;
+  } 
 
   onMounted(() => {
     requestAllCaixas();
@@ -68,18 +80,20 @@
     </template>
   </v-app-bar>
 
-  <div class="pa-4">
-    <v-row v-for="(rowCaixas, rowIndex) in calculatedRows" :key="rowIndex">
+  <div class="pa-4" v-if="isCaixasList">
+    <v-row v-for="(rowCaixas, rowIndex) in calculatedRows" :key="rowIndex" >
       <v-col
         v-for="caixa in rowCaixas"
         :key="caixa.idCaixa"
         cols="12"
         sm="6"
         md="4"
+        
       >
         <v-card
-          class="mb-4 border-start-card"
-          @click="() => toEditarPedido(pedido)"
+          class="mb-4 border-start-card h-100"
+          @click="() => toCaixaInfos(caixa)"
+          
         >
         <v-card-item>
           <v-card-title><span class="text-green">R$ {{ caixa.SaldoFinal.replace('.', ',') }}</span> de vendas</v-card-title>
@@ -98,13 +112,13 @@
             </p>
           </v-chip>
 
-          <v-chip color="green">
+          <v-chip color="green" v-if="!caixa.aberto">
             <p>
-              <strong>{{ caixa.nomeUsuarioAbertura }}</strong> fechou o caixa
+              <strong>{{ caixa.nomeUsuarioFechamento }}</strong> fechou o caixa
             </p>
           </v-chip>
 
-          <p class="mt-6">
+          <p class="mt-6" v-if="!caixa.aberto">
             Caixa fechado em {{ getFormatedDatetime(caixa.dataFechamento) }}
           </p>
         </v-card-text>
@@ -112,6 +126,11 @@
         </v-card>
       </v-col>
     </v-row>
+  </div>
+  <div v-else>
+    <CaixaInfos 
+      :caixa="caixaProps"
+      @voltar="toCaixaList"/>
   </div>
 </template>
 
