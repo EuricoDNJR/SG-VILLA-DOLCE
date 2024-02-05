@@ -119,6 +119,7 @@
           </v-chip>
 
           <p class="mt-6" v-if="!caixa.aberto">
+            <v-icon>mdi-clock-outline</v-icon>
             Caixa fechado em {{ getFormatedDatetime(caixa.dataFechamento) }}
           </p>
         </v-card-text>
