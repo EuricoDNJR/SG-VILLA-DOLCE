@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/best-selling-categories/",
+    "/best_selling_categories/",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_token_header)],
 )
@@ -62,7 +62,7 @@ def get_clients_who_most_purchased():
 
 
 @router.get(
-    "/top-selling-products/",
+    "/top_selling_products/",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_token_header)],
 )

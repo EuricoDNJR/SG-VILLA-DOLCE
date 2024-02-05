@@ -1,5 +1,5 @@
 <script setup>
-  import { onMounted, reactive } from 'vue';
+  import { ref, onMounted, reactive } from 'vue';
   import { fetchGet, getAuthToken, setMessageSnackbar } from '../utils/common';
   import { Chart, registerables } from 'chart.js';
   import 'chartjs-adapter-date-fns';
@@ -23,6 +23,9 @@
     }
   };
 
+  const clientsWhoMostPurchased = ref([]);
+  const topSellingProducts = ref([]);
+  
   const isVisible = reactive({
     pieChart: false,
     lineChart: false,
@@ -32,7 +35,7 @@
     let bestSellingCategories = undefined;
 
     try{
-      const url = "http://127.0.0.1:8000/v1/dashboard/best-selling-categories/"
+      const url = "http://127.0.0.1:8000/v1/dashboard/best_selling_categories/"
       const token = getAuthToken();
       
       const response = await fetchGet(url, token);
@@ -53,6 +56,77 @@
 
     return bestSellingCategories;
   } 
+
+  async function requestMonthlySalesOfTheSemester(){
+    let monthlySalesOfTheSemester = undefined;
+
+    try{
+      const url = "http://127.0.0.1:8000/v1/dashboard/monthly_sales_of_the_semester/"
+      const token = getAuthToken();
+      
+      const response = await fetchGet(url, token);
+
+      if(response.status != 204){
+        const responseJson = await response.json();
+
+        if(response.status === 200){
+          monthlySalesOfTheSemester = responseJson;
+          console.log(responseJson);
+        }else{
+          setMessageSnackbar(responseJson.message, 'warning');
+        }
+      }
+    }catch(e){
+      console.log(e);
+      setMessageSnackbar("Falha ao carregar vendas semestrais", 'warning');
+    }
+
+    return monthlySalesOfTheSemester;
+  } 
+  
+  async function requestClientsWhoMostPurchased(){
+    try{
+      const url = "http://127.0.0.1:8000/v1/dashboard/clients_who_most_purchased/"
+      const token = getAuthToken();
+      
+      const response = await fetchGet(url, token);
+
+      if(response.status != 204){
+        const responseJson = await response.json();
+
+        if(response.status === 200){
+          clientsWhoMostPurchased.value = responseJson;
+        }else{
+          setMessageSnackbar(responseJson.message, 'warning');
+        }
+      }
+    }catch(e){
+      console.log(e);
+      setMessageSnackbar("Falha ao carregar clientes que mais compraram", 'warning');
+    }
+  }
+
+  async function requestTopSellingProducts(){
+    try{
+      const url = "http://127.0.0.1:8000/v1/dashboard/top_selling_products/"
+      const token = getAuthToken();
+      
+      const response = await fetchGet(url, token);
+
+      if(response.status != 204){
+        const responseJson = await response.json();
+
+        if(response.status === 200){
+          topSellingProducts.value = responseJson;
+        }else{
+          setMessageSnackbar(responseJson.message, 'warning');
+        }
+      }
+    }catch(e){
+      console.log(e);
+      setMessageSnackbar("Falha ao carregar produtos mais vendidos", 'warning');
+    }
+  }
 
   function createChart({id, type, data, options}){
     const ctx = document.getElementById(id).getContext('2d');
@@ -120,9 +194,9 @@
   }
   
   async function createLineChart(){
-    const bestSellingCategories = await requestBestSellingCategories();
+    const monthlySalesOfTheSemester = await requestMonthlySalesOfTheSemester();
 
-    if(bestSellingCategories){
+    if(monthlySalesOfTheSemester){
       const data = {
         labels: [],
         datasets: [{
@@ -138,22 +212,20 @@
         }]
       };
       
-      const hoje = new Date;
-      bestSellingCategories.forEach((sellingCategorie) => {
-        // data.labels.push(sellingCategorie.categoria);
-        data.labels.push(hoje.setDate(hoje.getDate() - 50));
-        data.datasets[0].data.push(Number(sellingCategorie.total_vendido));
-      });
+      for(let month in monthlySalesOfTheSemester){
+        data.labels.push(month);
+        data.datasets[0].data.push(Number(monthlySalesOfTheSemester[month].total_vendas));
+      } 
 
       const options = {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
           x: {
-            type: 'time',
-            time: {
-              unit: 'month',
-            },
+            // type: 'time',
+            // time: {
+            //   unit: 'month',
+            // },
             grid: {
               display: false,
             }
@@ -182,13 +254,13 @@
               label: function(context){
                 return `R$ ${context.parsed.y.toFixed(2).replace('.', ',')}`;
               },
-              title: function(context){
-                const datetime = context[0].label;
+              // title: function(context){
+              //   const datetime = context[0].label;
 
-                let [mes, dia, ano, hora] = datetime.split(' ');
+              //   let [mes, dia, ano, hora] = datetime.split(' ');
 
-                return `${dia} de ${mes} de ${ano}`.replaceAll(',', '');
-              }
+              //   return `${dia} de ${mes} de ${ano}`.replaceAll(',', '');
+              // }
             }
           }
         },
@@ -208,6 +280,10 @@
 
   onMounted(() => {
     createLineChart();
+
+    requestClientsWhoMostPurchased();
+
+    requestTopSellingProducts();
 
     createPieChart();
   });
@@ -243,35 +319,21 @@
               color="primary"
               rounded="xl"
             >
-            
-
-            <!-- <v-list-item
-              v-for="(item, i) in items"
-              :key="i"
-              :value="item"
-              color="primary"
-              rounded="xl"
-            >
-              <template v-slot:prepend>
-                <v-icon :icon="item.icon"></v-icon>
-              </template> -->
-
-              
-              <v-card v-for="(j, i) in [1, 2, 3, 4, 5]" :key="i">
+              <v-card v-for="(cliente, i) in clientsWhoMostPurchased" :key="i">
                 <v-card-item>
                   <template v-slot:prepend>
                     <v-icon icon="mdi-account" color="primary"></v-icon>
                   </template>
 
                   <v-card-title>
-                    João
+                    {{ cliente.nome }}
                     <v-chip color="green">
-                      R$ 1500,30
+                      R$ {{ cliente.total_comprado.replace('.', ',') }}
                     </v-chip> 
                   </v-card-title>
 
                   <v-card-subtitle>
-                    8 pedidos no semestre
+                    {{ cliente.quantidade_pedidos }} pedidos no semestre
                   </v-card-subtitle>
                 </v-card-item>
               </v-card>
@@ -284,43 +346,29 @@
         <v-card
           class="elevation-2 rounded"
         >
-          <v-card-title><strong>Produtos mais vendidos</strong> </v-card-title>
+          <v-card-title><strong>Produtos mais vendidos</strong></v-card-title>
         
           <v-list>
             <v-list-item
               color="primary"
               rounded="xl"
             >
-            
-
-            <!-- <v-list-item
-              v-for="(item, i) in items"
-              :key="i"
-              :value="item"
-              color="primary"
-              rounded="xl"
-            >
-              <template v-slot:prepend>
-                <v-icon :icon="item.icon"></v-icon>
-              </template> -->
-
-              
-              <v-card v-for="(j, i) in [1, 2, 3, 4, 5]" :key="i">
+              <v-card v-for="(produto, i) in topSellingProducts" :key="i">
                 <v-card-item>
                   <template v-slot:prepend>
                     <v-icon icon="mdi-tag" color="primary"></v-icon>
                   </template>
 
                   <v-card-title>
-                    Açaí
+                    {{ produto.nome }}
                     <v-chip color="green">
-                      R$ 1500,30
+                      R$ {{ produto.total_vendido.replace('.', ',') }}
                     </v-chip> 
                   </v-card-title>
 
-                  <v-card-subtitle>
+                  <!-- <v-card-subtitle>
                     8 vendas no semestre
-                  </v-card-subtitle>
+                  </v-card-subtitle> -->
                 </v-card-item>
               </v-card>
             </v-list-item>

@@ -29,15 +29,17 @@ def clientes_que_mais_compraram():
         models.Cliente.select(
             models.Cliente.nome,
             fn.SUM(models.Pagamento.valorTotal).alias("total_comprado"),
+            fn.COUNT(models.Pedido.idPedido).alias("quantidade_pedidos"),
         )
         .join(models.Pedido)
         .join(models.Pagamento)
         .where(models.Pedido.data_criacao > datetime.now() - timedelta(days=180))
         .group_by(models.Cliente.nome)
         .order_by(fn.SUM(models.Pagamento.valorTotal).desc())
+        .limit(6)
     )
     return [
-        {"cliente": cliente.nome, "total_comprado": str(cliente.total_comprado)}
+        {"nome": cliente.nome, "total_comprado": str(cliente.total_comprado), "quantidade_pedidos": cliente.quantidade_pedidos}
         for cliente in query
     ]
 
@@ -53,9 +55,10 @@ def produtos_mais_vendidos():
         .where(models.Pedido.data_criacao > datetime.now() - timedelta(days=180))
         .group_by(models.Produto.nome)
         .order_by(fn.SUM(models.ProdutoPedido.valorTotal).desc())
+        .limit(6)
     )
     return [
-        {"produto": produto.nome, "total_vendido": str(produto.total_vendido)}
+        {"nome": produto.nome, "total_vendido": str(produto.total_vendido)}
         for produto in query
     ]
 
