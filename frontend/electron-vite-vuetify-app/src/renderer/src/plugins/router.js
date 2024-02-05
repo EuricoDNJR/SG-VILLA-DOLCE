@@ -8,6 +8,7 @@ const Clientes = () => import('../pages/Clientes.vue');
 const Colaboradores = () => import('../pages/Colaboradores.vue');
 const Pedidos = () => import('../pages/Pedidos.vue');
 const Produtos = () => import('../pages/Produtos.vue');
+const HistoricoCaixas = () => import('../pages/HistoricoCaixas.vue');
 
 const routes = [
   { 
@@ -49,6 +50,11 @@ const routes = [
         path: 'produtos',
         name: 'produtos',
         component: Produtos,
+      },
+      {
+        path: 'historico-caixas',
+        name: 'historico-caixas',
+        component: HistoricoCaixas,
       },
     ]
   },

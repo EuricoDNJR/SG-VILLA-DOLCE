@@ -222,6 +222,12 @@ export function getFormatedDate(date){
     return null;
 }
 
+export function getFormatedDatetime(datetime){
+    const [data, hora] = datetime.split(' ');
+
+    return `${data.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1')} às ${hora}`;
+}
+
 export function getColorQuantidade(quantidade){
   let color = "black";
   

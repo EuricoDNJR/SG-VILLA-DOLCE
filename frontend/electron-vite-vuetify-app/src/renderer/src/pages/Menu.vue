@@ -54,6 +54,12 @@
             </template>
 
             <Caixa/>
+
+            <v-list-item 
+              append-icon="mdi-history" 
+              link title="Histórico" 
+              to="/menu/historico-caixas/">
+            </v-list-item>
         </v-list-group>
 
         <v-list-item 

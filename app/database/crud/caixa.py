@@ -8,7 +8,6 @@ def open_caixa(
     observacoes,
     horaAbertura,
     idUsuarioAbertura,
-    idUsuarioFechamento=None,
 ):
     return models.Caixa.create(
         saldoInicial=saldoInicial,
@@ -16,7 +15,7 @@ def open_caixa(
         horaAbertura=horaAbertura,
         observacoes=observacoes,
         idUsuarioAbertura=idUsuarioAbertura,
-        idUsuarioFechamento=idUsuarioFechamento,
+        idUsuarioFechamento=idUsuarioAbertura,
     )
 
 
@@ -64,6 +63,8 @@ def get_all_caixa():
                 "observacoes": caixa.observacoes,
                 "somenteDinheiro": str(caixa.somenteDinheiro),
                 "SaldoFinal": str(caixa.saldoFinal),
+                "nomeUsuarioAbertura": caixa.idUsuarioAbertura.nome,
+                "nomeUsuarioFechamento": str(caixa.idUsuarioFechamento.nome),
             }
             for caixa in caixas  # if caixa.aberto == False
         ]
