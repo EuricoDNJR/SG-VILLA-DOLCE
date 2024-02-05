@@ -50,8 +50,9 @@
       v-for="(produto, i) in produtos" :key="i"
     >
       <v-card
-        color="grey-darken-3"
+        
         class="pa-1"
+        variant="tonal"
       >
         <v-card-title>{{ produto.nome }}</v-card-title>
         <v-card-subtitle>{{produto.quantidade.replace('.', ',')}} x {{produto.valorVendaUnd.replace('.', ',')}} = <v-chip color="green" variant="elevated">R$ {{produto.valorTotal.replace('.', ',')}}</v-chip></v-card-subtitle>

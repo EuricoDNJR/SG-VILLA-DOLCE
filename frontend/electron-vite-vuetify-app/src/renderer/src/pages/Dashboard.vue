@@ -310,7 +310,7 @@
     <v-row>
       <v-col>
         <v-card
-          class="elevation-2 rounded"
+          class="elevation-2 rounded h-100"
         >
           <v-card-title><strong>Clientes que mais compraram</strong></v-card-title>
           <v-list>
@@ -343,7 +343,7 @@
 
       <v-col>
         <v-card
-          class="elevation-2 rounded"
+          class="elevation-2 rounded h-100"
         >
           <v-card-title><strong>Produtos mais vendidos</strong></v-card-title>
         
