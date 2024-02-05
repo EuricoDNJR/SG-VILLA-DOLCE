@@ -6,13 +6,14 @@ from .produto_pedido import get_all_produtos_pedidos_by_id
 from .produto import get_product_by_id
 
 
-def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status):
+def create_pedido(idCliente, idPagamento, idUsuario, idCaixa, status, data_criacao):
     return models.Pedido.create(
         idCliente=idCliente,
         idPagamento=idPagamento,
         idUsuario=idUsuario,
         idCaixa=idCaixa,
         status=status,
+        data_criacao=data_criacao,
     )
 
 

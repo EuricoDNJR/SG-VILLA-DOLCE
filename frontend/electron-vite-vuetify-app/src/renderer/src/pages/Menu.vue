@@ -1,8 +1,9 @@
 <script setup>
-  import { computed } from 'vue'
+  import { reactive, computed } from 'vue'
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '../utils/store';
   import Caixa from '../components/Caixa.vue';
+  import Configuracoes from '../components/Configuracoes.vue';
 
   defineOptions({
     inheritAttrs: false
@@ -13,12 +14,15 @@
   const nome = computed(() => authStore.getNome);
   const cargo = computed(() => authStore.getCargo);
 
+  const isVisible = reactive({
+    configuracoes: false,
+  });
+
   function resetUserInfo(){
     authStore.reset();
 
     router.push('/');
   }
-
 </script>
 
 <template>
@@ -82,10 +86,15 @@
           to="/menu/colaboradores/">
         </v-list-item>
         
-        <v-list-item 
+        <v-list-item
           prepend-icon="mdi-cog" 
           link title="Configurações" 
-          to="/menu/configuracoes/">
+          @click="isVisible.configuracoes = true"
+        >
+          <Configuracoes
+            :isVisible="isVisible.configuracoes"
+            @close="isVisible.configuracoes = false"
+          />
         </v-list-item>
       </v-list>
 
@@ -110,9 +119,8 @@
 
 <style scoped>
   main {
-      display: flex;
+    display: flex;
   }
-
   .router-view-div{
     /* padding: 20px 10px 10px 10px; */
     width: 100%;

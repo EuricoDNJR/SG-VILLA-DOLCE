@@ -34,7 +34,7 @@
         for(let title in fieldsObj){
             something[fieldsObj[title].key] = fieldsObj[title].obj.value.trim();
         }
-        
+
         return something;
     }
 

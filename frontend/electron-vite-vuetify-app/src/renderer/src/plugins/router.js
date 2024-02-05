@@ -7,7 +7,6 @@ const Estoque = () => import('../pages/Estoque.vue');
 const Clientes = () => import('../pages/Clientes.vue');
 const Colaboradores = () => import('../pages/Colaboradores.vue');
 const Pedidos = () => import('../pages/Pedidos.vue');
-const Configuracoes = () => import('../pages/Configuracoes.vue');
 const Produtos = () => import('../pages/Produtos.vue');
 
 const routes = [
@@ -45,11 +44,6 @@ const routes = [
         path: 'pedidos',
         name: 'pedidos',
         component: Pedidos,
-      },
-      {
-        path: 'configuracoes',
-        name: 'configuracoes',
-        component: Configuracoes,
       },
       {
         path: 'produtos',

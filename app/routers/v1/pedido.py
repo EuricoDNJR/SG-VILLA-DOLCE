@@ -1,4 +1,5 @@
 import logging
+import datetime
 from pydantic import BaseModel
 from typing import Optional, List
 from decimal import Decimal
@@ -97,6 +98,9 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
             content={"message": "Erro ao criar pagamento"},
         )
     logging.info("Payment created")
+    logging.info("Getting date of creation")
+    data_criacao = datetime.date.today()
+    logging.info("Date of creation obtained")
     logging.info("Creating instance of order")
     pedido = create_pedido(
         idCliente=data.idCliente,
@@ -104,6 +108,7 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
         idUsuario=jwt_token,
         idCaixa=data.idCaixa,
         status=data.status,
+        data_criacao=data_criacao.strftime("%d/%m/%Y"),
     )
     if pedido is None:
         return JSONResponse(

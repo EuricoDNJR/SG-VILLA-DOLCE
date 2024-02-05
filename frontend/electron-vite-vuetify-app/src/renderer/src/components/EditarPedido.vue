@@ -102,31 +102,25 @@
     loading.finalizarBtn = true;
 
     try{
-      const needToSaveChanges =  pedido.value.find(
-            (produto) => produto.id != -1
-      );
+      await requestAddInOrder();
       
-      if(!needToSaveChanges){
-        const url = `http://127.0.0.1:8000/v1/pedido/finish_order/${idPedido}/`;
-        const body = {
-          valorRecebimento: Pagamento.valorRecebimento,
-          valorDevolvido: Pagamento.valorDevolvido,
-          tipoPagamento: Pagamento.pagamentoSelecionado.nome,
-        };
-        const token = authStore.getToken;
+      const url = `http://127.0.0.1:8000/v1/pedido/finish_order/${idPedido}/`;
+      const body = {
+        valorRecebimento: Pagamento.valorRecebimento,
+        valorDevolvido: Pagamento.valorDevolvido,
+        tipoPagamento: Pagamento.pagamentoSelecionado.nome,
+      };
+      const token = authStore.getToken;
 
-        const response = await fetchPatch(url, body, token);
-        const responseJson = await response.json();
+      const response = await fetchPatch(url, body, token);
+      const responseJson = await response.json();
 
-        if(response.status === 200){       
-          emit('pedidoFinished', idPedido);
+      if(response.status === 200){       
+        emit('pedidoFinished', idPedido);
 
-          snackbarStore.set(responseJson.message, 'success');
-        }else{
-          snackbarStore.set(responseJson.message, 'warning');
-        }
+        snackbarStore.set(responseJson.message, 'success');
       }else{
-        snackbarStore.set("Salve as alterações antes de finalizar o pedido", 'info');
+        snackbarStore.set(responseJson.message, 'warning');
       }
     }catch(e){
         console.log(e);
