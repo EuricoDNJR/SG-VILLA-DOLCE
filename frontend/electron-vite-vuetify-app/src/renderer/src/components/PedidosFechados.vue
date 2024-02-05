@@ -1,8 +1,10 @@
 <script setup>
   import { ref, onMounted } from 'vue'
   import { fetchGet, getAuthToken, setMessageSnackbar, getFormatedDate } from '../utils/common';
+  import ListaProdutos from '../components/ListaProdutos.vue';
 
   const pedidosFechados = ref([]);
+  const expanded = ref([]);
   const searchText = ref('');
   const headers = [
     { title: 'Colaborador', key: 'nomeUsuario' },
@@ -65,18 +67,31 @@
       ></v-text-field>
     </v-toolbar>
 
-   <div
+    <div
       class="pa-4" 
       color="grey-lighten-4"
     >
       <v-data-table-virtual
+        v-model:expanded="expanded"
         :headers="headers"
         :items="pedidosFechados"
+        item-value="idPedido"
         :search="searchText"
         hide-no-data
         hover
         class="elevation-2 rounded"
+        show-expand
       >
+        <template v-slot:expanded-row="{ columns, item }">
+          <tr>
+            <td :colspan="columns.length">
+              <ListaProdutos
+                :idPedido="item.idPedido"
+              /> 
+            </td>
+          </tr>
+        </template>
+
         <template v-slot:item.status="{ value }">
           <v-chip :color="getColorStatus(value)">
             {{ value }}
