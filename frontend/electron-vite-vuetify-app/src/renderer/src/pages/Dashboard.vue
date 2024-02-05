@@ -71,7 +71,6 @@
 
         if(response.status === 200){
           monthlySalesOfTheSemester = responseJson;
-          console.log(responseJson);
         }else{
           setMessageSnackbar(responseJson.message, 'warning');
         }

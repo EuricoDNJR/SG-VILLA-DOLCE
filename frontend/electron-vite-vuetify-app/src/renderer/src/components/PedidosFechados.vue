@@ -1,7 +1,7 @@
 <script setup>
   import { ref, onMounted } from 'vue'
-  import { fetchGet, getAuthToken, setMessageSnackbar } from '../utils/common';
-  
+  import { fetchGet, getAuthToken, setMessageSnackbar, getFormatedDate } from '../utils/common';
+
   const pedidosFechados = ref([]);
   const searchText = ref('');
   const headers = [
@@ -12,7 +12,7 @@
     { title: 'Status', key: 'status' },
     { title: 'Tipo de Pagamento', key: 'tipoPagamento' },
     { title: 'Valor Recebido', key: 'valorRecebimento'},
-    { title: 'Valor Devolvido (troco)', key: 'valorDevolvido'},
+    { title: 'Valor Devolvido (troco)', key: 'valorDevolvido'}
   ];
   
   async function requestPedidosFechados(){

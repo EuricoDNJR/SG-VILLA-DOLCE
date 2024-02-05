@@ -73,6 +73,7 @@ def get_all_pedidos():
                 "nomeUsuario": pedido.idUsuario.nome,
                 "idCaixa": str(pedido.idCaixa.idCaixa),
                 "status": pedido.status,
+                "data_criacao": str(pedido.data_criacao),
             }
             for pedido in pedidos
         ]
@@ -103,6 +104,7 @@ def get_all_pedidos_pendentes():
                 "nomeUsuario": pedido.idUsuario.nome,
                 "idCaixa": str(pedido.idCaixa.idCaixa),
                 "status": pedido.status,
+                "data_criacao": str(pedido.data_criacao),
             }
             for pedido in pedidos
             if pedido.status == "Pendente"
@@ -134,6 +136,7 @@ def get_all_pedidos_pagos_cancelados():
                 "nomeUsuario": pedido.idUsuario.nome,
                 "idCaixa": str(pedido.idCaixa.idCaixa),
                 "status": pedido.status,
+                "data_criacao": str(pedido.data_criacao),
             }
             for pedido in pedidos
             if pedido.status == "Pago" or pedido.status == "Cancelado"

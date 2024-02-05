@@ -64,6 +64,7 @@ def get_all_caixa():
                 "observacoes": caixa.observacoes,
                 "somenteDinheiro": str(caixa.somenteDinheiro),
                 "SaldoFinal": str(caixa.saldoFinal),
+                "nomeUsuarioAbertura": caixa.idUsuarioAbertura.nome,
             }
             for caixa in caixas  # if caixa.aberto == False
         ]
