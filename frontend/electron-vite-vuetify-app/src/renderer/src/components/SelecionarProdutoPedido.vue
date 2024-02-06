@@ -175,12 +175,20 @@
       </v-row>
   </v-toolbar>
 
-  <v-data-table-virtual
+  <v-data-table
     :headers="headers"
     :items="produtos"
     :search="searchText"
     hide-no-data
     hover
+    items-per-page-text="Itens por página"
+    :items-per-page-options="[
+      { value: 10, title: '10' },
+      { value: 25, title: '25' },
+      { value: 50, title: '50' },
+      { value: 100, title: '100' },
+      { value: produtos.length, title: 'Todos' }
+    ]"
     class="elevation-2 rounded"
   >
     <template v-slot:item.quantidade="{ value }">
@@ -200,7 +208,7 @@
           }"
       ></v-btn>
     </template>
-  </v-data-table-virtual>
+  </v-data-table>
 </template>
 
 <style scoped>

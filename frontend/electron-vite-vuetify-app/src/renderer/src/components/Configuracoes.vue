@@ -24,8 +24,8 @@
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>Settings</v-toolbar-title>
-          <v-spacer></v-spacer>
+          <v-toolbar-title>Configurações</v-toolbar-title>
+          <!-- <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn
               variant="text"
@@ -33,9 +33,9 @@
             >
               Save
             </v-btn>
-          </v-toolbar-items>
+          </v-toolbar-items> -->
         </v-toolbar>
-        <v-list
+        <!-- <v-list
           lines="two"
           subheader
         >
@@ -64,7 +64,7 @@
               <v-checkbox v-model="widgets"></v-checkbox>
             </template>
           </v-list-item>
-        </v-list>
+        </v-list> -->
       </v-card> 
     </v-dialog>
 </template>
