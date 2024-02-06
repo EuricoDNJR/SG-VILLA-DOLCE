@@ -50,7 +50,6 @@
       v-for="(produto, i) in produtos" :key="i"
     >
       <v-card
-        
         class="pa-1"
         variant="tonal"
       >
