@@ -51,7 +51,7 @@ class Cliente(BaseModel):
 
 class Caixa(BaseModel):
     idCaixa = UUIDField(primary_key=True, default=uuid.uuid4)
-    saldoInicial = DecimalField()
+    saldoInicial = DecimalField(max_digits=10, decimal_places=2, default=0.0)
     dataAbertura = DateField()
     horaAbertura = TimeField()
     dataFechamento = DateTimeField(null=True)

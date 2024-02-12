@@ -7,9 +7,9 @@
   import DescontoPedido from '../components/DescontoPedido.vue';
 
   const props = defineProps(['caixa']);
-  const emit = defineEmits([
-    'voltar',
-  ]);
+  const emit = defineEmits(['voltar']);
+
+  console.log(props.caixa);
 
   // const authStore = useAuthStore();
   // const snackbarStore = useSnackbarStore()
@@ -209,7 +209,105 @@
           Voltar
         </v-tooltip >
       </v-btn>
-    </div>
+  </div>
+
+  <div class="pa-4">
+    <v-card class="mb-1">
+      <v-card-item>
+        <v-row class="d-flex align-center">
+          <v-col>
+            <p class="text-grey text-caption">Saldo Inicial</p>
+            <p class="text-green font-weight-bold">R$ {{ props.caixa.saldoInicial.replace('.', ',')}}</p>
+          </v-col>
+          
+          <v-divider vertical></v-divider>
+
+          <v-col>
+            <p class="text-grey text-caption">Saldo Final</p>
+            <p class="text-green font-weight-bold">R$ {{ props.caixa.saldoFinal.replace('.', ',')}}</p>
+          </v-col>
+
+          <v-divider vertical></v-divider>
+
+          <v-col>
+            <v-chip 
+              :color="props.caixa.aberto ? 'blue' : 'grey'"
+              variant="flat"
+            >
+              Status: {{props.caixa.aberto ? 'Aberto' : 'Fechado'}}
+            </v-chip>
+          </v-col>
+        </v-row>
+      </v-card-item>
+    </v-card>
+
+    <v-card color="grey-lighten-4">
+      <v-card-item>
+        <v-row class="d-flex align-center">
+          <v-col>
+            <p class="text-grey text-caption">Abertura</p>
+            <p>{{getFormatedDate(props.caixa.dataAbertura)}} <v-icon color="primary">mdi-account</v-icon>{{props.caixa.nomeUsuarioAbertura}}</p>
+          </v-col>
+
+          <v-divider vertical></v-divider>
+
+          <v-col>
+            <p class="text-grey text-caption">Fechamento</p>
+            <p v-if="props.caixa.aberto">Indefinido</p>
+            <p v-else>{{getFormatedDate(props.caixa.dataFechamento)}} <v-icon color="primary">mdi-account</v-icon>{{props.caixa.nomeUsuarioFechamento}}</p>
+            
+          </v-col>
+        </v-row>
+      </v-card-item>
+    </v-card>
+    
+    <v-row class="mt-4">
+      <v-col>
+        <v-card>
+          <v-card-title>Caixa</v-card-title>
+          
+          <v-divider></v-divider>
+
+          <v-card-item>
+            <v-list>
+
+            </v-list>
+          </v-card-item>
+        </v-card>
+      </v-col>
+
+      <v-col>
+        <v-card>
+          <v-card-title>Estatísticas</v-card-title>
+          
+          <v-divider></v-divider>
+
+          <v-card-item>
+            <v-list>
+
+            </v-list>
+          </v-card-item>
+        </v-card>
+      </v-col>
+    </v-row>
+  </div>
+  <!-- <v-row class="d-flex align-center">
+              <v-col>
+                <p class="text-grey text-caption">Saldo Final</p>
+                <p class="text-green font-weight-bold">R$ {{ props.caixa.saldoFinal.replace('.', ',')}}</p>
+              </v-col>
+
+              
+
+              <v-col>
+                <v-chip 
+                  :color="props.caixa.aberto ? 'blue' : 'grey'"
+                  variant="flat"
+                >
+                  Status: {{props.caixa.aberto ? 'Aberto' : 'Fechado'}}
+                </v-chip>
+              </v-col>
+            </v-row> -->
 </template>
 
 <style scoped>

@@ -177,7 +177,7 @@
           variant="tonal"
           v-show="messageIsVisible"
           density="compact"
-          class="w-100"
+          class="w-100 text-center"
         ></v-alert>
 
         <v-btn
