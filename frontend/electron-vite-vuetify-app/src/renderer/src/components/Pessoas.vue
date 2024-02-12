@@ -22,7 +22,6 @@
   const searchText = ref('');
   const pessoaInfoIndex = ref(-1);
 
-
   function emitCadastrarPessoa(body){
     emit('cadastrarPessoa', body);
   }
@@ -87,35 +86,74 @@
       </v-row>
     </v-toolbar>
     
-    <v-expansion-panels  
-        class="pa-4" 
-        color="grey-lighten-4"
-        v-model="pessoaInfoIndex"
-      >
-        <v-expansion-panel 
-          v-for="(pessoa, i) in pessoasFiltered" :key="i" :id="i" @click="() => scrollTo(i)"
+    <v-data-iterator 
+      :items="pessoasFiltered" 
+      :items-per-page="15"
+    >
+      <template v-slot:default="{ items }">
+        <v-expansion-panels  
+          class="pa-4" 
+          color="grey-lighten-4"
+          v-model="pessoaInfoIndex"
         >
-          <v-expansion-panel-title expand-icon="mdi-menu-down">
-            <v-row>
-              <v-col><v-icon>mdi-account</v-icon> {{ pessoa.nome }}</v-col>
-              <v-col><v-icon>mdi-cellphone</v-icon> Telefone: {{ pessoa.telefone }}</v-col>
-            </v-row>
-          </v-expansion-panel-title>
+          <template
+            v-for="(item, i) in items"
+            :key="i"
+          >
+            <v-expansion-panel 
+              :id="i" @click="() => scrollTo(i)"
+            >
+              <v-expansion-panel-title expand-icon="mdi-menu-down">
+                <v-row>
+                  <v-col><v-icon>mdi-account</v-icon> {{ item.raw.nome }}</v-col>
+                  <v-col><v-icon>mdi-cellphone</v-icon> Telefone: {{ item.raw.telefone }}</v-col>
+                </v-row>
+              </v-expansion-panel-title>
 
-          <v-expansion-panel-text>
-            <div :key="props.reloadPessoaInfo">
-              <PessoaInfo
-                :pessoa="pessoa"
-                :configs="props.configsPessoaInfo"
-                :fixies="props.fixiesPessoaInfo"
-                @atualizarPessoa="emitAtualizarPessoa"
-                @removerPessoa="emitRemoverPessoa"
-                :loadingCardUpdate="props.loadingCardUpdate"
-              />
-            </div>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-    </v-expansion-panels>
+              <v-expansion-panel-text>
+                <div :key="props.reloadPessoaInfo">
+                  <PessoaInfo
+                    :pessoa="item.raw"
+                    :configs="props.configsPessoaInfo"
+                    :fixies="props.fixiesPessoaInfo"
+                    @atualizarPessoa="emitAtualizarPessoa"
+                    @removerPessoa="emitRemoverPessoa"
+                    :loadingCardUpdate="props.loadingCardUpdate"
+                  />
+                </div>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </template>
+        </v-expansion-panels>
+      </template>
+
+      <template v-slot:footer="{ page, pageCount, prevPage, nextPage }">
+        <div class="d-flex align-center justify-center pa-4">
+          <v-btn
+            :disabled="page === 1"
+            icon="mdi-arrow-left"
+            density="comfortable"
+            variant="tonal"
+            rounded
+            @click="prevPage"
+          ></v-btn>
+
+          <div class="mx-2 text-caption">
+            Página {{ page }} de {{ pageCount }}
+          </div>
+
+          <v-btn
+            :disabled="page >= pageCount"
+            icon="mdi-arrow-right"
+            density="comfortable"
+            variant="tonal"
+            rounded
+            @click="nextPage"
+          ></v-btn>
+        </div>
+      </template>
+    </v-data-iterator>
+    
 </template>
 
 <style scoped>

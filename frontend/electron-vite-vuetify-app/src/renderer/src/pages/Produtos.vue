@@ -123,7 +123,6 @@
   }
 
   function apagarCategoria(obj){
-    console.log(obj);
     const idCategoria = obj.idCategoria;
 
     categorias.value = categorias.value.filter((categoria) => categoria.idCategoria != idCategoria);
@@ -173,7 +172,7 @@
       class="pa-4" 
       color="grey-lighten-4"
     >
-      <v-data-table-virtual
+      <v-data-table
         :headers="headers"
         :items="produtos"
         :search="searchText"
@@ -181,6 +180,14 @@
         hover
         class="elevation-2 rounded"
         multi-line
+        items-per-page-text="Itens por página"
+        :items-per-page-options="[
+          { value: 10, title: '10' },
+          { value: 25, title: '25' },
+          { value: 50, title: '50' },
+          { value: 100, title: '100' },
+          { value: produtos.length, title: 'Todos' }
+        ]"
       >
         <template v-slot:item.quantidade="{ value }">
           <v-chip :color="getColorQuantidade(value)">
@@ -211,7 +218,7 @@
             icon="mdi-delete"
           ></v-btn>
         </template>
-      </v-data-table-virtual>
+      </v-data-table>
     </div>
     
 </template>
