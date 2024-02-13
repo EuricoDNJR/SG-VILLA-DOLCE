@@ -9,6 +9,8 @@
   const props = defineProps(['caixa']);
   const emit = defineEmits(['voltar']);
 
+  const formasPagamento = ref(["Dinheiro", "Pix"]);
+
   console.log(props.caixa);
 
   // const authStore = useAuthStore();
@@ -263,29 +265,103 @@
     
     <v-row class="mt-4">
       <v-col>
-        <v-card>
-          <v-card-title>Caixa</v-card-title>
+        <v-card class="h-100">
+          <v-card-title class="font-weight-bold">Caixa</v-card-title>
           
           <v-divider></v-divider>
 
           <v-card-item>
-            <v-list>
+            <div id="FormasDePagamento">
+              <v-row v-for="(v, i) in formasPagamento" dense>
+                <v-col>
+                  <span class="text-grey-darken-1">{{v}}</span>
+                </v-col>
+                <v-col>
+                  <span class="text-green">R$ 2000,30</span>
+                </v-col>
+              </v-row>
+            </div>
 
-            </v-list>
+            <v-divider class="mt-2 mb-2"></v-divider>
+
+            <div id="EntradasESaidas">
+              <v-row dense>
+                <v-col>
+                  <span class="text-grey-darken-1">Entradas</span>
+                </v-col>
+                <v-col>
+                  <span class="text-green">R$ 2000,30</span>
+                </v-col>
+              </v-row>
+
+              <v-row dense>
+                <v-col>
+                  <span class="text-grey-darken-1">Saídas</span>
+                </v-col>
+                <v-col>
+                  <span class="text-red">R$ 2000,30</span>
+                </v-col>
+              </v-row>
+            </div>
+
+            <v-divider class="mt-2 mb-2"></v-divider>
+
+            <div id="Total">
+              <v-row dense>
+                <v-col>
+                  <span class="font-weight-bold">Total</span>
+                </v-col>
+                <v-col>
+                  <span class="text-green font-weight-bold">R$ 0,00</span>
+                </v-col>
+              </v-row>
+            </div>
           </v-card-item>
         </v-card>
       </v-col>
 
       <v-col>
-        <v-card>
-          <v-card-title>Estatísticas</v-card-title>
+        <v-card class="h-100">
+          <v-card-title class="font-weight-bold">Estatísticas</v-card-title>
           
           <v-divider></v-divider>
 
           <v-card-item>
-            <v-list>
+             <v-row dense>
+                <v-col>
+                  <span class="text-grey-darken-1">Pedidos</span>
+                </v-col>
+                <v-col>
+                  <span>10 pedidos</span>
+                </v-col>
+              </v-row>
 
-            </v-list>
+              <v-row dense>
+                <v-col>
+                  <span class="text-grey-darken-1">Cancelado</span>
+                </v-col>
+                <v-col>
+                  <span>2 pedidos</span>
+                </v-col>
+              </v-row>
+
+              <v-row dense>
+                <v-col>
+                  <span class="text-grey-darken-1">Ticker Médio</span>
+                </v-col>
+                <v-col>
+                  <span class="text-green">R$ 200,03</span>
+                </v-col>
+              </v-row>
+
+              <v-row dense>
+                <v-col>
+                  <span class="text-grey-darken-1">Média de produto</span>
+                </v-col>
+                <v-col>
+                  <span>10,3</span>
+                </v-col>
+              </v-row>
           </v-card-item>
         </v-card>
       </v-col>
