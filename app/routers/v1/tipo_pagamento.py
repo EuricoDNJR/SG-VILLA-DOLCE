@@ -8,6 +8,7 @@ from database.crud.tipo_pagamento import (
     get_all_tipo_pagamentos,
     update_tipo_pagamento,
     delete_payment_type,
+    somatorio_vendas_tipos_pagamento_mes_atual,
 )
 from fastapi.responses import JSONResponse, Response
 from fastapi import APIRouter, status, Depends
@@ -155,4 +156,20 @@ def delete_payment_type_by_id(idTipoPagamento: str):
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Erro ao deletar o Tipo de Pagamento"},
+        )
+
+@router.get("/get_values_payment_type", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)],)
+def get_values_payment_type():
+    try:
+        logging.info("Getting all PaymentTypes")
+        tipo_pagamentos = somatorio_vendas_tipos_pagamento_mes_atual()
+        if tipo_pagamentos is None:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        logging.info("PaymentTypes found")
+        return JSONResponse(status_code=status.HTTP_200_OK, content=tipo_pagamentos)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Erro ao buscar os Tipos de Pagamento" + str(e)},
         )
