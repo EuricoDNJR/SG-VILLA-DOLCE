@@ -207,3 +207,18 @@ def get_sum_type_payment_by_id(idCaixa):
         somatorio_pagamentos[tipo_payment] = str(somatorio_pagamentos[tipo_payment])
 
     return somatorio_pagamentos
+
+def get_inputs_outputs_by_id(idCaixa):
+    somatorio_entradas_saidas = {"entradas": 0, "saidas": 0}
+
+    pagamentos_caixa = models.Pagamento.select().join(models.Pedido).where(models.Pedido.idCaixa == idCaixa)
+
+    # Calcula o somatório das entradas e saídas
+    for pagamento in pagamentos_caixa:
+        somatorio_entradas_saidas["entradas"] += pagamento.valorRecebimento
+        somatorio_entradas_saidas["saidas"] += pagamento.valorDevolvido
+
+    for tipo in somatorio_entradas_saidas:
+        somatorio_entradas_saidas[tipo] = str(somatorio_entradas_saidas[tipo])
+    
+    return somatorio_entradas_saidas

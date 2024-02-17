@@ -12,7 +12,8 @@ from database.crud.caixa import (
     get_all_paid_and_canceled_orders_caixa,
     get_all_pendent_orders_caixa,
     get_first_caixa_open,
-    get_sum_type_payment_by_id
+    get_sum_type_payment_by_id,
+    get_inputs_outputs_by_id,
 )
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
@@ -465,6 +466,42 @@ def get_sum_type_payment(idCaixa: str, jwt_token: str = Header()):
             )
 
         return JSONResponse(status_code=status.HTTP_200_OK, content=payment_values)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao buscar caixa " + str(e)},
+        )
+
+@router.get("/get_inputs_outputs/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_inputs_outputs(idCaixa: str, jwt_token: str = Header()):
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = get_usuario_by_id(jwt_token)
+
+            if user["cargo"] != "Admin":
+                logging.error("No permission")
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No permission"},
+                )
+        logging.info("recording cash start:" + jwt_token)
+
+        if get_caixa_by_id(idCaixa) is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao pesquisar caixa"},
+            )
+
+        input_output = get_inputs_outputs_by_id(idCaixa)
+        if input_output is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao pesquisar caixa"},
+            )
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content=input_output)
     except Exception as e:
         logging.error(e)
         return JSONResponse(
