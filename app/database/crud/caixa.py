@@ -222,3 +222,16 @@ def get_inputs_outputs_by_id(idCaixa):
         somatorio_entradas_saidas[tipo] = str(somatorio_entradas_saidas[tipo])
     
     return somatorio_entradas_saidas
+
+def get_quant_orders_stats_by_id(idCaixa):
+    somatorio_pedidos_status = {"nao_cancelados": 0, "cancelados": 0}
+
+    pedidos_caixa = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+
+    for pedido in pedidos_caixa:
+        if pedido.status in ["Pago", "Pendente"]:
+            somatorio_pedidos_status["nao_cancelados"] += 1
+        elif pedido.status == "Cancelado":
+            somatorio_pedidos_status["cancelados"] += 1
+
+    return somatorio_pedidos_status
