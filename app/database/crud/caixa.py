@@ -1,6 +1,6 @@
 from database import models
 from peewee import DoesNotExist
-
+from collections import defaultdict
 
 def open_caixa(
     saldoInicial,
@@ -45,6 +45,23 @@ def get_caixa(date):
     else:
         None
 
+def get_caixa_by_id(uuid):
+    try:
+        caixa = models.Caixa.get(models.Caixa.idCaixa == uuid)
+        return {
+            "idCaixa": str(caixa.idCaixa),
+            "saldoInicial": str(caixa.saldoInicial),
+            "dataAbertura": str(caixa.dataAbertura),
+            "dataFechamento": str(caixa.dataFechamento),
+            "aberto": caixa.aberto,
+            "observacoes": caixa.observacoes,
+            "somenteDinheiro": str(caixa.somenteDinheiro),
+            "SaldoFinal": str(caixa.saldoFinal),
+            "nomeUsuarioAbertura": caixa.idUsuarioAbertura.nome,
+            "nomeUsuarioFechamento": str(caixa.idUsuarioFechamento.nome),
+        }
+    except DoesNotExist:
+        return None
 
 def get_all_caixa():
     # Tenta buscar todos os caixas
@@ -172,3 +189,21 @@ def get_all_pendent_orders_caixa(idCaixa):
         for pedido in pedidos
         if pedido.status == "Pendente"
     ]
+
+def get_sum_type_payment_by_id(idCaixa):
+    # Inicializa um dicionário padrão para armazenar o somatório das vendas por tipo de pagamento
+    somatorio_pagamentos = defaultdict(int)
+
+    # Executa a consulta para obter os pedidos associados ao caixa especificado
+    pedidos_caixa = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+
+    # Calcula o somatório das vendas por tipo de pagamento
+    for pedido in pedidos_caixa:
+        pagamento = pedido.idPagamento
+        tipo_pagamento = pagamento.tipoPagamento
+        somatorio_pagamentos[tipo_pagamento] += pagamento.valorTotal
+    
+    for tipo_payment in somatorio_pagamentos:
+        somatorio_pagamentos[tipo_payment] = str(somatorio_pagamentos[tipo_payment])
+
+    return somatorio_pagamentos
