@@ -191,47 +191,78 @@ def get_all_pendent_orders_caixa(idCaixa):
     ]
 
 def get_sum_type_payment_by_id(idCaixa):
-    # Inicializa um dicionário padrão para armazenar o somatório das vendas por tipo de pagamento
-    somatorio_pagamentos = defaultdict(int)
+    try:
+        # Inicializa um dicionário padrão para armazenar o somatório das vendas por tipo de pagamento
+        somatorio_pagamentos = defaultdict(int)
 
-    # Executa a consulta para obter os pedidos associados ao caixa especificado
-    pedidos_caixa = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+        # Executa a consulta para obter os pedidos associados ao caixa especificado
+        pedidos_caixa = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
 
-    # Calcula o somatório das vendas por tipo de pagamento
-    for pedido in pedidos_caixa:
-        pagamento = pedido.idPagamento
-        tipo_pagamento = pagamento.tipoPagamento
-        somatorio_pagamentos[tipo_pagamento] += pagamento.valorTotal
+        # Calcula o somatório das vendas por tipo de pagamento
+        for pedido in pedidos_caixa:
+            pagamento = pedido.idPagamento
+            tipo_pagamento = pagamento.tipoPagamento
+            somatorio_pagamentos[tipo_pagamento] += pagamento.valorTotal
+        
+        for tipo_payment in somatorio_pagamentos:
+            somatorio_pagamentos[tipo_payment] = str(somatorio_pagamentos[tipo_payment])
+
+        return somatorio_pagamentos
     
-    for tipo_payment in somatorio_pagamentos:
-        somatorio_pagamentos[tipo_payment] = str(somatorio_pagamentos[tipo_payment])
-
-    return somatorio_pagamentos
+    except Exception:
+        return None
 
 def get_inputs_outputs_by_id(idCaixa):
-    somatorio_entradas_saidas = {"entradas": 0, "saidas": 0}
+    try:
+        somatorio_entradas_saidas = {"entradas": 0, "saidas": 0}
 
-    pagamentos_caixa = models.Pagamento.select().join(models.Pedido).where(models.Pedido.idCaixa == idCaixa)
+        pagamentos_caixa = models.Pagamento.select().join(models.Pedido).where(models.Pedido.idCaixa == idCaixa)
 
-    # Calcula o somatório das entradas e saídas
-    for pagamento in pagamentos_caixa:
-        somatorio_entradas_saidas["entradas"] += pagamento.valorRecebimento
-        somatorio_entradas_saidas["saidas"] += pagamento.valorDevolvido
+        # Calcula o somatório das entradas e saídas
+        for pagamento in pagamentos_caixa:
+            somatorio_entradas_saidas["entradas"] += pagamento.valorRecebimento
+            somatorio_entradas_saidas["saidas"] += pagamento.valorDevolvido
 
-    for tipo in somatorio_entradas_saidas:
-        somatorio_entradas_saidas[tipo] = str(somatorio_entradas_saidas[tipo])
+        for tipo in somatorio_entradas_saidas:
+            somatorio_entradas_saidas[tipo] = str(somatorio_entradas_saidas[tipo])
+        
+        return somatorio_entradas_saidas
     
-    return somatorio_entradas_saidas
+    except Exception:
+        return None
 
 def get_quant_orders_stats_by_id(idCaixa):
-    somatorio_pedidos_status = {"nao_cancelados": 0, "cancelados": 0}
+    try:
 
-    pedidos_caixa = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+        somatorio_pedidos_status = {"nao_cancelados": 0, "cancelados": 0}
 
-    for pedido in pedidos_caixa:
-        if pedido.status in ["Pago", "Pendente"]:
-            somatorio_pedidos_status["nao_cancelados"] += 1
-        elif pedido.status == "Cancelado":
-            somatorio_pedidos_status["cancelados"] += 1
+        pedidos_caixa = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
 
-    return somatorio_pedidos_status
+        for pedido in pedidos_caixa:
+            if pedido.status in ["Pago", "Pendente"]:
+                somatorio_pedidos_status["nao_cancelados"] += 1
+            elif pedido.status == "Cancelado":
+                somatorio_pedidos_status["cancelados"] += 1
+
+        return somatorio_pedidos_status
+    
+    except Exception:
+        return None
+
+def average_products_per_order_by_id(idCaixa):
+    try:
+        total_produtos = 0
+        total_pedidos = 0
+
+        pedidos_caixa = models.Pedido.select().where(models.Pedido.idCaixa == idCaixa)
+
+        for pedido in pedidos_caixa:
+            total_produtos += pedido.quantidade_produtos_pedido
+            total_pedidos += 1
+
+        media_produtos_por_pedido = total_produtos / total_pedidos if total_pedidos > 0 else 0
+
+        return media_produtos_por_pedido
+    
+    except Exception:
+        return None
