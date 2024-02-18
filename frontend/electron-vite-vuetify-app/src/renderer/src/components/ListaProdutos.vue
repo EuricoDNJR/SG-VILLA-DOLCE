@@ -20,6 +20,8 @@
 
         if(response.status == 200){
           pedido = responseJson;
+
+          console.log(pedido);
         }else{
           setMessageSnackbar(responseJson.message, 'warning');
         }

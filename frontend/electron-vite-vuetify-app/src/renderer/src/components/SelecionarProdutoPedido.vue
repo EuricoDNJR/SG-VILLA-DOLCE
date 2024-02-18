@@ -1,13 +1,12 @@
 <script setup>
   import { ref, computed, reactive, watch } from 'vue'
-  import { fetchGet, getColorQuantidade } from '../utils/common';
+  import { fetchGet, getColorQuantidade, setMessageSnackbar } from '../utils/common';
   import { useAuthStore, useSnackbarStore } from '../utils/store';
   
   const props = defineProps(['produtoRemovido']);
   const emit = defineEmits(['produtoAdicionado']);
 
   const authStore = useAuthStore();
-  const snackbarStore = useSnackbarStore();
 
   const produtoWasRemoved = computed(() => props.produtoRemovido.wasRemoved);
 
@@ -38,16 +37,19 @@
       const token = authStore.getToken;
   
       const response = await fetchGet(url, token);
-      const responseJson = await response.json();
 
-      if(response.status === 200){
-        produtos.value = responseJson;
-      }else{
-        snackbarStore.set(responseJson.message, 'warning');
+      if(response.status != 204){
+        const responseJson = await response.json();
+
+        if(response.status === 200){
+          produtos.value = responseJson;
+        }else{
+          setMessageSnackbar(responseJson.message, 'warning');
+        }
       }
     }catch(e){
       console.log(e);
-      snackbarStore.set(`Falha ao carregar`, 'warning');
+      setMessageSnackbar("Falha ao carregar produtos", 'warning');
     }
   }
 
@@ -71,7 +73,7 @@
 
       closeDialog();
     }else{
-      snackbarStore.set("Quantidade inválida", 'warning');
+      setMessageSnackbar("Quantidade inválida", 'warning');
     }
   }
 
