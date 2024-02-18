@@ -1,6 +1,7 @@
 from database import models
 from peewee import DoesNotExist
-
+from collections import defaultdict
+from datetime import datetime
 
 def create_tipo_pagamento(nome):
     return models.TipoPagamento.create(nome=nome)
