@@ -79,7 +79,7 @@ def get_all_caixa():
                 "aberto": caixa.aberto,
                 "observacoes": caixa.observacoes,
                 "somenteDinheiro": str(caixa.somenteDinheiro),
-                "SaldoFinal": str(caixa.saldoFinal),
+                "saldoFinal": str(caixa.saldoFinal),
                 "nomeUsuarioAbertura": caixa.idUsuarioAbertura.nome,
                 "nomeUsuarioFechamento": str(caixa.idUsuarioFechamento.nome),
             }
@@ -101,7 +101,7 @@ def get_first_caixa_open():
             "aberto": caixa.aberto,
             "observacoes": caixa.observacoes,
             "somenteDinheiro": str(caixa.somenteDinheiro),
-            "SaldoFinal": str(caixa.saldoFinal),
+            "saldoFinal": str(caixa.saldoFinal),
         }
     except DoesNotExist:
         return None

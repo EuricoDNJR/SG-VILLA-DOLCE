@@ -214,9 +214,11 @@ export function createFormFields(configs, fixies=[]){
     return [fieldsObj, fieldsArray];
 }
 
-export function getFormatedDate(date){
-    if(date){
-        return date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
+export function getFormatedDate(datetime){
+    if(datetime){
+        const [data, hora] = datetime.split(' ');
+
+        return data.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
     }
     
     return null;

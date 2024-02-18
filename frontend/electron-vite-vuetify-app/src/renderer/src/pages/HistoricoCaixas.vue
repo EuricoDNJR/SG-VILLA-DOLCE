@@ -96,7 +96,7 @@
           
         >
         <v-card-item>
-          <v-card-title><span class="text-green">R$ {{ caixa.SaldoFinal.replace('.', ',') }}</span> de vendas</v-card-title>
+          <v-card-title><span class="text-green">R$ {{ caixa.saldoFinal.replace('.', ',') }}</span> de vendas</v-card-title>
 
           <v-card-subtitle>
             <span class="me-1">Status: {{ caixa.aberto ? "Aberto" : "Fechado" }}</span>
