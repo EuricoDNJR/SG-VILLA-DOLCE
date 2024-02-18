@@ -7,10 +7,15 @@ from database.crud.caixa import (
     close_caixa,
     update_novo_saldoInicial,
     get_caixa,
+    get_caixa_by_id,
     get_all_caixa,
     get_all_paid_and_canceled_orders_caixa,
     get_all_pendent_orders_caixa,
     get_first_caixa_open,
+    get_sum_type_payment_by_id,
+    get_inputs_outputs_by_id,
+    get_quant_orders_stats_by_id,
+    average_products_per_order_by_id,
 )
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
@@ -433,3 +438,145 @@ def get_first_caixa_op(jwt_token: str = Header()):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao buscar caixa " + str(e)},
         )
+
+@router.get("/get_sum_type_payment/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_sum_type_payment(idCaixa: str, jwt_token: str = Header()):
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = get_usuario_by_id(jwt_token)
+
+            if user["cargo"] != "Admin":
+                logging.error("No permission")
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No permission"},
+                )
+        logging.info("recording cash start:" + jwt_token)
+
+        if get_caixa_by_id(idCaixa) is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao pesquisar caixa"},
+            )
+
+        payment_values = get_sum_type_payment_by_id(idCaixa)
+        if payment_values is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao calcular os pagamentos de cada tipo do caixa"},
+            )
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content=payment_values)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao executar a função " + str(e)},
+        )
+
+@router.get("/get_inputs_outputs/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_inputs_outputs(idCaixa: str, jwt_token: str = Header()):
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = get_usuario_by_id(jwt_token)
+
+            if user["cargo"] != "Admin":
+                logging.error("No permission")
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No permission"},
+                )
+        logging.info("recording cash start:" + jwt_token)
+
+        if get_caixa_by_id(idCaixa) is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao pesquisar caixa"},
+            )
+
+        input_output = get_inputs_outputs_by_id(idCaixa)
+        if input_output is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao calcular as entradas e saidas do caixa"},
+            )
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content=input_output)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao executar a função " + str(e)},
+        )
+    
+@router.get("/get_quant_orders_stats/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def get_quant_orders_stats(idCaixa: str, jwt_token: str = Header()):
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = get_usuario_by_id(jwt_token)
+
+            if user["cargo"] != "Admin":
+                logging.error("No permission")
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No permission"},
+                )
+        logging.info("recording cash start:" + jwt_token)
+        if get_caixa_by_id(idCaixa) is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao pesquisar caixa"},
+            )
+        
+        quant_orders = get_quant_orders_stats_by_id(idCaixa)
+        if quant_orders is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao contabilizar os pedidos cancelados e não cancelados do caixa"},
+            )
+        return JSONResponse(status_code=status.HTTP_200_OK, content=quant_orders)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao executar a função " + str(e)},
+        )
+    
+@router.get("/average_products_per_order/{idCaixa}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_token_header)])
+def average_products_per_order(idCaixa: str, jwt_token: str = Header()):
+    try:
+        logging.info("Getting user")
+        if jwt_token != "test":
+            user = get_usuario_by_id(jwt_token)
+
+            if user["cargo"] != "Admin":
+                logging.error("No permission")
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"message": "No permission"},
+                )
+        logging.info("recording cash start:" + jwt_token)
+        if get_caixa_by_id(idCaixa) is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao pesquisar caixa"},
+            )
+        
+        average_products = average_products_per_order_by_id(idCaixa)
+        if average_products is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao calcular a media dos produtos dos pedidos do caixa"},
+            )
+        
+        return JSONResponse(status_code=status.HTTP_200_OK, content=average_products)
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao executar a função " + str(e)},
+        )
+        

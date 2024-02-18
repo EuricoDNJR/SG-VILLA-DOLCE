@@ -8,7 +8,6 @@ from database.crud.tipo_pagamento import (
     get_all_tipo_pagamentos,
     update_tipo_pagamento,
     delete_payment_type,
-    somatorio_vendas_tipos_pagamento_mes_atual,
 )
 from fastapi.responses import JSONResponse, Response
 from fastapi import APIRouter, status, Depends

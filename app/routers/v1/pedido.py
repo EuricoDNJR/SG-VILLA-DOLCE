@@ -119,19 +119,24 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     try:
         logging.info("adding products to order")
         for produto in data.idProdutos:
-            create_produto_pedido(
+            produto_pedido = create_produto_pedido(
                 idPedido=pedido.idPedido,
                 idProduto=produto.idProduto,
                 quantidade=produto.quantidade,
                 valorVendaUnd=produto.valorVendaUnd,
                 desconto=produto.desconto,
             )
+            if produto_pedido.idProduto.categoria.unidadeMedida == "UND":
+                pedido.quantidade_produtos_pedido += int(produto.quantidade)
+            else:
+                pedido.quantidade_produtos_pedido += 1
+        pedido.save()
         logging.info("Products added to order")
     except Exception as e:
         logging.error(e)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Erro ao adicionar produtos ao pedido"},
+            content={"message": "Erro ao adicionar produtos ao pedido" + str(e)},
         )
     try:
         logging.info("Updating quantity of products")
@@ -265,6 +270,11 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
                 logging.info("Balance of client and order updated")
             else:
                 logging.info("Balance of client and order not updated")
+            if produto_instance.idProduto.categoria.unidadeMedida == "UND":
+                pedido.quantidade_produtos_pedido += int(produto.quantidade)
+            else:
+                pedido.quantidade_produtos_pedido += 1
+        pedido.save()
         logging.info("New product(s) added to order")
     except Exception as e:
         logging.error(e)
