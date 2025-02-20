@@ -1,0 +1,141 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+html {
+    background: linear-gradient(to right, #ffffff 40%, #6940AA);
+}
+
+main {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;;
+}
+
+form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column
+}
+
+h1 {
+    font-size: 40px;
+}
+
+.left-box img{
+    width: 50vw;
+    height: auto;
+    max-height: 100vh;
+    mix-blend-mode: multiply;
+}
+
+.right-box{
+    background-color: white;
+    padding: 1.5vw 2.5vw 2.5vw 2.5vw;
+    border-radius: 0.25em;
+    box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.45);
+}
+
+.input-field {
+    display: flex;
+    flex-direction: column;
+    margin: 30px 0 5px 0;
+}
+
+.input-centralize{
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.input-field label {
+    position: absolute;
+    left: 17px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 25px;
+    font-weight: 500;
+    color: rgb(95, 95, 95);
+    transition: all 0.3s;
+    pointer-events: none;
+}
+
+.input-field input {
+    width: 320px;
+    height: 50px;
+    border-radius: 10px;
+    border-color: rgb(95, 95, 95);
+    border-style: solid;
+    outline: none;
+    padding: 5px;
+    font-size: 20px;
+    font-weight: 500;
+    padding: 15px 25% 0px 15px;
+    transition: all 0.3s;
+}
+
+.input-field input:focus + label, .input-field input:not(:placeholder-shown) + label{
+    transform: translate(-25%, -85%) scale(0.5);
+    color: rgb(102, 12, 185);
+}
+
+.input-field input:hover{
+    border-color: #000;
+}
+
+.input-field input:focus, .input-field input:not(:placeholder-shown){
+    border-color: rgb(102, 12, 185);
+}
+
+#show-hide-password{
+    all: unset;
+    position: absolute;
+    font-size: 1.2em;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    color:rgb(28, 28, 28);
+    cursor: pointer;
+    display: none;
+}
+
+#show-hide-password:hover{
+    color:rgb(124, 124, 124);
+}
+
+#password:not(:placeholder-shown) ~ #show-hide-password{
+    display: block;
+}
+
+#error-message{
+    display: none;
+    color: #eaeaea;
+    background-color: #ff3333;
+    border-radius: 0.2rem;
+    padding: 10px 5px;
+}
+
+button {
+    width: 320px;
+    height: 50px;
+    background: #000;
+    color: #ffffff;
+    font-size: 25px;
+    border-radius: 10px;
+    border-style: none;
+    margin-top: 20px;
+}
+
+button:hover{
+    background-color: #111111;
+}
+
+button:active{
+    background-color: #1a1a1a;
+}
+

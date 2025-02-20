@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <title>Pedido</title>
+</head>
+
+<body>
+  <main>
+    <aside>
+      <div class="user-info">
+        <img src="assets/imgs/profile-img.jpg" alt="profile-img">
+        <span class="user">Dua Lipa</span>
+        <span class="position">Gerente</span>
+      </div>
+      <div class="menu">
+        <ul>
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#">Caixa</a></li>
+          <li><a href="#">Pedido</a></li>
+          <li><a href="#">Clientes</a></li>
+          <li><a href="#">Funcionários</a></li>
+          <li><a href="#">Configurações</a></li>
+          <li><a href="#">Sair</a></li>
+        </ul>
+      </div>
+    </aside>
+    <div class="page-content">
+
+      <a href="#"><img src="assets/imgs/back-img.svg" alt=""></a>
+
+      <section class="main-content">
+        <div class="toolbar">
+
+          <h1>Selecionar produtos</h1>
+
+          <div>
+            <div class="search-container">
+              <form action="#" method="get">
+                <input type="text" class="search-box" name="search" placeholder="Buscar">
+                <button type="submit" class="search-btn"><img src="assets/imgs/magnifying-glass-solid.svg"
+                    alt="search icone"></button>
+              </form>
+            </div>
+
+            <!--<button class="register-btn"><a href="#">Cadastrar cliente</a></button>-->
+          </div>
+        </div>
+
+        <div class=clients-list>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Quantidade</th>
+                <th>Preço R$</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Açai</td>
+                <td>3Kg</td>
+                <td>45,00 </td>
+              </tr>
+              <tr>
+                <td>Açai</td>
+                <td>3Kg</td>
+                <td>45,00 </td>
+              </tr>
+              <tr>
+                <td>Açai</td>
+                <td>3Kg</td>
+                <td>45,00 </td>
+              </tr>
+              <tr>
+                <td>Açai</td>
+                <td>3Kg</td>
+                <td>45,00 </td>
+              </tr>
+              <tr>
+                <td>Açai</td>
+                <td>3Kg</td>
+                <td>45,00 </td>
+              </tr>
+              <tr>
+                <td>Açai</td>
+                <td>3Kg</td>
+                <td>45,00 </td>
+              </tr>
+              <tr>
+                <td>Açai</td>
+                <td>3Kg</td>
+                <td>45,00 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class=add-container>
+          <label for="quant">Quantidade</label>
+          <input type="number" name="qaunt" id="quant-input">
+          <button id="quant-add-btn">add</button>
+        </div>
+
+        <div class="client-info">
+
+          <div class="client-func">
+            <h1>Cliente</h1>
+
+            <div>
+              <button id="select-client-btn" type="button">Selecionar</button>
+              <button id="register-client-btn" type="button">Cadastrar</button>
+            </div>
+
+          </div>
+
+          <hr>
+
+          <div class="info-field">
+            <label for="name">Nome:</label>
+            <p id="name">John Doe</p>
+          </div>
+
+          <hr>
+
+          <div class="info-field">
+            <label for="email">E-mail:</label>
+            <p id="email">john.doe@example.com</p>
+          </div>
+
+          <hr>
+
+          <div class="info-field">
+            <label for="phone">Telefone:</label>
+            <p id="phone">123-456-7890</p>
+          </div>
+
+          <hr>
+        </div>
+
+        <dialog id="modal-select-client">
+
+          <div class="toolbar-modal">
+
+            <h1>Clientes</h1>
+
+            <div class="search-container-modal">
+              <form action="#" method="get">
+                <input type="text" class="search-box-modal" name="search" placeholder="Buscar">
+                <button type="submit" class="search-btn"><img src="assets/imgs/magnifying-glass-solid.svg"
+                    alt="search icone"></button>
+              </form>
+            </div>
+          </div>
+
+          <div class=clients-list-modal>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Telefone</th>
+                  <th>Email</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Mateus Assis</td>
+                  <td>(225) 555-0118</td>
+                  <td>mateus.assis@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Filipe Mateus</td>
+                  <td>(225) 555-0118</td>
+                  <td>filipe.mateus@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Lucas Lopes</td>
+                  <td>(225) 555-0118</td>
+                  <td>lucas.lopes@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Mateus Assis</td>
+                  <td>(225) 555-0118</td>
+                  <td>mateus.assis@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Filipe Mateus</td>
+                  <td>(225) 555-0118</td>
+                  <td>filipe.mateus@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Lucas Lopes</td>
+                  <td>(225) 555-0118</td>
+                  <td>lucas.lopes@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Mateus Assis</td>
+                  <td>(225) 555-0118</td>
+                  <td>mateus.assis@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Filipe Mateus</td>
+                  <td>(225) 555-0118</td>
+                  <td>filipe.mateus@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Lucas Lopes</td>
+                  <td>(225) 555-0118</td>
+                  <td>lucas.lopes@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Mateus Assis</td>
+                  <td>(225) 555-0118</td>
+                  <td>mateus.assis@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Filipe Mateus</td>
+                  <td>(225) 555-0118</td>
+                  <td>filipe.mateus@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Filipe Mateus</td>
+                  <td>(225) 555-0118</td>
+                  <td>filipe.mateus@example.com</td>
+                  <td>
+                    <button class="select-client-modal-btn">selecionar</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="action-buttons">
+            <button id="close-modal-select-client-btn" type="button">Fechar</button>
+            <button id="more-clients-modal-btn" type="button">Mais</button>
+          </div>
+        </dialog>
+
+        <dialog id="modal-register-client">
+          
+
+          <form id='register-client-form' action="#" method="post">
+            
+            <h1>Cadastrar cliente</h1>
+
+            <div class="input-field">
+              <label for="nome">Nome:</label>
+              <input type="text" id="nome" name="nome" required><br>
+            </div>
+
+            <div class="input-field">
+              <label  for="telefone">Telefone:</label>
+              <input type="tel" id="telefone" name="telefone" pattern="[0-9]{11}" required><br>
+            </div>
+
+            <div class="input-field">
+              <label for="email">E-mail:</label>
+              <input type="email" id="email" name="email" required><br>
+            </div>
+
+            <div class="input-field">
+              <label for="dataNascimento">Data de Nascimento:</label>
+              <input type="date" id="dataNascimento" name="dataNascimento"><br>
+            </div>
+
+            <div class="action-buttons form-buttons">
+              <button id="close-modal-register-client-btn" type="button">Fechar</button>
+              <button id="register-client-form-btn" type="submit">Cadastrar</button>
+            </div>
+          </form>
+        </dialog>
+
+        <div class="payment-option-container">
+          <h1>Forma de pagamento</h1>
+
+          <form id="payment-option-form" action="#">
+            <div class="payment-option-inputs">
+              <div>
+                <input type="radio" name="forma-pagamento" id="pix" value="pix">
+                <label for="pix">Pix</label>
+              </div>
+              
+              <div>
+                <input type="radio" name="forma-pagamento" id="dinheiro" value="dinheiro">
+                <label for="dinheiro">Dinheiro</label>
+              </div>
+
+              <div>
+                <input type="radio" name="forma-pagamento" id="cartao-credito" value="cartao-credito">
+                <label for="cartao-credito">Cartão de crédito</label>
+              </div>
+
+              <div>
+                <input type="radio" name="forma-pagamento" id="cartao-debito" value="cartao-debito">
+                <label for="cartao-debito">Cartão de débito</label>
+              </div>
+            </div>
+
+            <span id="total-order-value">Total: R$35,64</span>
+            
+            <button id="finish-order-btn" type="button">Finalizar pedido</button>
+
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="assets/scripts/modal.js"></script>
+</body>
+
+</html>
