@@ -65,6 +65,8 @@ Exemplo:
 ```env
 DB_ENGINE="sqlite"
 DB_SQLITE_PATH=""
+DB_SQLITE_CIPHER="OFF"
+DB_SQLITE_KEY_FILE=""
 TEST="OFF"
 ADMIN_PASSWORD="123"
 ENV="production"
@@ -73,6 +75,22 @@ SYNC_REMOTE_ENABLED="ON"
 SYNC_REMOTE_BASE_URL="https://SEU-SERVICO.onrender.com"
 SYNC_REMOTE_API_KEY="sua_chave_grande_e_aleatoria"
 ```
+
+### Opcional: ativar criptografia do banco local (SQLCipher)
+
+No `builder-local.env`:
+
+```env
+DB_SQLITE_CIPHER="ON"
+DB_SQLITE_KEY_FILE=""
+```
+
+Notas:
+
+- `DB_SQLITE_KEY_FILE` vazio usa caminho padrao em `%LOCALAPPDATA%/SG-VILLA-DOLCE/data/sqlite_key.bin`.
+- No Windows, a chave e protegida por DPAPI (atrelada ao usuario/machine).
+- Se `DB_SQLITE_CIPHER=ON`, a API local precisa das dependencias de SQLCipher.
+- Para migrar um `.db` antigo sem criptografia para SQLCipher, gere um novo build e planeje migracao de dados.
 
 ### 2. Gerar instalador
 
@@ -135,4 +153,3 @@ Nao precisa Docker no cliente final.
 - Se o remoto parecer antigo:
   - confira `GET /version`
   - no provedor, faca deploy com limpeza de cache
-

@@ -1,6 +1,7 @@
 import os
 import dotenv
 from peewee import PostgresqlDatabase, SqliteDatabase
+from security.sqlite_key import get_sqlite_cipher_key
 
 dotenv.load_dotenv()
 
@@ -11,6 +12,7 @@ db_password = os.getenv("DB_PASSWORD")
 db_host = os.getenv("DB_HOST")
 db_port = os.getenv("DB_PORT")
 db_sqlite_path = os.getenv("DB_SQLITE_PATH")
+db_sqlite_cipher = os.getenv("DB_SQLITE_CIPHER", "OFF").strip().upper() == "ON"
 
 if db_port:
     db_port = int(db_port)
@@ -30,15 +32,33 @@ def _resolve_sqlite_path() -> str:
 
 if db_engine == "sqlite":
     sqlite_path = _resolve_sqlite_path()
-    db = SqliteDatabase(
-        sqlite_path,
-        pragmas={
-            "journal_mode": "wal",
-            "foreign_keys": 1,
-            "cache_size": -1024 * 64,
-            "synchronous": 1,
-        },
-    )
+    sqlite_pragmas = {
+        "journal_mode": "wal",
+        "foreign_keys": 1,
+        "cache_size": -1024 * 64,
+        "synchronous": 1,
+    }
+
+    if db_sqlite_cipher:
+        try:
+            from playhouse.sqlcipher_ext import SqlCipherDatabase
+        except Exception as import_error:
+            raise RuntimeError(
+                "DB_SQLITE_CIPHER=ON, mas SQLCipher nao esta disponivel. "
+                "Instale dependencias de SQLCipher (ex.: pysqlcipher3/sqlcipher3-binary)."
+            ) from import_error
+
+        cipher_key = get_sqlite_cipher_key()
+        db = SqlCipherDatabase(
+            sqlite_path,
+            passphrase=cipher_key,
+            pragmas=sqlite_pragmas,
+        )
+    else:
+        db = SqliteDatabase(
+            sqlite_path,
+            pragmas=sqlite_pragmas,
+        )
 else:
     db = PostgresqlDatabase(
         database=db_name,

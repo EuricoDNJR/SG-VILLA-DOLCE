@@ -72,6 +72,8 @@ if ($envMap.Count -eq 0) {
 $defaults = @{
   DB_ENGINE = "sqlite"
   DB_SQLITE_PATH = ""
+  DB_SQLITE_CIPHER = "OFF"
+  DB_SQLITE_KEY_FILE = ""
   TEST = "OFF"
   ADMIN_PASSWORD = "123"
   ENV = "production"
@@ -88,6 +90,8 @@ $defaults.Keys | ForEach-Object {
 $prodEnv = @(
   ('DB_ENGINE="' + $final.DB_ENGINE + '"'),
   ('DB_SQLITE_PATH="' + $final.DB_SQLITE_PATH + '"'),
+  ('DB_SQLITE_CIPHER="' + $final.DB_SQLITE_CIPHER + '"'),
+  ('DB_SQLITE_KEY_FILE="' + $final.DB_SQLITE_KEY_FILE + '"'),
   ('TEST="' + $final.TEST + '"'),
   ('ADMIN_PASSWORD="' + $final.ADMIN_PASSWORD + '"'),
   ('ENV="' + $final.ENV + '"'),
