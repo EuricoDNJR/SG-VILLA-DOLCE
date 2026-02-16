@@ -133,20 +133,14 @@ def _push_event_to_remote(sync_event):
         return False, "SYNC_REMOTE_BASE_URL vazio"
 
     payload_data = json.loads(sync_event.payloadJson)
-    if (
-        sync_event.entity == "pedido"
-        and sync_event.operation == "create"
-        and isinstance(payload_data, dict)
-    ):
-        if not payload_data.get("clienteSnapshot"):
+    if sync_event.entity == "pedido" and isinstance(payload_data, dict):
+        if sync_event.operation == "create" and not payload_data.get("clienteSnapshot"):
             cliente_snapshot = _build_cliente_snapshot(payload_data.get("idCliente"))
             if cliente_snapshot:
                 payload_data["clienteSnapshot"] = cliente_snapshot
 
-        if not payload_data.get("produtosSnapshot"):
-            payload_data["produtosSnapshot"] = _build_produtos_snapshot(
-                payload_data.get("idProdutos")
-            )
+        if sync_event.operation in ["create", "add_items"] and not payload_data.get("produtosSnapshot"):
+            payload_data["produtosSnapshot"] = _build_produtos_snapshot(payload_data.get("idProdutos"))
 
     payload = {
         "idSyncEvent": str(sync_event.idSyncEvent),

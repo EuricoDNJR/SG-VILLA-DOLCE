@@ -401,6 +401,53 @@ def _apply_pedido_finish(payload: dict, entity_id: str):
     update_pedido_status(pedido, "Pago")
 
 
+def _apply_pedido_add_items(payload: dict, entity_id: str):
+    pedido = get_pedido_object_by_id(idPedido=entity_id)
+    if pedido is None:
+        raise ValueError("pedido nao encontrado para add_items")
+
+    if pedido.status != "Pendente":
+        # Keep operation idempotent if order is already closed/canceled remotely.
+        return
+
+    produtos_payload = payload.get("idProdutos") or []
+    produtos_snapshot = payload.get("produtosSnapshot") or []
+    produtos_snapshot_by_id = {
+        str(item.get("idProduto")): item
+        for item in produtos_snapshot
+        if isinstance(item, dict) and item.get("idProduto")
+    }
+
+    for produto in produtos_payload:
+        produto_id = produto.get("idProduto")
+        produto_exists = models.Produto.get_or_none(models.Produto.idProduto == produto_id)
+        if produto_exists is None:
+            produto_snapshot = produtos_snapshot_by_id.get(str(produto_id))
+            if produto_snapshot:
+                _apply_produto("create", produto_snapshot, str(produto_id))
+            else:
+                raise ValueError(
+                    f"produto do add_items nao encontrado no remoto: idProduto={produto_id}"
+                )
+
+        produto_instance = create_produto_pedido(
+            idPedido=pedido.idPedido,
+            idProduto=produto_id,
+            quantidade=produto.get("quantidade"),
+            valorVendaUnd=produto.get("valorVendaUnd"),
+            desconto=produto.get("desconto"),
+        )
+        update_quantity_product(produto_id, produto.get("quantidade"))
+        update_balance_client_and_order_unique(pedido, produto_instance)
+
+        if produto_instance.idProduto.categoria.unidadeMedida == "UND":
+            pedido.quantidade_produtos_pedido += int(produto.get("quantidade"))
+        else:
+            pedido.quantidade_produtos_pedido += 1
+
+    pedido.save()
+
+
 def _apply_pedido_cancel(entity_id: str):
     pedido = get_pedido_object_by_id(idPedido=entity_id)
     if pedido is None:
@@ -448,6 +495,11 @@ def _apply_pedido(operation: str, payload: dict, entity_id: str = None):
         if not target_id:
             raise ValueError("idPedido ausente no evento finish")
         _apply_pedido_finish(payload, target_id)
+        return
+    if operation == "add_items":
+        if not target_id:
+            raise ValueError("idPedido ausente no evento add_items")
+        _apply_pedido_add_items(payload, target_id)
         return
     if operation == "cancel":
         if not target_id:

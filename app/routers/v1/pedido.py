@@ -311,6 +311,17 @@ def add_in_order(idPedido: str, data: AddInOrderRequest):
             content={"message": "Erro ao adicionar produto(s) ao pedido: " + str(e)},
         )
     logging.info("Product(s) added to order successfully")
+    try:
+        payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+        payload["idPedido"] = str(idPedido)
+        enqueue_sync_event(
+            entity="pedido",
+            entity_id=str(idPedido),
+            operation="add_items",
+            payload=payload,
+        )
+    except Exception as sync_error:
+        logging.warning("Failed to enqueue order add_items sync event: " + str(sync_error))
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": "Produto(s) adicionado(s) ao pedido com sucesso"},
