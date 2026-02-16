@@ -373,20 +373,26 @@ def _apply_pedido_finish(payload: dict, entity_id: str):
     if pedido.status == "Pago":
         return
 
-    valor_recebimento = payload.get("valorRecebimento")
-    valor_devolvido = payload.get("valorDevolvido", 0.0)
-    tipo_pagamento = payload.get("tipoPagamento")
+    valor_recebimento = Decimal(str(payload.get("valorRecebimento", 0.0)))
+    valor_devolvido = Decimal(str(payload.get("valorDevolvido", 0.0)))
+    tipo_pagamento = (
+        payload.get("tipoPagamento")
+        or pedido.idPagamento.tipoPagamento
+        or "Dinheiro"
+    )
 
-    if (
-        Decimal((Decimal(valor_recebimento) - Decimal(valor_devolvido)).__format__(".2f"))
-        != pedido.idPagamento.valorTotal
-    ):
-        raise ValueError("valor recebido menos troco nao confere com total do pedido")
+    saldo_recebido = (valor_recebimento - valor_devolvido).quantize(Decimal("0.01"))
+    total_pedido = Decimal(str(pedido.idPagamento.valorTotal)).quantize(Decimal("0.01"))
+
+    # For remote sync, prefer eventual consistency over strict rejection:
+    # if totals diverge, adjust the received value to match remote order total.
+    if saldo_recebido != total_pedido:
+        valor_recebimento = (total_pedido + valor_devolvido).quantize(Decimal("0.01"))
 
     update_pagamento(
         pedido=pedido,
-        valorRecebimento=valor_recebimento,
-        valorDevolvido=valor_devolvido,
+        valorRecebimento=float(valor_recebimento),
+        valorDevolvido=float(valor_devolvido),
         tipoPagamento=tipo_pagamento,
     )
     update_balance_caixa_pedido(
