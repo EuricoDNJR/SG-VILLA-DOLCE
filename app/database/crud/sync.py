@@ -126,3 +126,9 @@ def ingest_remote_sync_event(
         createdAt=datetime.utcnow(),
     )
     return created_event, True
+
+
+def get_inbound_event_by_key(idempotency_key: str):
+    return models.SyncInboundEvent.get_or_none(
+        models.SyncInboundEvent.idempotencyKey == idempotency_key
+    )

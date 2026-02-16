@@ -185,6 +185,9 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
     logging.info("Order created successfully")
     try:
         payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+        payload["idUsuario"] = str(jwt_token)
+        payload["dataCriacao"] = str(data_criacao)
+        payload["idPedido"] = str(pedido.idPedido)
         enqueue_sync_event(
             entity="pedido",
             entity_id=str(pedido.idPedido),

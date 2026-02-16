@@ -10,12 +10,14 @@ from typing import Optional
 
 from database.crud.sync import (
     claim_sync_events,
+    get_inbound_event_by_key,
     get_pending_sync_events,
     get_pending_sync_summary,
     ingest_remote_sync_event,
     mark_sync_event_done,
     mark_sync_event_failed,
 )
+from database.crud.sync_apply import apply_sync_event
 from dependencies import get_token_header
 
 router = APIRouter()
@@ -168,6 +170,23 @@ def ingest_sync_event(data: InboundSyncEventRequest, x_api_key: str = Header(def
                 content={"message": "Invalid sync API key"},
             )
 
+        existing_event = get_inbound_event_by_key(data.idempotencyKey)
+        if existing_event:
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content={
+                    "status": "duplicate",
+                    "idInboundEvent": str(existing_event.idInboundEvent),
+                },
+            )
+
+        apply_sync_event(
+            entity=data.entity,
+            operation=data.operation,
+            payload=data.payload,
+            entity_id=data.entityId,
+        )
+
         created_event, created = ingest_remote_sync_event(
             idempotency_key=data.idempotencyKey,
             entity=data.entity,
@@ -177,19 +196,10 @@ def ingest_sync_event(data: InboundSyncEventRequest, x_api_key: str = Header(def
             source="desktop_client",
         )
 
-        if created:
-            return JSONResponse(
-                status_code=status.HTTP_201_CREATED,
-                content={
-                    "status": "accepted",
-                    "idInboundEvent": str(created_event.idInboundEvent),
-                },
-            )
-
         return JSONResponse(
-            status_code=status.HTTP_200_OK,
+            status_code=status.HTTP_201_CREATED,
             content={
-                "status": "duplicate",
+                "status": "accepted" if created else "duplicate",
                 "idInboundEvent": str(created_event.idInboundEvent),
             },
         )
