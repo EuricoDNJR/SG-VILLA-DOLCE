@@ -3,10 +3,16 @@ from peewee import DoesNotExist
 from decimal import Decimal
 
 
-def create_produto(nome, descricao, categoria, valorVenda):
-    return models.Produto.create(
-        nome=nome, descricao=descricao, categoria=categoria, valorVenda=valorVenda
-    )
+def create_produto(nome, descricao, categoria, valorVenda, idProduto=None):
+    create_payload = {
+        "nome": nome,
+        "descricao": descricao,
+        "categoria": categoria,
+        "valorVenda": valorVenda,
+    }
+    if idProduto is not None:
+        create_payload["idProduto"] = idProduto
+    return models.Produto.create(**create_payload)
 
 
 def get_product_by_id(uuid):

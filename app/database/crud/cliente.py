@@ -3,16 +3,28 @@ from peewee import DoesNotExist
 from decimal import Decimal
 
 
-def create_cliente(email, nome, dataNascimento, cpf, endereco, telefone, saldo):
-    return models.Cliente.create(
-        email=email,
-        nome=nome,
-        dataNascimento=dataNascimento,
-        cpf=cpf,
-        endereco=endereco,
-        telefone=telefone,
-        saldo=saldo,
-    )
+def create_cliente(
+    email,
+    nome,
+    dataNascimento,
+    cpf,
+    endereco,
+    telefone,
+    saldo,
+    idCliente=None,
+):
+    create_payload = {
+        "email": email,
+        "nome": nome,
+        "dataNascimento": dataNascimento,
+        "cpf": cpf,
+        "endereco": endereco,
+        "telefone": telefone,
+        "saldo": saldo,
+    }
+    if idCliente is not None:
+        create_payload["idCliente"] = idCliente
+    return models.Cliente.create(**create_payload)
 
 
 def get_cliente(telefone):

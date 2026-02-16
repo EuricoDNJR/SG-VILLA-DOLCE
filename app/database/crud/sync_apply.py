@@ -31,9 +31,10 @@ def _get_entity_id(payload: dict, key: str, fallback: str = None):
 
 def _apply_cliente(operation: str, payload: dict, entity_id: str = None):
     if operation == "create":
+        target_id = _get_entity_id(payload, "idCliente", entity_id)
         existing = None
-        if entity_id:
-            existing = models.Cliente.get_or_none(models.Cliente.idCliente == entity_id)
+        if target_id:
+            existing = models.Cliente.get_or_none(models.Cliente.idCliente == target_id)
 
         if existing is None and payload.get("telefone"):
             existing = models.Cliente.get_or_none(
@@ -61,6 +62,7 @@ def _apply_cliente(operation: str, payload: dict, entity_id: str = None):
                 payload.get("endereco"),
                 payload.get("telefone"),
                 payload.get("saldo"),
+                idCliente=target_id,
             )
         return
 
@@ -93,9 +95,10 @@ def _apply_cliente(operation: str, payload: dict, entity_id: str = None):
 
 def _apply_produto(operation: str, payload: dict, entity_id: str = None):
     if operation == "create":
+        target_id = _get_entity_id(payload, "idProduto", entity_id)
         existing = None
-        if entity_id:
-            existing = models.Produto.get_or_none(models.Produto.idProduto == entity_id)
+        if target_id:
+            existing = models.Produto.get_or_none(models.Produto.idProduto == target_id)
 
         if existing is None and payload.get("nome"):
             existing = models.Produto.get_or_none(
@@ -119,6 +122,7 @@ def _apply_produto(operation: str, payload: dict, entity_id: str = None):
                 payload.get("descricao"),
                 payload.get("categoria"),
                 payload.get("valorVenda"),
+                idProduto=target_id,
             )
             if created is None:
                 raise ValueError("erro ao criar produto")
@@ -149,9 +153,43 @@ def _apply_produto(operation: str, payload: dict, entity_id: str = None):
     raise ValueError(f"operacao de produto nao suportada: {operation}")
 
 
-def _apply_pedido_create(payload: dict):
+def _apply_pedido_create(payload: dict, entity_id: str = None):
+    target_pedido_id = _get_entity_id(payload, "idPedido", entity_id)
     pagamento_payload = payload.get("Pagamento") or {}
     produtos_payload = payload.get("idProdutos") or []
+    requested_cliente_id = payload.get("idCliente")
+    resolved_cliente = (
+        models.Cliente.get_or_none(models.Cliente.idCliente == requested_cliente_id)
+        if requested_cliente_id
+        else None
+    )
+
+    # If the order references a client not present remotely yet, try to bootstrap
+    # it from snapshot data included in the sync payload.
+    if resolved_cliente is None:
+        cliente_snapshot = payload.get("clienteSnapshot") or {}
+        if cliente_snapshot:
+            _apply_cliente(
+                "create",
+                cliente_snapshot,
+                _get_entity_id(cliente_snapshot, "idCliente", requested_cliente_id),
+            )
+            resolved_cliente = (
+                models.Cliente.get_or_none(
+                    models.Cliente.idCliente == requested_cliente_id
+                )
+                if requested_cliente_id
+                else None
+            )
+            if resolved_cliente is None and cliente_snapshot.get("telefone"):
+                resolved_cliente = models.Cliente.get_or_none(
+                    models.Cliente.telefone == cliente_snapshot.get("telefone")
+                )
+
+    if requested_cliente_id and resolved_cliente is None:
+        raise ValueError(
+            f"cliente do pedido nao encontrado no remoto: idCliente={requested_cliente_id}"
+        )
 
     pagamento = create_pagamento(
         valorRecebimento=pagamento_payload.get("valorRecebimento", 0.0),
@@ -162,7 +200,7 @@ def _apply_pedido_create(payload: dict):
         raise ValueError("erro ao criar pagamento do pedido")
 
     pedido = create_pedido(
-        idCliente=payload.get("idCliente"),
+        idCliente=resolved_cliente.idCliente if resolved_cliente else payload.get("idCliente"),
         idPagamento=pagamento.idPagamento,
         idUsuario=payload.get("idUsuario") or payload.get("jwt_token"),
         idCaixa=payload.get("idCaixa"),
@@ -170,6 +208,7 @@ def _apply_pedido_create(payload: dict):
         data_criacao=payload.get("data_criacao")
         or payload.get("dataCriacao")
         or datetime.date.today(),
+        idPedido=target_pedido_id,
     )
     if pedido is None:
         raise ValueError("erro ao criar pedido")
@@ -272,7 +311,7 @@ def _apply_pedido(operation: str, payload: dict, entity_id: str = None):
     target_id = _get_entity_id(payload, "idPedido", entity_id)
 
     if operation == "create":
-        _apply_pedido_create(payload)
+        _apply_pedido_create(payload, target_id)
         return
     if operation == "finish":
         if not target_id:

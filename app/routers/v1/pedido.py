@@ -188,6 +188,20 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
         payload["idUsuario"] = str(jwt_token)
         payload["dataCriacao"] = str(data_criacao)
         payload["idPedido"] = str(pedido.idPedido)
+        payload["clienteSnapshot"] = {
+            "idCliente": str(pedido.idCliente.idCliente),
+            "email": pedido.idCliente.email,
+            "nome": pedido.idCliente.nome,
+            "dataNascimento": str(pedido.idCliente.dataNascimento)
+            if pedido.idCliente.dataNascimento is not None
+            else None,
+            "cpf": pedido.idCliente.cpf,
+            "endereco": pedido.idCliente.endereco,
+            "telefone": pedido.idCliente.telefone,
+            "saldo": float(pedido.idCliente.saldo)
+            if pedido.idCliente.saldo is not None
+            else 0.0,
+        }
         enqueue_sync_event(
             entity="pedido",
             entity_id=str(pedido.idPedido),

@@ -140,6 +140,7 @@ export const useConnectivityStore = defineStore('connectivity', {
     lastCheckedAt: null,
     pendingSyncCount: 0,
     failedSyncCount: 0,
+    lastSyncError: null,
   }),
   getters: {
     getIsOnline() {
@@ -154,6 +155,9 @@ export const useConnectivityStore = defineStore('connectivity', {
     getFailedSyncCount() {
       return this.failedSyncCount;
     },
+    getLastSyncError() {
+      return this.lastSyncError;
+    },
   },
   actions: {
     setOnline(isOnline) {
@@ -163,6 +167,9 @@ export const useConnectivityStore = defineStore('connectivity', {
     setSyncSummary(summary) {
       this.pendingSyncCount = summary?.pending ?? 0;
       this.failedSyncCount = summary?.failed ?? 0;
+    },
+    setLastSyncError(errorMessage) {
+      this.lastSyncError = errorMessage || null;
     },
   }
 });

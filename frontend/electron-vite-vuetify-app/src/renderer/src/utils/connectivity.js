@@ -24,10 +24,30 @@ export function startConnectivityMonitor() {
   const authStore = useAuthStore();
   let isChecking = false;
 
+  const getLatestSyncError = (events) => {
+    if (!Array.isArray(events) || events.length === 0) {
+      return null;
+    }
+
+    const failedEvents = events.filter((event) => Boolean(event?.lastError));
+    if (failedEvents.length === 0) {
+      return null;
+    }
+
+    failedEvents.sort((a, b) => {
+      const dateA = new Date(a?.updatedAt || a?.createdAt || 0).getTime();
+      const dateB = new Date(b?.updatedAt || b?.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+
+    return failedEvents[0]?.lastError || null;
+  };
+
   const loadSyncSummary = async () => {
     const token = authStore.getToken;
     if (!token) {
       connectivityStore.setSyncSummary({ pending: 0, failed: 0 });
+      connectivityStore.setLastSyncError(null);
       return;
     }
 
@@ -49,6 +69,37 @@ export function startConnectivityMonitor() {
       return summary;
     } catch (error) {
       // Ignore transient sync-summary errors.
+    }
+
+    return null;
+  };
+
+  const loadLastSyncError = async () => {
+    const token = authStore.getToken;
+    if (!token) {
+      connectivityStore.setLastSyncError(null);
+      return null;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/v1/sync/pending_events/?limit=50", {
+        method: "GET",
+        headers: {
+          "jwt-token": token,
+        },
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const events = await response.json();
+      const latestError = getLatestSyncError(events);
+      connectivityStore.setLastSyncError(latestError);
+      return latestError;
+    } catch (error) {
+      // Ignore transient pending-events errors.
     }
 
     return null;
@@ -83,9 +134,11 @@ export function startConnectivityMonitor() {
     connectivityStore.setOnline(isOnline);
     if (isOnline) {
       const summary = await loadSyncSummary();
+      await loadLastSyncError();
       if (summary && (summary.pending > 0 || summary.failed > 0)) {
         await pushPendingSyncQueue();
         await loadSyncSummary();
+        await loadLastSyncError();
       }
     }
     isChecking = false;
