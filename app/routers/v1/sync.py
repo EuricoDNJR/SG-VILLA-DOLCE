@@ -1,6 +1,7 @@
 import logging
 import json
 import os
+import traceback
 from urllib import request, error
 
 from pydantic import BaseModel
@@ -171,13 +172,30 @@ def _push_event_to_remote(sync_event):
         with request.urlopen(req, timeout=5) as response:
             return (200 <= response.status < 300), f"http_status={response.status}"
     except error.HTTPError as http_error:
+        status_code = getattr(http_error, "code", "unknown")
+        reason = getattr(http_error, "reason", "")
+        body_preview = ""
         try:
-            error_body = http_error.read().decode("utf-8")
+            error_body_bytes = http_error.read()
+            body_preview = error_body_bytes.decode("utf-8", errors="replace")
         except Exception:
-            error_body = ""
-        return False, f"http_error={http_error.code} body={error_body}"
+            body_preview = ""
+        details = [
+            f"http_error={status_code}",
+            f"reason={reason}" if reason else "",
+            f"entity={sync_event.entity}",
+            f"operation={sync_event.operation}",
+            f"idSyncEvent={sync_event.idSyncEvent}",
+            f"entityId={sync_event.entityId}" if sync_event.entityId else "",
+            f"body={body_preview}" if body_preview else "",
+        ]
+        return False, " ".join(part for part in details if part)
     except Exception as req_error:
-        return False, str(req_error)
+        return (
+            False,
+            f"request_error={str(req_error)} entity={sync_event.entity} "
+            f"operation={sync_event.operation} idSyncEvent={sync_event.idSyncEvent}",
+        )
 
 
 def _is_remote_api_key_valid(x_api_key: Optional[str]):
@@ -276,7 +294,9 @@ def ingest_sync_event(data: InboundSyncEventRequest, x_api_key: str = Header(def
             },
         )
     except Exception as e:
-        logging.error(e)
+        logging.error("Erro ao ingerir evento de sync")
+        logging.error(str(e))
+        logging.error(traceback.format_exc())
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao ingerir evento de sincronizacao: " + str(e)},
