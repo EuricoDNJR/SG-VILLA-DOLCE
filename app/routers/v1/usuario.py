@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Optional
 from pydantic import BaseModel
-from passlib.hash import bcrypt
+import bcrypt
 from database.crud.usuario import (
     get_usuario,
     create_usuario,
@@ -16,6 +16,16 @@ from fastapi.responses import JSONResponse, Response
 from fastapi import APIRouter, status, Header, Depends
 
 router = APIRouter()
+
+
+def verify_password(password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode(
+        "utf-8"
+    )
 
 
 class LoginRequest(BaseModel):
@@ -53,7 +63,7 @@ def login(data: LoginRequest):
             )
         logging.info("User found")
         logging.info("Verifying password")
-        if user and bcrypt.verify(data.senha, user.senha):
+        if user and verify_password(data.senha, user.senha):
             logging.info("Login successful")
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
@@ -120,8 +130,7 @@ def create_user(data: CreateUserRequest, jwt_token: str = Header()):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     content={"message": "No Permission"},
                 )
-        # Gerar hash da senha usando passlib
-        hashed_password = bcrypt.using(rounds=12).hash(data.senha)
+        hashed_password = hash_password(data.senha)
 
         logging.info("Creating user")
         user = create_usuario(

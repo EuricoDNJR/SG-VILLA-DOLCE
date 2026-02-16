@@ -10,8 +10,14 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
 asarUnpack:
   - resources/**
+extraResources:
+  - from: resources/backend
+    to: backend
+    filter:
+      - '**/*'
 win:
   executableName: electron-vue-app
+  signAndEditExecutable: false
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

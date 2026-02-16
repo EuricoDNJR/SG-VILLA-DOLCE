@@ -22,6 +22,7 @@ from database.crud.pagamento import create_pagamento, update_pagamento, delete_p
 from database.crud.produto_pedido import create_produto_pedido
 from database.crud.produto import update_quantity_product
 from database.crud.caixa import update_balance_caixa_pedido
+from database.crud.sync import enqueue_sync_event
 from fastapi.responses import JSONResponse, Response
 from fastapi import APIRouter, status, Header, Depends
 
@@ -182,6 +183,16 @@ def create_order(data: CreateOrderRequest, jwt_token: str = Header()):
                 content={"message": "Erro ao atualizar saldo do caixa"},
             )
     logging.info("Order created successfully")
+    try:
+        payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+        enqueue_sync_event(
+            entity="pedido",
+            entity_id=str(pedido.idPedido),
+            operation="create",
+            payload=payload,
+        )
+    except Exception as sync_error:
+        logging.warning("Failed to enqueue order create sync event: " + str(sync_error))
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={"uuid": str(pedido.idPedido), "message": "Pedido criado com sucesso"},
@@ -412,6 +423,16 @@ def finish_order(idPedido: str, data: FinishOrderRequest):
             status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     logging.info("Order finished successfully")
+    try:
+        payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+        enqueue_sync_event(
+            entity="pedido",
+            entity_id=str(idPedido),
+            operation="finish",
+            payload=payload,
+        )
+    except Exception as sync_error:
+        logging.warning("Failed to enqueue order finish sync event: " + str(sync_error))
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
@@ -527,6 +548,15 @@ def cancel_order(idPedido: str):
             status_code=status.HTTP_400_BAD_REQUEST, content={"message": str(e)}
         )
     logging.info("Order canceled successfully")
+    try:
+        enqueue_sync_event(
+            entity="pedido",
+            entity_id=str(idPedido),
+            operation="cancel",
+            payload={"idPedido": str(idPedido)},
+        )
+    except Exception as sync_error:
+        logging.warning("Failed to enqueue order cancel sync event: " + str(sync_error))
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": "Pedido cancelado com sucesso"},
@@ -614,6 +644,15 @@ def delete_order(idPedido: str, jwt_token: str = Header()):
             content={"message": "Erro ao deletar pagamento do pedido: " + str(e)},
         )
     logging.info("Order deleted successfully")
+    try:
+        enqueue_sync_event(
+            entity="pedido",
+            entity_id=str(idPedido),
+            operation="delete",
+            payload={"idPedido": str(idPedido)},
+        )
+    except Exception as sync_error:
+        logging.warning("Failed to enqueue order delete sync event: " + str(sync_error))
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": "Pedido deletado com sucesso"},

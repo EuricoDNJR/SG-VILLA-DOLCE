@@ -1,9 +1,68 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import { spawn } from 'child_process'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 let mainWindow = undefined;
+let backendProcess = undefined;
+
+function resolveBackendExecutablePath() {
+  return join(process.resourcesPath, 'backend', 'villa-api.exe')
+}
+
+async function waitForBackendReady(timeoutMs = 15000) {
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/')
+      if (response.ok) {
+        return true
+      }
+    } catch (error) {
+      // Backend not available yet.
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+  }
+
+  return false
+}
+
+async function startBackend() {
+  if (is.dev) {
+    console.log('[backend] Development mode: backend must be started manually.')
+    return true
+  }
+
+  const backendExecutablePath = resolveBackendExecutablePath()
+  backendProcess = spawn(backendExecutablePath, [], {
+    cwd: join(process.resourcesPath, 'backend'),
+    windowsHide: true,
+  })
+
+  backendProcess.on('error', (error) => {
+    console.error('[backend] Failed to start backend process:', error)
+  })
+
+  backendProcess.on('exit', (code, signal) => {
+    console.log(`[backend] Process exited with code=${code} signal=${signal}`)
+  })
+
+  const isBackendReady = await waitForBackendReady()
+  if (!isBackendReady) {
+    console.error('[backend] Backend did not respond on http://127.0.0.1:8000 in time.')
+  }
+
+  return isBackendReady
+}
+
+function stopBackend() {
+  if (backendProcess && !backendProcess.killed) {
+    backendProcess.kill()
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -44,7 +103,7 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -55,6 +114,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  await startBackend()
   createWindow()
 
   app.on('activate', function () {
@@ -69,8 +129,13 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    stopBackend()
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  stopBackend()
 })
 
 // In this file you can include the rest of your app"s specific main process

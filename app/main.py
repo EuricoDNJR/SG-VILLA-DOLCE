@@ -14,6 +14,7 @@ if __name__ == "__main__":
 
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
+    from peewee import OperationalError
     from contextlib import asynccontextmanager
     from database.dbmain import db
     from database.models import (
@@ -28,6 +29,9 @@ if __name__ == "__main__":
         Cargo,
         TipoPagamento,
         Categoria,
+        SyncQueue,
+        SyncCheckpoint,
+        SyncInboundEvent,
     )
     from database.initial_data import create_initial_values
     from routers.v1 import (
@@ -41,6 +45,7 @@ if __name__ == "__main__":
         cargo,
         tipo_pagamento,
         categoria,
+        sync,
     )
 
     dotenv.load_dotenv()
@@ -50,43 +55,52 @@ if __name__ == "__main__":
 
     api_metadata = {
         "title": "Villa Dolce API",
-        "description": "API para o sistema de gerenciamento do Açaí Villa Dolce.",
+        "description": "API para o sistema de gerenciamento do Acai Villa Dolce.",
         "version": api_version,
     }
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        # Inicialização do banco de dados
+        # Startup: initialize schema and seed data, then release the connection.
         logging.info("Connecting Database")
-        db.connect()
-        logging.info("Creating Tables")
-        db.create_tables(
-            [
-                Usuario,
-                Pagamento,
-                Cliente,
-                Caixa,
-                Produto,
-                Pedido,
-                Estoque,
-                ProdutoPedido,
-                Cargo,
-                TipoPagamento,
-                Categoria,
-            ],
-            safe=True,
-        )
-        logging.info("Tables Created")
-        logging.info("Creating Initial Values")
-        create_initial_values()
-        logging.info("Initial Values Created")
-        logging.info("Database Connected")
+        db.connect(reuse_if_open=True)
+        try:
+            logging.info("Creating Tables")
+            db.create_tables(
+                [
+                    Usuario,
+                    Pagamento,
+                    Cliente,
+                    Caixa,
+                    Produto,
+                    Pedido,
+                    Estoque,
+                    ProdutoPedido,
+                    Cargo,
+                    TipoPagamento,
+                    Categoria,
+                    SyncQueue,
+                    SyncCheckpoint,
+                    SyncInboundEvent,
+                ],
+                safe=True,
+            )
+            logging.info("Tables Created")
+            logging.info("Creating Initial Values")
+            create_initial_values()
+            logging.info("Initial Values Created")
+            logging.info("Database Connected")
+        finally:
+            if not db.is_closed():
+                db.close()
+
         yield
-        # Desconexão do banco de dados
+
         logging.info("Shutdown")
-        logging.info("Disconnecting Database")
-        db.close()
-        logging.info("Database Disconnected")
+        if not db.is_closed():
+            logging.info("Disconnecting Database")
+            db.close()
+            logging.info("Database Disconnected")
 
     if ENV == "development":
         print("Development")
@@ -114,6 +128,24 @@ if __name__ == "__main__":
         allow_headers=["*"],
     )
 
+    @app.middleware("http")
+    async def db_connection_middleware(request, call_next):
+        # Ensure a fresh DB connection per request to avoid stale/closed sessions.
+        try:
+            db.connect(reuse_if_open=True)
+        except OperationalError:
+            if not db.is_closed():
+                db.close()
+            db.connect(reuse_if_open=True)
+
+        try:
+            response = await call_next(request)
+        finally:
+            if not db.is_closed():
+                db.close()
+
+        return response
+
     app.include_router(dashboard.router, prefix="/v1/dashboard", tags=["Dashboard"])
     app.include_router(cliente.router, prefix="/v1/cliente", tags=["Cliente"])
     app.include_router(usuario.router, prefix="/v1/usuario", tags=["Usuario"])
@@ -126,10 +158,10 @@ if __name__ == "__main__":
     app.include_router(
         tipo_pagamento.router, prefix="/v1/tipo_pagamento", tags=["Tipo Pagamento"]
     )
+    app.include_router(sync.router, prefix="/v1/sync", tags=["Sync"])
 
     @app.get("/")
     async def root():
         return {"api-version": api_version}
 
-    # Adicione qualquer configuração adicional que você precise
     uvicorn.run(app, host="0.0.0.0", port=8000)

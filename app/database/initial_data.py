@@ -6,7 +6,7 @@ from .crud.tipo_pagamento import create_tipo_pagamento
 from .crud.cliente import create_cliente
 from .crud.usuario import create_usuario
 
-from passlib.hash import bcrypt
+import bcrypt
 from peewee import DoesNotExist
 from decimal import Decimal
 
@@ -66,7 +66,10 @@ def create_initial_values():
     except DoesNotExist:
         create_usuario(
             email="adminpadrao@gmail.com",
-            senha=bcrypt.using(rounds=12).hash(os.getenv("ADMIN_PASSWORD")),
+            senha=bcrypt.hashpw(
+                os.getenv("ADMIN_PASSWORD").encode("utf-8"),
+                bcrypt.gensalt(rounds=12),
+            ).decode("utf-8"),
             nome="Admin",
             dataNascimento="1000-01-01",
             cpf="00000000000",

@@ -132,3 +132,37 @@ export const useSnackbarStore = defineStore('snackbar', {
     }
   }
 });
+
+export const useConnectivityStore = defineStore('connectivity', {
+  id: 'connectivity',
+  state: () => ({
+    isOnline: true,
+    lastCheckedAt: null,
+    pendingSyncCount: 0,
+    failedSyncCount: 0,
+  }),
+  getters: {
+    getIsOnline() {
+      return this.isOnline;
+    },
+    getStatusText() {
+      return this.isOnline ? 'Online' : 'Offline';
+    },
+    getPendingSyncCount() {
+      return this.pendingSyncCount;
+    },
+    getFailedSyncCount() {
+      return this.failedSyncCount;
+    },
+  },
+  actions: {
+    setOnline(isOnline) {
+      this.isOnline = isOnline;
+      this.lastCheckedAt = new Date().toISOString();
+    },
+    setSyncSummary(summary) {
+      this.pendingSyncCount = summary?.pending ?? 0;
+      this.failedSyncCount = summary?.failed ?? 0;
+    },
+  }
+});

@@ -11,6 +11,7 @@ from database.crud.produto import (
     delete_product,
 )
 from database.crud.categoria import get_categoria_by_id
+from database.crud.sync import enqueue_sync_event
 from fastapi.responses import JSONResponse, Response
 from fastapi import APIRouter, status, Header, Depends
 
@@ -73,6 +74,16 @@ def create_product(data: CreateProductRequest, jwt_token: str = Header()):
         logging.info("Product created")
         
         categoria = get_categoria_by_id(produto.categoria)
+        try:
+            payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+            enqueue_sync_event(
+                entity="produto",
+                entity_id=str(produto.idProduto),
+                operation="create",
+                payload=payload,
+            )
+        except Exception as sync_error:
+            logging.warning("Failed to enqueue product create sync event: " + str(sync_error))
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={
@@ -212,6 +223,16 @@ def update_product_by_id(
                 content={"message": "Erro ao atualizar produto"},
             )
         logging.info("Product updated")
+        try:
+            payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+            enqueue_sync_event(
+                entity="produto",
+                entity_id=str(uuid),
+                operation="update",
+                payload=payload,
+            )
+        except Exception as sync_error:
+            logging.warning("Failed to enqueue product update sync event: " + str(sync_error))
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={"message": "Produto atualizado com sucesso"},
@@ -252,6 +273,15 @@ def delete_product_by_id(uuid: str, jwt_token: str = Header()):
                 content={"message": "Produto não encontrado"},
             )
         logging.info("Product deleted")
+        try:
+            enqueue_sync_event(
+                entity="produto",
+                entity_id=str(uuid),
+                operation="delete",
+                payload={"idProduto": str(uuid)},
+            )
+        except Exception as sync_error:
+            logging.warning("Failed to enqueue product delete sync event: " + str(sync_error))
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={"message": "Produto deletado com sucesso"},

@@ -3,6 +3,7 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import pinia from './plugins/pinia'
 import router from './plugins/router'
+import { startConnectivityMonitor } from './utils/connectivity'
 import './assets/css/style.css'
 
 const app = createApp(App);
@@ -10,5 +11,7 @@ const app = createApp(App);
 app.use(vuetify)
 app.use(pinia);
 app.use(router);
+
+startConnectivityMonitor();
 
 app.mount('#app');

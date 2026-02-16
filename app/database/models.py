@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from peewee import *
 
 from .dbmain import db
@@ -142,3 +143,44 @@ class TipoPagamento(BaseModel):
 
     class Meta:
         table_name = "TipoPagamento"
+
+
+class SyncQueue(BaseModel):
+    idSyncEvent = UUIDField(primary_key=True, default=uuid.uuid4)
+    entity = CharField()
+    entityId = CharField(null=True)
+    operation = CharField()
+    payloadJson = TextField()
+    idempotencyKey = CharField(unique=True)
+    status = CharField(default="pending")
+    attempts = IntegerField(default=0)
+    lastError = TextField(null=True)
+    createdAt = DateTimeField(default=datetime.utcnow)
+    updatedAt = DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        table_name = "SyncQueue"
+
+
+class SyncCheckpoint(BaseModel):
+    idCheckpoint = UUIDField(primary_key=True, default=uuid.uuid4)
+    scope = CharField(unique=True)
+    lastRemoteTimestamp = DateTimeField(null=True)
+    updatedAt = DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        table_name = "SyncCheckpoint"
+
+
+class SyncInboundEvent(BaseModel):
+    idInboundEvent = UUIDField(primary_key=True, default=uuid.uuid4)
+    idempotencyKey = CharField(unique=True)
+    entity = CharField()
+    entityId = CharField(null=True)
+    operation = CharField()
+    payloadJson = TextField()
+    source = CharField(default="remote_client")
+    createdAt = DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        table_name = "SyncInboundEvent"

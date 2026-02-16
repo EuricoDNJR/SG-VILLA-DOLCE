@@ -1,6 +1,6 @@
 from database import models
 from peewee import DoesNotExist
-from passlib.hash import bcrypt
+import bcrypt
 
 
 def create_usuario(email, senha, nome, dataNascimento, cpf, endereco, telefone, cargo):
@@ -87,7 +87,9 @@ def update_user(
         if email is not None:
             usuario.email = email
         if senha is not None:
-            hashed_password = bcrypt.using(rounds=12).hash(senha)
+            hashed_password = bcrypt.hashpw(
+                senha.encode("utf-8"), bcrypt.gensalt(rounds=12)
+            ).decode("utf-8")
             usuario.senha = hashed_password
         if nome is not None:
             usuario.nome = nome

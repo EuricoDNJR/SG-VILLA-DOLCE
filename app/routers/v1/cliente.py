@@ -10,6 +10,7 @@ from database.crud.cliente import (
     delete_cliente,
     get_client_discounts,
 )
+from database.crud.sync import enqueue_sync_event
 from database.crud.usuario import verifying_permission_admin
 from dependencies import get_token_header
 from fastapi.responses import JSONResponse, Response
@@ -73,6 +74,16 @@ def create_client(data: ClienteRequest, jwt_token: str = Header()):
             data.saldo,
         )
         logging.info("Client created")
+        try:
+            payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+            enqueue_sync_event(
+                entity="cliente",
+                entity_id=str(cliente.idCliente),
+                operation="create",
+                payload=payload,
+            )
+        except Exception as sync_error:
+            logging.warning("Failed to enqueue client create sync event: " + str(sync_error))
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={"uuid": str(cliente.idCliente), "Nome": cliente.nome},
@@ -207,6 +218,16 @@ def update_client(
             )
         else:
             logging.info("Client updated")
+            try:
+                payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+                enqueue_sync_event(
+                    entity="cliente",
+                    entity_id=str(idCliente),
+                    operation="update",
+                    payload=payload,
+                )
+            except Exception as sync_error:
+                logging.warning("Failed to enqueue client update sync event: " + str(sync_error))
             return JSONResponse(status_code=status.HTTP_200_OK, content=cliente_updated)
     except Exception as e:
         logging.error(e)
@@ -227,6 +248,15 @@ def delete_client(idCliente: str):
         client_deleted = delete_cliente(uuid=idCliente)
         if client_deleted:
             logging.info("Client deleted")
+            try:
+                enqueue_sync_event(
+                    entity="cliente",
+                    entity_id=str(idCliente),
+                    operation="delete",
+                    payload={"idCliente": str(idCliente)},
+                )
+            except Exception as sync_error:
+                logging.warning("Failed to enqueue client delete sync event: " + str(sync_error))
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
                 content={"message": "Cliente deletado com sucesso"},
