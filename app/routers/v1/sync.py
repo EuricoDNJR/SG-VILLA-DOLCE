@@ -46,6 +46,35 @@ def _build_cliente_snapshot(id_cliente: str):
     }
 
 
+def _build_produtos_snapshot(produtos_payload):
+    if not isinstance(produtos_payload, list):
+        return []
+
+    snapshots = []
+    for item in produtos_payload:
+        produto_id = (item or {}).get("idProduto")
+        if not produto_id:
+            continue
+
+        produto = models.Produto.get_or_none(models.Produto.idProduto == produto_id)
+        if produto is None:
+            continue
+
+        snapshots.append(
+            {
+                "idProduto": str(produto.idProduto),
+                "nome": produto.nome,
+                "descricao": produto.descricao,
+                "categoria": str(produto.categoria.idCategoria),
+                "categoriaNome": produto.categoria.nome,
+                "unidadeMedida": produto.categoria.unidadeMedida,
+                "valorVenda": float(produto.valorVenda),
+            }
+        )
+
+    return snapshots
+
+
 class InboundSyncEventRequest(BaseModel):
     idSyncEvent: str
     entity: str
@@ -106,11 +135,16 @@ def _push_event_to_remote(sync_event):
         sync_event.entity == "pedido"
         and sync_event.operation == "create"
         and isinstance(payload_data, dict)
-        and not payload_data.get("clienteSnapshot")
     ):
-        cliente_snapshot = _build_cliente_snapshot(payload_data.get("idCliente"))
-        if cliente_snapshot:
-            payload_data["clienteSnapshot"] = cliente_snapshot
+        if not payload_data.get("clienteSnapshot"):
+            cliente_snapshot = _build_cliente_snapshot(payload_data.get("idCliente"))
+            if cliente_snapshot:
+                payload_data["clienteSnapshot"] = cliente_snapshot
+
+        if not payload_data.get("produtosSnapshot"):
+            payload_data["produtosSnapshot"] = _build_produtos_snapshot(
+                payload_data.get("idProdutos")
+            )
 
     payload = {
         "idSyncEvent": str(sync_event.idSyncEvent),

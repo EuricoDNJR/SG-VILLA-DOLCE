@@ -29,6 +29,44 @@ def _get_entity_id(payload: dict, key: str, fallback: str = None):
     return payload.get(key) or fallback
 
 
+def _resolve_categoria_for_produto(payload: dict):
+    requested_categoria = payload.get("categoria") or payload.get("idCategoria")
+    categoria_nome = payload.get("categoriaNome")
+    unidade_medida = payload.get("unidadeMedida") or "UND"
+
+    if requested_categoria:
+        categoria = models.Categoria.get_or_none(
+            models.Categoria.idCategoria == requested_categoria
+        )
+        if categoria is not None:
+            return categoria.idCategoria
+
+    if categoria_nome:
+        categoria = models.Categoria.get_or_none(models.Categoria.nome == categoria_nome)
+        if categoria is not None:
+            if unidade_medida and categoria.unidadeMedida != unidade_medida:
+                categoria.unidadeMedida = unidade_medida
+                categoria.save()
+            return categoria.idCategoria
+
+    if requested_categoria:
+        try:
+            categoria = models.Categoria.create(
+                idCategoria=requested_categoria,
+                nome=categoria_nome or f"Categoria Sync {str(requested_categoria)[:8]}",
+                unidadeMedida=unidade_medida,
+            )
+            return categoria.idCategoria
+        except Exception:
+            pass
+
+    categoria = models.Categoria.create(
+        nome=categoria_nome or "Categoria Sync",
+        unidadeMedida=unidade_medida,
+    )
+    return categoria.idCategoria
+
+
 def _resolve_pedido_usuario(payload: dict):
     requested_usuario_id = payload.get("idUsuario") or payload.get("jwt_token")
     if requested_usuario_id:
@@ -155,6 +193,7 @@ def _apply_cliente(operation: str, payload: dict, entity_id: str = None):
 def _apply_produto(operation: str, payload: dict, entity_id: str = None):
     if operation == "create":
         target_id = _get_entity_id(payload, "idProduto", entity_id)
+        resolved_categoria_id = _resolve_categoria_for_produto(payload)
         existing = None
         if target_id:
             existing = models.Produto.get_or_none(models.Produto.idProduto == target_id)
@@ -165,21 +204,19 @@ def _apply_produto(operation: str, payload: dict, entity_id: str = None):
             )
 
         if existing is not None:
-            updated = update_product(
-                uuid=str(existing.idProduto),
-                nome=payload.get("nome"),
-                descricao=payload.get("descricao"),
-                categoria=payload.get("categoria"),
-                valorVenda=payload.get("valorVenda"),
-                unidadeMedida=payload.get("unidadeMedida"),
-            )
-            if updated is None:
-                raise ValueError("erro ao atualizar produto existente no upsert")
+            if payload.get("nome") is not None:
+                existing.nome = payload.get("nome")
+            if payload.get("descricao") is not None:
+                existing.descricao = payload.get("descricao")
+            if payload.get("valorVenda") is not None:
+                existing.valorVenda = payload.get("valorVenda")
+            existing.categoria = resolved_categoria_id
+            existing.save()
         else:
             created = create_produto(
                 payload.get("nome"),
                 payload.get("descricao"),
-                payload.get("categoria"),
+                resolved_categoria_id,
                 payload.get("valorVenda"),
                 idProduto=target_id,
             )
@@ -252,6 +289,12 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
 
     resolved_usuario_id, _ = _resolve_pedido_usuario(payload)
     resolved_caixa_id = _resolve_pedido_caixa(payload, resolved_usuario_id)
+    produtos_snapshot = payload.get("produtosSnapshot") or []
+    produtos_snapshot_by_id = {
+        str(item.get("idProduto")): item
+        for item in produtos_snapshot
+        if isinstance(item, dict) and item.get("idProduto")
+    }
 
     pagamento = create_pagamento(
         valorRecebimento=pagamento_payload.get("valorRecebimento", 0.0),
@@ -276,9 +319,20 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
         raise ValueError("erro ao criar pedido")
 
     for produto in produtos_payload:
+        produto_id = produto.get("idProduto")
+        produto_exists = models.Produto.get_or_none(models.Produto.idProduto == produto_id)
+        if produto_exists is None:
+            produto_snapshot = produtos_snapshot_by_id.get(str(produto_id))
+            if produto_snapshot:
+                _apply_produto("create", produto_snapshot, str(produto_id))
+            else:
+                raise ValueError(
+                    f"produto do pedido nao encontrado no remoto: idProduto={produto_id}"
+                )
+
         produto_pedido = create_produto_pedido(
             idPedido=pedido.idPedido,
-            idProduto=produto.get("idProduto"),
+            idProduto=produto_id,
             quantidade=produto.get("quantidade"),
             valorVendaUnd=produto.get("valorVendaUnd"),
             desconto=produto.get("desconto"),
@@ -296,7 +350,7 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
 
     if payload.get("status") == "Pago":
         update_balance_caixa_pedido(
-            payload.get("idCaixa"),
+            resolved_caixa_id,
             pedido.idPagamento.valorTotal,
             pedido.idPagamento.tipoPagamento,
         )
