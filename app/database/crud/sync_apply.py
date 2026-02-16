@@ -251,6 +251,13 @@ def _apply_produto(operation: str, payload: dict, entity_id: str = None):
 
 def _apply_pedido_create(payload: dict, entity_id: str = None):
     target_pedido_id = _get_entity_id(payload, "idPedido", entity_id)
+    if target_pedido_id:
+        existing_pedido = models.Pedido.get_or_none(models.Pedido.idPedido == target_pedido_id)
+        if existing_pedido is not None:
+            # Idempotent behavior: if the order already exists remotely, treat
+            # this create event as already applied.
+            return
+
     pagamento_payload = payload.get("Pagamento") or {}
     produtos_payload = payload.get("idProdutos") or []
     requested_cliente_id = payload.get("idCliente")
