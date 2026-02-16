@@ -13,6 +13,7 @@ from database.crud.pedido import (
     get_pedido_by_id,
     get_pedido_object_by_id,
     update_balance_client_and_order,
+    update_balance_client_and_order_unique,
     update_balance_client_and_order_cancel,
     update_pedido_status,
 )
