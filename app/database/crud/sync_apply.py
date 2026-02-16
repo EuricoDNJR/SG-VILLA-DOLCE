@@ -30,6 +30,16 @@ def _get_entity_id(payload: dict, key: str, fallback: str = None):
     return payload.get(key) or fallback
 
 
+def _apply_balance_for_single_item(pedido, produto_instance):
+    # Prefer the granular balance update if available in this runtime.
+    fn = globals().get("update_balance_client_and_order_unique")
+    if callable(fn):
+        return fn(pedido, produto_instance)
+
+    # Fallback to full recomputation to avoid sync failure on mixed deployments.
+    return update_balance_client_and_order(pedido)
+
+
 def _resolve_categoria_for_produto(payload: dict):
     requested_categoria = payload.get("categoria") or payload.get("idCategoria")
     categoria_nome = payload.get("categoriaNome")
@@ -439,7 +449,7 @@ def _apply_pedido_add_items(payload: dict, entity_id: str):
             desconto=produto.get("desconto"),
         )
         update_quantity_product(produto_id, produto.get("quantidade"))
-        update_balance_client_and_order_unique(pedido, produto_instance)
+        _apply_balance_for_single_item(pedido, produto_instance)
 
         if produto_instance.idProduto.categoria.unidadeMedida == "UND":
             pedido.quantidade_produtos_pedido += int(produto.get("quantidade"))
