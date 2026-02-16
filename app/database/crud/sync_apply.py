@@ -47,6 +47,47 @@ def _resolve_pedido_usuario(payload: dict):
     raise ValueError("nenhum usuario disponivel no remoto para vincular pedido")
 
 
+def _resolve_pedido_caixa(payload: dict, fallback_usuario_id):
+    requested_caixa_id = payload.get("idCaixa")
+    if requested_caixa_id:
+        caixa = models.Caixa.get_or_none(models.Caixa.idCaixa == requested_caixa_id)
+        if caixa is not None:
+            return caixa.idCaixa
+
+        now = datetime.datetime.now()
+        caixa = models.Caixa.create(
+            idCaixa=requested_caixa_id,
+            saldoInicial=0.0,
+            dataAbertura=now.date(),
+            horaAbertura=now.time().replace(microsecond=0),
+            observacoes="Caixa criado automaticamente via sync de pedido",
+            aberto=False,
+            idUsuarioAbertura=fallback_usuario_id,
+            idUsuarioFechamento=fallback_usuario_id,
+        )
+        return caixa.idCaixa
+
+    caixa_aberto = models.Caixa.get_or_none(models.Caixa.aberto == True)
+    if caixa_aberto is not None:
+        return caixa_aberto.idCaixa
+
+    caixa_qualquer = models.Caixa.select().first()
+    if caixa_qualquer is not None:
+        return caixa_qualquer.idCaixa
+
+    now = datetime.datetime.now()
+    caixa = models.Caixa.create(
+        saldoInicial=0.0,
+        dataAbertura=now.date(),
+        horaAbertura=now.time().replace(microsecond=0),
+        observacoes="Caixa fallback criado automaticamente via sync",
+        aberto=False,
+        idUsuarioAbertura=fallback_usuario_id,
+        idUsuarioFechamento=fallback_usuario_id,
+    )
+    return caixa.idCaixa
+
+
 def _apply_cliente(operation: str, payload: dict, entity_id: str = None):
     if operation == "create":
         target_id = _get_entity_id(payload, "idCliente", entity_id)
@@ -210,6 +251,7 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
         )
 
     resolved_usuario_id, _ = _resolve_pedido_usuario(payload)
+    resolved_caixa_id = _resolve_pedido_caixa(payload, resolved_usuario_id)
 
     pagamento = create_pagamento(
         valorRecebimento=pagamento_payload.get("valorRecebimento", 0.0),
@@ -223,7 +265,7 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
         idCliente=resolved_cliente.idCliente if resolved_cliente else payload.get("idCliente"),
         idPagamento=pagamento.idPagamento,
         idUsuario=resolved_usuario_id,
-        idCaixa=payload.get("idCaixa"),
+        idCaixa=resolved_caixa_id,
         status=payload.get("status"),
         data_criacao=payload.get("data_criacao")
         or payload.get("dataCriacao")
