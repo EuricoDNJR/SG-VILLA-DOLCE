@@ -103,7 +103,11 @@ def _push_event_to_remote(sync_event):
         with request.urlopen(req, timeout=5) as response:
             return (200 <= response.status < 300), f"http_status={response.status}"
     except error.HTTPError as http_error:
-        return False, f"http_error={http_error.code}"
+        try:
+            error_body = http_error.read().decode("utf-8")
+        except Exception:
+            error_body = ""
+        return False, f"http_error={http_error.code} body={error_body}"
     except Exception as req_error:
         return False, str(req_error)
 

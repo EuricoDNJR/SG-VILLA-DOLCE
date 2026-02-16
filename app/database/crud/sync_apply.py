@@ -34,18 +34,34 @@ def _apply_cliente(operation: str, payload: dict, entity_id: str = None):
         existing = None
         if entity_id:
             existing = models.Cliente.get_or_none(models.Cliente.idCliente == entity_id)
-        if existing:
-            return
 
-        create_cliente(
-            payload.get("email"),
-            payload.get("nome"),
-            payload.get("dataNascimento"),
-            payload.get("cpf"),
-            payload.get("endereco"),
-            payload.get("telefone"),
-            payload.get("saldo"),
-        )
+        if existing is None and payload.get("telefone"):
+            existing = models.Cliente.get_or_none(
+                models.Cliente.telefone == payload.get("telefone")
+            )
+
+        # Idempotent behavior for remote sync: if already exists by id/telefone, update.
+        if existing is not None:
+            update_cliente(
+                uuid=str(existing.idCliente),
+                telefone=payload.get("telefone"),
+                email=payload.get("email"),
+                nome=payload.get("nome"),
+                dataNascimento=payload.get("dataNascimento"),
+                cpf=payload.get("cpf"),
+                endereco=payload.get("endereco"),
+                saldo=payload.get("saldo"),
+            )
+        else:
+            create_cliente(
+                payload.get("email"),
+                payload.get("nome"),
+                payload.get("dataNascimento"),
+                payload.get("cpf"),
+                payload.get("endereco"),
+                payload.get("telefone"),
+                payload.get("saldo"),
+            )
         return
 
     target_id = _get_entity_id(payload, "idCliente", entity_id)
@@ -80,17 +96,32 @@ def _apply_produto(operation: str, payload: dict, entity_id: str = None):
         existing = None
         if entity_id:
             existing = models.Produto.get_or_none(models.Produto.idProduto == entity_id)
-        if existing:
-            return
 
-        created = create_produto(
-            payload.get("nome"),
-            payload.get("descricao"),
-            payload.get("categoria"),
-            payload.get("valorVenda"),
-        )
-        if created is None:
-            raise ValueError("erro ao criar produto")
+        if existing is None and payload.get("nome"):
+            existing = models.Produto.get_or_none(
+                models.Produto.nome == payload.get("nome")
+            )
+
+        if existing is not None:
+            updated = update_product(
+                uuid=str(existing.idProduto),
+                nome=payload.get("nome"),
+                descricao=payload.get("descricao"),
+                categoria=payload.get("categoria"),
+                valorVenda=payload.get("valorVenda"),
+                unidadeMedida=payload.get("unidadeMedida"),
+            )
+            if updated is None:
+                raise ValueError("erro ao atualizar produto existente no upsert")
+        else:
+            created = create_produto(
+                payload.get("nome"),
+                payload.get("descricao"),
+                payload.get("categoria"),
+                payload.get("valorVenda"),
+            )
+            if created is None:
+                raise ValueError("erro ao criar produto")
         return
 
     target_id = _get_entity_id(payload, "idProduto", entity_id)
