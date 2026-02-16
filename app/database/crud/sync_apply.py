@@ -366,7 +366,9 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
 def _apply_pedido_finish(payload: dict, entity_id: str):
     pedido = get_pedido_object_by_id(idPedido=entity_id)
     if pedido is None:
-        raise ValueError("pedido nao encontrado para finish")
+        # Idempotent behavior for out-of-order sync: if the order does not
+        # exist remotely anymore, treat finish as already applied.
+        return
 
     if pedido.status == "Pago":
         return

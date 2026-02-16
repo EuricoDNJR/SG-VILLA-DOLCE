@@ -1,6 +1,7 @@
 import json
 import uuid
 from datetime import datetime
+from datetime import timedelta
 
 from database import models
 
@@ -83,6 +84,30 @@ def claim_sync_events(limit=25):
         claimed.append(event)
 
     return claimed
+
+
+def requeue_stale_processing_events(max_age_seconds=60):
+    cutoff = datetime.utcnow() - timedelta(seconds=max_age_seconds)
+    stale_events = (
+        models.SyncQueue.select()
+        .where(
+            (models.SyncQueue.status == "processing")
+            & (models.SyncQueue.updatedAt <= cutoff)
+        )
+        .limit(1000)
+    )
+
+    now = datetime.utcnow()
+    rescued = 0
+    for event in stale_events:
+        event.status = "failed"
+        if not event.lastError:
+            event.lastError = "processing_stale_requeued"
+        event.updatedAt = now
+        event.save()
+        rescued += 1
+
+    return rescued
 
 
 def mark_sync_event_done(event):

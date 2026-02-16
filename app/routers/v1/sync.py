@@ -18,6 +18,7 @@ from database.crud.sync import (
     ingest_remote_sync_event,
     mark_sync_event_done,
     mark_sync_event_failed,
+    requeue_stale_processing_events,
 )
 from database.crud.sync_apply import apply_sync_event
 from dependencies import get_token_header
@@ -212,12 +213,19 @@ def _is_remote_api_key_valid(x_api_key: Optional[str]):
 )
 def push_pending(limit: int = 25):
     try:
+        rescued_processing = requeue_stale_processing_events(max_age_seconds=60)
         events = claim_sync_events(limit=limit)
 
         if not events:
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
-                content={"processed": 0, "done": 0, "failed": 0, "message": "Sem eventos pendentes"},
+                content={
+                    "processed": 0,
+                    "done": 0,
+                    "failed": 0,
+                    "rescuedProcessing": rescued_processing,
+                    "message": "Sem eventos pendentes",
+                },
             )
 
         done_count = 0
@@ -238,6 +246,7 @@ def push_pending(limit: int = 25):
                 "processed": len(events),
                 "done": done_count,
                 "failed": failed_count,
+                "rescuedProcessing": rescued_processing,
             },
         )
     except Exception as e:
