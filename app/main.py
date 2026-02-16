@@ -52,6 +52,12 @@ if __name__ == "__main__":
 
     ENV = os.getenv("ENV")
     api_version = "v0.1.0"
+    build_commit = (
+        os.getenv("APP_GIT_COMMIT")
+        or os.getenv("RENDER_GIT_COMMIT")
+        or "unknown"
+    )
+    build_id = os.getenv("APP_BUILD_ID") or os.getenv("RENDER_SERVICE_ID") or "unknown"
 
     api_metadata = {
         "title": "Villa Dolce API",
@@ -62,6 +68,13 @@ if __name__ == "__main__":
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         # Startup: initialize schema and seed data, then release the connection.
+        logging.info(
+            "Starting API version=%s env=%s commit=%s build=%s",
+            api_version,
+            ENV or "unknown",
+            build_commit,
+            build_id,
+        )
         logging.info("Connecting Database")
         db.connect(reuse_if_open=True)
         try:
@@ -163,5 +176,14 @@ if __name__ == "__main__":
     @app.get("/")
     async def root():
         return {"api-version": api_version}
+
+    @app.get("/version")
+    async def version():
+        return {
+            "apiVersion": api_version,
+            "environment": ENV or "unknown",
+            "gitCommit": build_commit,
+            "buildId": build_id,
+        }
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
