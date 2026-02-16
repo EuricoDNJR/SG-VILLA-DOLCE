@@ -157,3 +157,36 @@ def get_inbound_event_by_key(idempotency_key: str):
     return models.SyncInboundEvent.get_or_none(
         models.SyncInboundEvent.idempotencyKey == idempotency_key
     )
+
+
+def get_outbound_event_by_key(idempotency_key: str):
+    return models.SyncQueue.get_or_none(
+        models.SyncQueue.idempotencyKey == idempotency_key
+    )
+
+
+def get_checkpoint(scope: str):
+    return models.SyncCheckpoint.get_or_none(models.SyncCheckpoint.scope == scope)
+
+
+def get_checkpoint_timestamp(scope: str):
+    checkpoint = get_checkpoint(scope)
+    if checkpoint is None:
+        return None
+    return checkpoint.lastRemoteTimestamp
+
+
+def upsert_checkpoint_timestamp(scope: str, timestamp):
+    checkpoint = get_checkpoint(scope)
+    now = datetime.utcnow()
+    if checkpoint is None:
+        return models.SyncCheckpoint.create(
+            scope=scope,
+            lastRemoteTimestamp=timestamp,
+            updatedAt=now,
+        )
+
+    checkpoint.lastRemoteTimestamp = timestamp
+    checkpoint.updatedAt = now
+    checkpoint.save()
+    return checkpoint
