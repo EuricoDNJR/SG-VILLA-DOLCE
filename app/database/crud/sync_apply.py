@@ -29,6 +29,24 @@ def _get_entity_id(payload: dict, key: str, fallback: str = None):
     return payload.get(key) or fallback
 
 
+def _resolve_pedido_usuario(payload: dict):
+    requested_usuario_id = payload.get("idUsuario") or payload.get("jwt_token")
+    if requested_usuario_id:
+        usuario = models.Usuario.get_or_none(models.Usuario.idUsuario == requested_usuario_id)
+        if usuario is not None:
+            return usuario.idUsuario, requested_usuario_id
+
+    admin_usuario = models.Usuario.get_or_none(models.Usuario.cargo == "Admin")
+    if admin_usuario is not None:
+        return admin_usuario.idUsuario, requested_usuario_id
+
+    any_usuario = models.Usuario.select().first()
+    if any_usuario is not None:
+        return any_usuario.idUsuario, requested_usuario_id
+
+    raise ValueError("nenhum usuario disponivel no remoto para vincular pedido")
+
+
 def _apply_cliente(operation: str, payload: dict, entity_id: str = None):
     if operation == "create":
         target_id = _get_entity_id(payload, "idCliente", entity_id)
@@ -191,6 +209,8 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
             f"cliente do pedido nao encontrado no remoto: idCliente={requested_cliente_id}"
         )
 
+    resolved_usuario_id, _ = _resolve_pedido_usuario(payload)
+
     pagamento = create_pagamento(
         valorRecebimento=pagamento_payload.get("valorRecebimento", 0.0),
         valorDevolvido=pagamento_payload.get("valorDevolvido", 0.0),
@@ -202,7 +222,7 @@ def _apply_pedido_create(payload: dict, entity_id: str = None):
     pedido = create_pedido(
         idCliente=resolved_cliente.idCliente if resolved_cliente else payload.get("idCliente"),
         idPagamento=pagamento.idPagamento,
-        idUsuario=payload.get("idUsuario") or payload.get("jwt_token"),
+        idUsuario=resolved_usuario_id,
         idCaixa=payload.get("idCaixa"),
         status=payload.get("status"),
         data_criacao=payload.get("data_criacao")

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Header, status
 from fastapi.responses import JSONResponse
 from typing import Optional
 
+from database import models
 from database.crud.sync import (
     claim_sync_events,
     get_inbound_event_by_key,
@@ -21,6 +22,28 @@ from database.crud.sync_apply import apply_sync_event
 from dependencies import get_token_header
 
 router = APIRouter()
+
+
+def _build_cliente_snapshot(id_cliente: str):
+    if not id_cliente:
+        return None
+
+    cliente = models.Cliente.get_or_none(models.Cliente.idCliente == id_cliente)
+    if cliente is None:
+        return None
+
+    return {
+        "idCliente": str(cliente.idCliente),
+        "email": cliente.email,
+        "nome": cliente.nome,
+        "dataNascimento": str(cliente.dataNascimento)
+        if cliente.dataNascimento is not None
+        else None,
+        "cpf": cliente.cpf,
+        "endereco": cliente.endereco,
+        "telefone": cliente.telefone,
+        "saldo": float(cliente.saldo) if cliente.saldo is not None else 0.0,
+    }
 
 
 class InboundSyncEventRequest(BaseModel):
@@ -78,12 +101,23 @@ def _push_event_to_remote(sync_event):
     if not remote_base_url:
         return False, "SYNC_REMOTE_BASE_URL vazio"
 
+    payload_data = json.loads(sync_event.payloadJson)
+    if (
+        sync_event.entity == "pedido"
+        and sync_event.operation == "create"
+        and isinstance(payload_data, dict)
+        and not payload_data.get("clienteSnapshot")
+    ):
+        cliente_snapshot = _build_cliente_snapshot(payload_data.get("idCliente"))
+        if cliente_snapshot:
+            payload_data["clienteSnapshot"] = cliente_snapshot
+
     payload = {
         "idSyncEvent": str(sync_event.idSyncEvent),
         "entity": sync_event.entity,
         "entityId": sync_event.entityId,
         "operation": sync_event.operation,
-        "payload": json.loads(sync_event.payloadJson),
+        "payload": payload_data,
         "idempotencyKey": sync_event.idempotencyKey,
         "createdAt": sync_event.createdAt.isoformat() if sync_event.createdAt else None,
     }
