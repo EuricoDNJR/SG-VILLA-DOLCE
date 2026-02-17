@@ -124,6 +124,25 @@ export function startConnectivityMonitor() {
     }
   };
 
+  const pullRemoteSyncEvents = async () => {
+    const token = authStore.getToken;
+    if (!token) {
+      return;
+    }
+
+    try {
+      await fetch("http://127.0.0.1:8000/v1/sync/pull_remote/?limit=200", {
+        method: "POST",
+        headers: {
+          "jwt-token": token,
+        },
+        cache: "no-store",
+      });
+    } catch (error) {
+      // Ignore transient pull errors.
+    }
+  };
+
   const check = async () => {
     if (isChecking) {
       return;
@@ -133,6 +152,7 @@ export function startConnectivityMonitor() {
     const isOnline = await checkApiHealth();
     connectivityStore.setOnline(isOnline);
     if (isOnline) {
+      await pullRemoteSyncEvents();
       const summary = await loadSyncSummary();
       await loadLastSyncError();
       if (summary && (summary.pending > 0 || summary.failed > 0)) {

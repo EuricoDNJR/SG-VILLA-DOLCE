@@ -2,6 +2,8 @@ import logging
 import json
 import os
 import traceback
+from datetime import datetime
+from urllib.parse import quote
 from urllib import request, error
 
 from pydantic import BaseModel
@@ -12,13 +14,16 @@ from typing import Optional
 from database import models
 from database.crud.sync import (
     claim_sync_events,
+    get_checkpoint_timestamp,
     get_inbound_event_by_key,
+    get_outbound_event_by_key,
     get_pending_sync_events,
     get_pending_sync_summary,
     ingest_remote_sync_event,
     mark_sync_event_done,
     mark_sync_event_failed,
     requeue_stale_processing_events,
+    upsert_checkpoint_timestamp,
 )
 from database.crud.sync_apply import apply_sync_event
 from dependencies import get_token_header
@@ -200,6 +205,59 @@ def _is_remote_api_key_valid(x_api_key: Optional[str]):
     return bool(x_api_key and x_api_key.strip() == expected_key)
 
 
+def _parse_iso_datetime(raw_value: Optional[str]):
+    if not raw_value:
+        return None
+    try:
+        normalized = raw_value.replace("Z", "+00:00")
+        return datetime.fromisoformat(normalized)
+    except Exception:
+        return None
+
+
+def _fetch_remote_inbound_events(*, since: Optional[str] = None, limit: int = 200):
+    remote_enabled = os.getenv("SYNC_REMOTE_ENABLED", "OFF").strip().upper() == "ON"
+    remote_base_url = os.getenv("SYNC_REMOTE_BASE_URL", "").strip().rstrip("/")
+    remote_api_key = os.getenv("SYNC_REMOTE_API_KEY", "").strip()
+
+    if not remote_enabled:
+        return False, "SYNC_REMOTE_ENABLED=OFF", []
+    if not remote_base_url:
+        return False, "SYNC_REMOTE_BASE_URL vazio", []
+
+    query_parts = [f"limit={max(1, min(int(limit), 1000))}"]
+    if since:
+        query_parts.append(f"since={quote(since, safe='')}")
+    target_url = remote_base_url + "/v1/sync/inbound_events?" + "&".join(query_parts)
+
+    req = request.Request(
+        target_url,
+        headers={
+            "Content-Type": "application/json",
+            **({"x-api-key": remote_api_key} if remote_api_key else {}),
+        },
+        method="GET",
+    )
+
+    try:
+        with request.urlopen(req, timeout=10) as response:
+            if not (200 <= response.status < 300):
+                return False, f"http_status={response.status}", []
+            payload = json.loads(response.read().decode("utf-8"))
+            events = payload.get("events") if isinstance(payload, dict) else []
+            if not isinstance(events, list):
+                events = []
+            return True, "ok", events
+    except error.HTTPError as http_error:
+        try:
+            error_body = http_error.read().decode("utf-8", errors="replace")
+        except Exception:
+            error_body = ""
+        return False, f"http_error={http_error.code} body={error_body}", []
+    except Exception as req_error:
+        return False, f"request_error={str(req_error)}", []
+
+
 @router.post(
     "/push_pending/",
     status_code=status.HTTP_200_OK,
@@ -248,6 +306,137 @@ def push_pending(limit: int = 25):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": "Erro ao processar fila de sincronizacao: " + str(e)},
+        )
+
+
+@router.get(
+    "/inbound_events",
+    status_code=status.HTTP_200_OK,
+)
+def inbound_events(
+    since: Optional[str] = None,
+    limit: int = 200,
+    x_api_key: str = Header(default=None),
+):
+    try:
+        if not _is_remote_api_key_valid(x_api_key):
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"message": "Invalid sync API key"},
+            )
+
+        since_dt = _parse_iso_datetime(since)
+        query = models.SyncInboundEvent.select().order_by(models.SyncInboundEvent.createdAt.asc())
+        if since_dt is not None:
+            query = query.where(models.SyncInboundEvent.createdAt > since_dt)
+        query = query.limit(max(1, min(limit, 1000)))
+
+        events = [
+            {
+                "idInboundEvent": str(event.idInboundEvent),
+                "idempotencyKey": event.idempotencyKey,
+                "entity": event.entity,
+                "entityId": event.entityId,
+                "operation": event.operation,
+                "payload": json.loads(event.payloadJson),
+                "source": event.source,
+                "createdAt": event.createdAt.isoformat() if event.createdAt else None,
+            }
+            for event in query
+        ]
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"events": events, "count": len(events)},
+        )
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao exportar eventos de sincronizacao: " + str(e)},
+        )
+
+
+@router.post(
+    "/pull_remote/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_token_header)],
+)
+def pull_remote(limit: int = 200):
+    try:
+        checkpoint_scope = "remote_inbound_sync"
+        checkpoint_ts = get_checkpoint_timestamp(checkpoint_scope)
+        since = checkpoint_ts.isoformat() if checkpoint_ts else None
+
+        ok, info, events = _fetch_remote_inbound_events(since=since, limit=limit)
+        if not ok:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"message": "Erro ao puxar eventos remotos: " + info},
+            )
+
+        applied = 0
+        skipped = 0
+        failed = 0
+        latest_ts = checkpoint_ts
+
+        for event in events:
+            event_key = event.get("idempotencyKey")
+            event_created_at = _parse_iso_datetime(event.get("createdAt"))
+            if event_created_at and (latest_ts is None or event_created_at > latest_ts):
+                latest_ts = event_created_at
+
+            if not event_key:
+                failed += 1
+                continue
+
+            # Avoid echoing back events this client originally produced.
+            if get_outbound_event_by_key(event_key):
+                skipped += 1
+                continue
+
+            if get_inbound_event_by_key(event_key):
+                skipped += 1
+                continue
+
+            try:
+                apply_sync_event(
+                    entity=event.get("entity"),
+                    operation=event.get("operation"),
+                    payload=event.get("payload") or {},
+                    entity_id=event.get("entityId"),
+                )
+                ingest_remote_sync_event(
+                    idempotency_key=event_key,
+                    entity=event.get("entity"),
+                    entity_id=event.get("entityId"),
+                    operation=event.get("operation"),
+                    payload=event.get("payload") or {},
+                    source=event.get("source") or "remote_pull",
+                )
+                applied += 1
+            except Exception as apply_error:
+                failed += 1
+                logging.error("pull_remote apply error: %s", str(apply_error))
+
+        if latest_ts is not None:
+            upsert_checkpoint_timestamp(checkpoint_scope, latest_ts)
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "fetched": len(events),
+                "applied": applied,
+                "skipped": skipped,
+                "failed": failed,
+                "checkpoint": latest_ts.isoformat() if latest_ts else None,
+            },
+        )
+    except Exception as e:
+        logging.error(e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Erro ao processar pull remoto: " + str(e)},
         )
 
 
