@@ -14,6 +14,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('ipcRenderer', {
       confirmDialog: (msg) => ipcRenderer.invoke('window-confirm', msg),
+      printHtml: (payload) => ipcRenderer.invoke('window-print-html', payload),
       // we can also expose variables, not just functions
     })
   } catch (error) {
