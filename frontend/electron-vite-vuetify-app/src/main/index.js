@@ -153,3 +153,40 @@ ipcMain.handle('window-confirm', async (event, msg) => {
   
   return dialogObjResponse.response == 0; 
 });
+
+ipcMain.handle('window-print-html', async (event, payload) => {
+  const html = payload?.html || ''
+  const isThermal = payload?.layout === 'thermal'
+
+  if (!html) {
+    return { ok: false, message: 'Conteudo de impressao vazio' }
+  }
+
+  const printWindow = new BrowserWindow({
+    width: isThermal ? 420 : 900,
+    height: 700,
+    show: true,
+    autoHideMenuBar: true,
+    webPreferences: {
+      sandbox: false
+    }
+  })
+
+  try {
+    await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
+    await new Promise((resolve) => {
+      if (printWindow.webContents.isLoading()) {
+        printWindow.webContents.once('did-finish-load', () => resolve())
+      } else {
+        resolve()
+      }
+    })
+
+    // Trigger Chromium print dialog from inside the opened receipt window.
+    await printWindow.webContents.executeJavaScript('window.focus(); setTimeout(() => window.print(), 50);')
+
+    return { ok: true }
+  } catch (error) {
+    return { ok: false, message: String(error) }
+  }
+})
